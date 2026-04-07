@@ -271,7 +271,7 @@ export default function AnalyticsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} formatter={(v: number) => [`${v}%`]} />
+                  <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} formatter={(v: unknown) => [`${v}%`]} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
                   <Line type="monotone" dataKey="rate" stroke="var(--accent)" strokeWidth={2} dot={{ r: 3, fill: 'var(--accent)' }} name="Rate" />
                   <Line type="monotone" dataKey="rolling" stroke="#94a3b8" strokeWidth={1.5} strokeDasharray="4 2" dot={false} name="7d avg" />
@@ -289,7 +289,7 @@ export default function AnalyticsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} tickLine={false} axisLine={false} />
                   <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} formatter={(v: number, name: string) => [name === 'velocity' ? `+${v}%` : `${v}%`, name === 'velocity' ? 'Progress gain' : 'Current']} />
+                  <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} formatter={(v: unknown, name: unknown) => [name === 'velocity' ? `+${v}%` : `${v}%`, name === 'velocity' ? 'Progress gain' : 'Current']} />
                   <Bar dataKey="progress" fill="var(--surface-2)" name="Current progress" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="velocity" fill="var(--accent)" name="Gain this period" radius={[4, 4, 0, 0]} />
                 </BarChart>
