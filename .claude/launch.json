@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "larchmont-os",
+      "runtimeExecutable": "/opt/homebrew/Cellar/node/25.9.0_1/bin/node",
+      "runtimeArgs": ["/Users/andrewrenko/Claudeski/larchmont-os/node_modules/.bin/next", "dev", "--turbopack"],
+      "port": 3000,
+      "autoPort": false
+    }
+  ]
+}
