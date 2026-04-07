@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Plus, CheckSquare, Calendar, FolderOpen, X, Check, Play, Square, Clock } from 'lucide-react'
+import { ArrowLeft, Plus, CheckSquare, Calendar, FolderOpen, X, Check, Play, Square, Clock, Trash2 } from 'lucide-react'
 import { db } from '@/lib/db'
 import type { Project, Task } from '@/lib/db'
 import { useToastStore, useTimerStore } from '@/lib/store'
@@ -320,11 +320,13 @@ function TaskDetailPanel({
   onClose,
   onTaskUpdate,
   onAddTime,
+  onDelete,
 }: {
   task: Task
   onClose: () => void
   onTaskUpdate: (taskId: string, updates: Partial<Task>) => Promise<void>
   onAddTime: (taskId: string, minutes: number) => void
+  onDelete: (taskId: string) => void
 }) {
   const [mounted, setMounted] = useState(false)
 
@@ -335,6 +337,9 @@ function TaskDetailPanel({
   // Inline description editing
   const [editingDesc, setEditingDesc] = useState(false)
   const [descValue, setDescValue] = useState(task.description ?? '')
+
+  // Delete confirm
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   // Save indicator
   const [saved, setSaved] = useState(false)
@@ -540,6 +545,36 @@ function TaskDetailPanel({
             )}
           </div>
 
+          {/* ── Delete ── */}
+          <div className="border-t border-[var(--border)] px-5 py-4">
+            {confirmDelete ? (
+              <div className="flex items-center gap-2">
+                <span className="flex-1 text-[12px] text-[var(--text-secondary)]">Delete this task?</span>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="rounded-[6px] px-3 py-1.5 text-[12px] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => onDelete(task.id)}
+                  className="flex items-center gap-1.5 rounded-[6px] bg-red-500/10 px-3 py-1.5 text-[12px] font-medium text-red-400 hover:bg-red-500/20 transition-colors"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Delete
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="flex items-center gap-1.5 text-[12px] text-[var(--text-tertiary)] hover:text-red-400 transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete task
+              </button>
+            )}
+          </div>
+
         </div>
       </div>
     </>,
@@ -631,6 +666,16 @@ export default function ProjectDetailPage() {
   const handleAddTime = (taskId: string, minutes: number) => {
     const current = tasks.find((t) => t.id === taskId)?.actualMinutes ?? 0
     handleTaskUpdate(taskId, { actualMinutes: current + minutes })
+  }
+
+  const handleTaskDelete = async (taskId: string) => {
+    setTasks((ts) => ts.filter((t) => t.id !== taskId))
+    setSelectedTask(null)
+    try {
+      await db.tasks.delete(taskId)
+    } catch {
+      addToast({ type: 'error', message: 'Failed to delete task' })
+    }
   }
 
   const renderTaskCard = (task: Task) => (
@@ -791,6 +836,7 @@ export default function ProjectDetailPage() {
           onClose={() => setSelectedTask(null)}
           onTaskUpdate={handleTaskUpdate}
           onAddTime={handleAddTime}
+          onDelete={handleTaskDelete}
         />
       )}
     </div>
