@@ -308,6 +308,7 @@ export default function DashboardPage() {
             columns={PROJECT_COLUMNS}
             onStatusChange={handleProjectStatusChange}
             columnWidth="w-[180px]"
+            columnMinHeight="0px"
             renderColumnHeader={(col, count) => (
               <div className="mb-2 flex items-center gap-2 px-2">
                 <span className="text-[12px] font-medium text-[var(--text-secondary)]">{col}</span>

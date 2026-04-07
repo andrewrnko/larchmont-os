@@ -39,6 +39,7 @@ export interface KanbanBoardProps<T extends KanbanItem> {
   renderColumnFooter?: (column: string) => React.ReactNode
   getColumnBorderClass?: (column: string) => string
   columnWidth?: string
+  columnMinHeight?: string
 }
 
 // ── Sortable wrapper — wraps each card with dnd-kit drag handles ──────────────
@@ -90,6 +91,7 @@ function KanbanColumn<T extends KanbanItem>({
   renderColumnFooter,
   getColumnBorderClass,
   columnWidth,
+  columnMinHeight,
 }: {
   column: string
   items: T[]
@@ -98,13 +100,14 @@ function KanbanColumn<T extends KanbanItem>({
   renderColumnFooter?: (column: string) => React.ReactNode
   getColumnBorderClass?: (column: string) => string
   columnWidth: string
+  columnMinHeight: string
   activeItemId: string | null
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column })
   const borderClass = getColumnBorderClass?.(column) ?? 'border-[var(--border)]'
 
   return (
-    <div className={`flex-shrink-0 flex flex-col ${columnWidth} min-h-[400px]`}>
+    <div className={`flex-shrink-0 flex flex-col ${columnWidth}`} style={{ minHeight: columnMinHeight }}>
       {/* Column header */}
       {renderColumnHeader ? (
         renderColumnHeader(column, items.length)
@@ -121,7 +124,7 @@ function KanbanColumn<T extends KanbanItem>({
       <div
         ref={setNodeRef}
         className={cn(
-          'flex-1 min-h-[360px] rounded-[8px] border-2 p-2 transition-colors duration-150',
+          'flex-1 rounded-[8px] border-2 p-2 transition-colors duration-150',
           isOver
             ? 'border-[var(--accent)]/60 bg-[var(--accent-muted)]'
             : `${borderClass} bg-[var(--surface-2)]/50`
@@ -161,6 +164,7 @@ export function KanbanBoard<T extends KanbanItem>({
   renderColumnFooter,
   getColumnBorderClass,
   columnWidth = 'w-[260px]',
+  columnMinHeight = '400px',
 }: KanbanBoardProps<T>) {
   const [activeItem, setActiveItem] = useState<T | null>(null)
 
@@ -216,6 +220,7 @@ export function KanbanBoard<T extends KanbanItem>({
             renderColumnFooter={renderColumnFooter}
             getColumnBorderClass={getColumnBorderClass}
             columnWidth={columnWidth}
+            columnMinHeight={columnMinHeight}
             activeItemId={activeItem?.id ?? null}
           />
         ))}
