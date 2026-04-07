@@ -84,7 +84,7 @@ export function QuickCapture() {
                 value={type}
                 onChange={(e) => setType(e.target.value)}
                 className={cn(
-                  'flex-1 rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)]',
+                  'min-w-0 flex-1 rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)]',
                   'px-2 py-1.5 text-[12px] text-[var(--text-secondary)]',
                   'focus:border-[var(--accent)] focus:outline-none'
                 )}
@@ -96,7 +96,7 @@ export function QuickCapture() {
                 onClick={handleCapture}
                 disabled={!text.trim() || saving}
                 className={cn(
-                  'rounded-[6px] px-3 py-1.5 text-[12px] font-medium',
+                  'flex-shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-medium',
                   'bg-[var(--accent)] text-[var(--accent-fg)]',
                   'hover:opacity-90 disabled:opacity-40 transition-opacity'
                 )}
