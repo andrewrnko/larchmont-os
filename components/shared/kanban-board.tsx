@@ -90,7 +90,6 @@ function KanbanColumn<T extends KanbanItem>({
   renderColumnHeader,
   renderColumnFooter,
   getColumnBorderClass,
-  columnWidth,
   columnMinHeight,
 }: {
   column: string
@@ -99,7 +98,6 @@ function KanbanColumn<T extends KanbanItem>({
   renderColumnHeader?: (column: string, count: number) => React.ReactNode
   renderColumnFooter?: (column: string) => React.ReactNode
   getColumnBorderClass?: (column: string) => string
-  columnWidth: string
   columnMinHeight: string
   activeItemId: string | null
 }) {
@@ -107,7 +105,7 @@ function KanbanColumn<T extends KanbanItem>({
   const borderClass = getColumnBorderClass?.(column) ?? 'border-[var(--border)]'
 
   return (
-    <div className={`flex-shrink-0 flex flex-col ${columnWidth}`} style={{ minHeight: columnMinHeight }}>
+    <div className="flex flex-col" style={{ minHeight: columnMinHeight }}>
       {/* Column header */}
       {renderColumnHeader ? (
         renderColumnHeader(column, items.length)
@@ -209,7 +207,10 @@ export function KanbanBoard<T extends KanbanItem>({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div
+        className="grid w-full"
+        style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`, gap: '16px' }}
+      >
         {columns.map((column) => (
           <KanbanColumn
             key={column}
@@ -219,7 +220,6 @@ export function KanbanBoard<T extends KanbanItem>({
             renderColumnHeader={renderColumnHeader}
             renderColumnFooter={renderColumnFooter}
             getColumnBorderClass={getColumnBorderClass}
-            columnWidth={columnWidth}
             columnMinHeight={columnMinHeight}
             activeItemId={activeItem?.id ?? null}
           />
