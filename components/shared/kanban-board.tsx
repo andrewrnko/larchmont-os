@@ -121,10 +121,10 @@ function KanbanColumn<T extends KanbanItem>({
       <div
         ref={setNodeRef}
         className={cn(
-          'flex-1 min-h-[360px] rounded-[8px] border p-2 transition-colors duration-150',
+          'flex-1 min-h-[360px] rounded-[8px] border-2 p-2 transition-colors duration-150',
           isOver
             ? 'border-[var(--accent)]/60 bg-[var(--accent-muted)]'
-            : `border-dashed ${borderClass} bg-transparent`
+            : `${borderClass} bg-[var(--surface-2)]/50`
         )}
       >
         <SortableContext
