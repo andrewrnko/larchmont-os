@@ -36,8 +36,8 @@ export default function RootLayout({
       <body suppressHydrationWarning className="h-screen overflow-hidden bg-[var(--background)] antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange={false}
           storageKey="larchmont-theme"
         >
