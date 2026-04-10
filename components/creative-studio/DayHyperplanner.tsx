@@ -86,7 +86,7 @@ export function DayHyperplanner() {
       {!task.done && (
         <button
           onClick={() => startFocus(task.id, task.estimateMin ?? 25)}
-          className={`flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium hover:opacity-80 ${
+          className={`flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium hover:opacity-80 ${
             isP1 ? 'bg-amber-500 text-black' : 'bg-amber-500/20 text-amber-400'
           }`}
           title="Start Focus"
@@ -110,7 +110,7 @@ export function DayHyperplanner() {
       >
         <div
           className={`mb-2 flex items-center justify-between font-mono ${
-            isP1 ? 'text-[11px] text-amber-500' : 'text-[10px] text-neutral-500'
+            isP1 ? 'text-[11px] text-amber-500' : 'text-[11px] text-neutral-500'
           } uppercase tracking-wider`}
         >
           <span>P{rank}</span>
@@ -142,7 +142,7 @@ export function DayHyperplanner() {
       <div className="border-b border-[#2a2a2a] bg-[#0d0d0d] p-3">
         <div className="mb-2 flex items-center justify-between">
           <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-amber-500">Day Hyperplanner</span>
-          <div className="flex items-center gap-2 text-[10px] text-neutral-500">
+          <div className="flex items-center gap-2 text-[11px] text-neutral-500">
             <button onClick={() => setLogOpen(true)} className="flex items-center gap-1 hover:text-white">
               <Archive size={10} /> Yesterday
             </button>
@@ -171,7 +171,7 @@ export function DayHyperplanner() {
               value={drifting}
               onChange={(e) => setDrifting(e.target.value)}
             />
-            {warn && <span className="font-mono text-[10px] text-red-400">⚠ drifting &gt; 10min</span>}
+            {warn && <span className="font-mono text-[11px] text-red-400">⚠ drifting &gt; 10min</span>}
           </div>
         )}
       </div>
@@ -194,11 +194,11 @@ export function DayHyperplanner() {
             {log.length === 0 && <div className="text-[11px] text-neutral-600">Nothing archived yet.</div>}
             {log.map((entry) => (
               <div key={entry.date} className="mb-3">
-                <div className="mb-1 font-mono text-[10px] text-neutral-500">{entry.date}</div>
+                <div className="mb-1 font-mono text-[11px] text-neutral-500">{entry.date}</div>
                 {entry.tasks.map((t) => (
                   <div key={t.id} className="flex items-center gap-2 text-[11px] text-neutral-300">
                     <span className={t.done ? 'text-amber-500' : 'text-neutral-600'}>{t.done ? '✓' : '○'}</span>
-                    <span className="font-mono text-[10px] text-neutral-600">P{t.rank}</span>
+                    <span className="font-mono text-[11px] text-neutral-600">P{t.rank}</span>
                     <span className={t.done ? 'line-through' : ''}>{t.title}</span>
                   </div>
                 ))}

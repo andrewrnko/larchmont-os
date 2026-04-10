@@ -146,7 +146,7 @@ export function ConnectorLines({ blocks, connectors }: Props) {
                 <input
                   autoFocus
                   defaultValue={c.label ?? ''}
-                  className="w-full rounded bg-black/90 px-1 text-[10px] text-white outline-none"
+                  className="w-full rounded bg-black/90 px-1 text-[11px] text-white outline-none"
                   onBlur={(e) => {
                     updateConnector(c.id, { label: e.target.value })
                     setEditing(null)

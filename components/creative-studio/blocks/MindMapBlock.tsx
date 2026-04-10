@@ -290,7 +290,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                   className="absolute left-full top-0 z-30 ml-2 flex flex-col gap-1 rounded-md bg-[#141414] p-2 text-white shadow-2xl border border-[#2a2a2a]"
                   onPointerDown={(e) => e.stopPropagation()}
                 >
-                  <div className="mb-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500">Shape</div>
+                  <div className="mb-1 text-[11px] font-mono uppercase tracking-wider text-neutral-500">Shape</div>
                   <div className="flex gap-1">
                     {(['circle', 'square', 'pill'] as const).map((s) => (
                       <button
@@ -305,7 +305,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                       </button>
                     ))}
                   </div>
-                  <div className="mt-1 mb-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500">Color</div>
+                  <div className="mt-1 mb-1 text-[11px] font-mono uppercase tracking-wider text-neutral-500">Color</div>
                   <div className="flex gap-1">
                     {COLORS.map((c) => (
                       <button

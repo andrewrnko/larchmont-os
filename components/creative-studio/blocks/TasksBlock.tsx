@@ -79,7 +79,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
             />
           </div>
           {totalCount > 0 && (
-            <span className="font-mono text-[10px] text-neutral-500">
+            <span className="font-mono text-[11px] text-neutral-500">
               {doneCount}/{totalCount}
             </span>
           )}
@@ -98,7 +98,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               >
                 <button
                   onClick={() => toggleDone(item.id)}
-                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] ${
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[11px] ${
                     item.done
                       ? 'border-amber-500 bg-amber-500 text-black'
                       : 'border-neutral-600'
@@ -108,7 +108,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                 </button>
                 {item.priority && (
                   <span
-                    className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                    className={`rounded px-1.5 py-0.5 font-mono text-[11px] font-bold ${
                       PRIORITY_COLORS[item.priority] ?? PRIORITY_COLORS[3]
                     }`}
                   >
@@ -148,7 +148,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               {([1, 2, 3] as const).map((p) => (
                 <button
                   key={p}
-                  className={`rounded px-1.5 py-1 font-mono text-[10px] font-bold ${
+                  className={`rounded px-1.5 py-1 font-mono text-[11px] font-bold ${
                     newPriority === p
                       ? PRIORITY_COLORS[p]
                       : 'text-neutral-600 hover:text-neutral-400'

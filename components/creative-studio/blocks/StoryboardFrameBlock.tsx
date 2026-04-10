@@ -88,7 +88,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
         <div className="flex h-full w-full flex-col overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141412] shadow-lg">
           {/* Header */}
           <div data-no-drag className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#1a1a18] px-3 py-1.5">
-            <span className="font-mono text-xs text-amber-400">STORYBOARD</span>
+            <span className="font-mono text-[11px] text-amber-400">STORYBOARD</span>
             <div className="flex gap-1">
               <button
                 className="flex items-center gap-1 rounded bg-[#2a2a2a] px-2 py-1 text-[11px] text-white hover:bg-[#3a3a3a]"
@@ -229,7 +229,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
 
                 {/* Detailed notes */}
                 <div className="flex-1 overflow-auto px-6 py-4">
-                  <div className="mb-2 font-mono text-[10px] uppercase text-neutral-500">Detailed Notes</div>
+                  <div className="mb-2 font-mono text-[11px] uppercase text-neutral-500">Detailed Notes</div>
                   <textarea
                     autoFocus
                     key={openFrame.id}

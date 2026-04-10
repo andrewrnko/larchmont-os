@@ -76,7 +76,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
           <div data-no-drag className="absolute right-1 top-8 z-20 rounded bg-black/90 p-1">
             <input
               autoFocus
-              className="w-48 bg-black text-xs text-white outline-none"
+              className="w-48 bg-black text-[12px] text-white outline-none"
               placeholder="https://..."
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {

@@ -497,7 +497,7 @@ export function SubpageEditor() {
           {/* Connections list */}
           {connections.length > 0 && (
             <div className="mb-6 rounded border border-[#2a2a2a] bg-black/30 p-3">
-              <div className="mb-2 font-mono text-[10px] uppercase tracking-wider text-amber-500">Linked to</div>
+              <div className="mb-2 font-mono text-[11px] uppercase tracking-wider text-amber-500">Linked to</div>
               <div className="space-y-1">
                 {connections.map(({ connector, other }) => (
                   <button
@@ -505,7 +505,7 @@ export function SubpageEditor() {
                     onClick={() => centerOnBlock(other!.id)}
                     className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[12px] text-neutral-300 hover:bg-amber-500/10"
                   >
-                    <span className="font-mono text-[10px] uppercase text-neutral-500">{other!.kind}</span>
+                    <span className="font-mono text-[11px] uppercase text-neutral-500">{other!.kind}</span>
                     <span className="flex-1 truncate">
                       {('title' in other! ? (other as { title?: string }).title : null) ||
                         ('text' in other! ? (other as { text?: string }).text : null) ||
@@ -546,7 +546,7 @@ export function SubpageEditor() {
               }}
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-neutral-600">
+              <div className="px-3 py-1 text-[11px] uppercase tracking-wider text-neutral-600">
                 Turn into {slashMenu.filter && <span className="text-amber-500">· {slashMenu.filter}</span>}
               </div>
               {filtered.length === 0 && (
@@ -567,7 +567,7 @@ export function SubpageEditor() {
                 >
                   <span className="w-5 text-center text-[14px] leading-none">{t.icon}</span>
                   <span className="flex-1">{t.label}</span>
-                  <span className="text-[10px] text-neutral-600">{t.description}</span>
+                  <span className="text-[11px] text-neutral-600">{t.description}</span>
                 </button>
               ))}
             </div>
@@ -593,7 +593,7 @@ export function SubpageEditor() {
                   >
                     <ArrowRightLeft size={12} className="text-neutral-500" />
                     <span className="flex-1">Turn into</span>
-                    <span className="text-[10px] text-neutral-600">›</span>
+                    <span className="text-[11px] text-neutral-600">›</span>
                   </button>
                   <button
                     className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] text-neutral-200 hover:bg-[#1a1a1a]"
@@ -622,7 +622,7 @@ export function SubpageEditor() {
               ) : (
                 <>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1 text-left text-[10px] text-neutral-500 hover:bg-[#1a1a1a]"
+                    className="flex w-full items-center gap-2 px-3 py-1 text-left text-[11px] text-neutral-500 hover:bg-[#1a1a1a]"
                     onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setBlockMenu((m) => m ? { ...m, showTurnInto: false } : m) }}
                   >
                     ‹ Back
