@@ -47,7 +47,7 @@ export function FocusOverlay() {
           >
             <div>
               <div className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Focus · P1</div>
-              <div className="text-[15px] font-semibold text-white">{task.title}</div>
+              <div className="text-[13px] font-semibold text-white">{task.title}</div>
             </div>
             <div className="font-mono text-2xl tabular-nums text-amber-400">
               {fmt(Date.now() - focus.startedAt)}

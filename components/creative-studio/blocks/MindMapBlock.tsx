@@ -290,7 +290,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                   className="absolute left-full top-0 z-30 ml-2 flex flex-col gap-1 rounded-md bg-[#141414] p-2 text-white shadow-2xl border border-[#2a2a2a]"
                   onPointerDown={(e) => e.stopPropagation()}
                 >
-                  <div className="mb-1 text-[11px] font-mono uppercase tracking-[0.06em] text-neutral-500">Shape</div>
+                  <div className="mb-1 text-[12px] font-mono uppercase tracking-[0.06em] text-neutral-500">Shape</div>
                   <div className="flex gap-1">
                     {(['circle', 'square', 'pill'] as const).map((s) => (
                       <button
@@ -305,7 +305,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                       </button>
                     ))}
                   </div>
-                  <div className="mt-1 mb-1 text-[11px] font-mono uppercase tracking-[0.06em] text-neutral-500">Color</div>
+                  <div className="mt-1 mb-1 text-[12px] font-mono uppercase tracking-[0.06em] text-neutral-500">Color</div>
                   <div className="flex gap-1">
                     {COLORS.map((c) => (
                       <button
@@ -371,7 +371,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                       <div className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Mind Map Node</div>
                       <input
                         autoFocus
-                        className="mt-1 w-full bg-transparent text-[20px] font-semibold text-white outline-none"
+                        className="mt-1 w-full bg-transparent text-[13px] font-semibold text-white outline-none"
                         defaultValue={modalNode.label}
                         placeholder="Node title…"
                         onBlur={(e) =>

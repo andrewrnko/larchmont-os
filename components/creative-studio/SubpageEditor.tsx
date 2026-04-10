@@ -382,7 +382,7 @@ export function SubpageEditor() {
                 pageBlock.content.map((x) => (x.id === item.id ? ({ ...x, checked: !(item.checked ?? false) } as SubPageBlock) : x))
               )
             }
-            className={`shrink-0 mt-[3px] mr-1.5 flex h-4 w-4 items-center justify-center rounded-sm border ${
+            className={`shrink-0 mt-[4px] mr-1.5 flex h-4 w-4 items-center justify-center rounded-sm border ${
               item.checked ? 'border-amber-500 bg-amber-500 text-black' : 'border-neutral-600'
             }`}
           >

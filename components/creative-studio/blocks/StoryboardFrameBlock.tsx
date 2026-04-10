@@ -127,7 +127,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
                 <div className="flex flex-1 gap-2 p-2" style={{ minHeight: 120 }}>
                   {/* Image area */}
                   <label
-                    className="relative flex w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[13px] text-neutral-500"
+                    className="relative flex w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[12px] text-neutral-500"
                     onDrop={(e) => {
                       e.preventDefault()
                       const f = e.dataTransfer.files[0]
@@ -192,7 +192,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
                   <div>
                     <div className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Storyboard Frame</div>
                     <input
-                      className="mt-1 w-full bg-transparent text-[20px] font-semibold text-white outline-none"
+                      className="mt-1 w-full bg-transparent text-[13px] font-semibold text-white outline-none"
                       defaultValue={openFrame.label}
                       onBlur={(e) =>
                         setFrames((f) => f.map((fr) => (fr.id === openFrame.id ? { ...fr, label: e.target.value } : fr)))

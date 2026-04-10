@@ -27,7 +27,7 @@ export function TranscriptBlockView({ block, onContextMenu }: Props) {
         <div className="flex items-center gap-2 border-b border-[#2a2a2a] bg-[#141412] px-4 py-3">
           <FileAudio size={15} className="text-amber-500" />
           <input
-            className="flex-1 bg-transparent text-[17px] font-semibold text-white outline-none"
+            className="flex-1 bg-transparent text-[13px] font-semibold text-white outline-none"
             defaultValue={block.title}
             placeholder="Transcript title…"
             onBlur={(e) => updateBlock(block.id, { title: e.target.value })}

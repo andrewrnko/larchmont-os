@@ -41,7 +41,7 @@ export function CreativeStudioClient() {
       <div className="flex h-full w-full items-center justify-center">
         <div className="rounded-lg border border-[#2a2a2a] bg-[#141414] p-8 text-center">
           <div className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Creative Studio</div>
-          <h2 className="mt-2 text-[17px] font-semibold text-white">Nothing here yet</h2>
+          <h2 className="mt-2 text-[13px] font-semibold text-white">Nothing here yet</h2>
           <button
             onClick={() => createBoard('My First Board', '🎬')}
             className="mt-4 rounded bg-amber-500 px-4 py-2 text-[13px] font-medium text-black hover:bg-amber-400"

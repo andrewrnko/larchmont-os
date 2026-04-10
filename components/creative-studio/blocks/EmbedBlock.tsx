@@ -66,7 +66,7 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
                   </div>
                 ) : (
                   <>
-                    <div className="text-[17px] font-semibold text-white leading-[1.2] line-clamp-2">
+                    <div className="text-[13px] font-semibold text-white leading-snug line-clamp-2">
                       {block.title || hostname}
                     </div>
                     {block.description && (

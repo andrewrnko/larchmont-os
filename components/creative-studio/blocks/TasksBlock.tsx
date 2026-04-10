@@ -72,7 +72,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
           <div className="flex items-center gap-2">
             <CheckSquare size={15} className="text-amber-500" />
             <input
-              className="bg-transparent text-[17px] font-semibold text-white outline-none"
+              className="bg-transparent text-[13px] font-semibold text-white outline-none"
               defaultValue={block.label}
               onBlur={(e) => updateBlock(block.id, { label: e.target.value })}
             />
