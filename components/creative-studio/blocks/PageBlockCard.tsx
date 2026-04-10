@@ -30,7 +30,7 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
   return (
     <BlockWrapper block={block} kind="page" onContextMenu={onContextMenu}>
       <div
-        className="relative flex h-full w-full flex-col justify-between rounded-md border border-[#2a2a2a] p-3 shadow-lg"
+        className="relative flex h-full w-full flex-col justify-between rounded-lg border border-[#2a2a2a] p-4 shadow-lg"
         style={{ background: block.color ?? '#1a1a1a' }}
       >
         <div className="flex items-start gap-2">

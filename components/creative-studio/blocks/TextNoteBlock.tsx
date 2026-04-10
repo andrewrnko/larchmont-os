@@ -142,7 +142,7 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
           {editor && (
             <EditorContent
               editor={editor}
-              className="max-w-none focus:outline-none [&_*]:outline-none [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-1.5 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-1 [&_p]:my-1 [&_ul]:my-1 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:my-1 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:my-0.5 [&_li]:pl-1 [&_hr]:my-3 [&_hr]:border-[#2a2a2a] [&_blockquote]:border-l-2 [&_blockquote]:border-neutral-600 [&_blockquote]:pl-3 [&_blockquote]:text-neutral-400"
+              className="max-w-none focus:outline-none [&_*]:outline-none [&_h1]:text-[22px] [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-[18px] [&_h2]:font-semibold [&_h2]:mb-1.5 [&_h3]:text-[16px] [&_h3]:font-semibold [&_h3]:mb-1 [&_p]:my-1 [&_p]:leading-relaxed [&_ul]:my-1 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:my-1 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:my-0.5 [&_li]:pl-1 [&_hr]:my-3 [&_hr]:border-[#2a2a2a] [&_blockquote]:border-l-2 [&_blockquote]:border-neutral-600 [&_blockquote]:pl-3 [&_blockquote]:text-neutral-400"
             />
           )}
         </div>

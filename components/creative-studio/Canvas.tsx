@@ -320,6 +320,7 @@ export function Canvas({ tool, setTool }: Props) {
 
       <TimerWidget />
       <ContextMenu state={ctxMenu} onClose={() => setCtxMenu(null)} onZoomToFit={zoomToFit} />
+
     </div>
   )
 }

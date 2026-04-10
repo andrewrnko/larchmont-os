@@ -343,10 +343,10 @@ export function SubpageEditor() {
       )
     }
     const cls =
-      item.type === 'h1' ? 'text-3xl font-bold'
-      : item.type === 'h2' ? 'text-2xl font-semibold'
-      : item.type === 'h3' ? 'text-xl font-semibold'
-      : 'text-base'
+      item.type === 'h1' ? 'text-[24px] font-bold'
+      : item.type === 'h2' ? 'text-[20px] font-semibold'
+      : item.type === 'h3' ? 'text-[17px] font-semibold'
+      : 'text-[14px] leading-[1.7]'
     // Compute numbered list index
     const numberedIndex = item.type === 'numbered'
       ? (() => {

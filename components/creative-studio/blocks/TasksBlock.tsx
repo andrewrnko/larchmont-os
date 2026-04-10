@@ -42,7 +42,6 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
     }
     setItems((t) => [...t, item])
     setNewTitle('')
-    // Track
     import('../tracking').then((m) => m.trackTaskCompleted({ rank: newPriority, title: item.title })).catch(() => {})
   }
 
@@ -67,11 +66,11 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
 
   return (
     <BlockWrapper block={block} kind="tasks" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-md border border-[#2a2a2a] bg-[#0e0e0d] shadow-lg">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#0e0e0d] shadow-lg">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#141412] px-3 py-2">
+        <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#141412] px-4 py-3">
           <div className="flex items-center gap-2">
-            <CheckSquare size={14} className="text-amber-500" />
+            <CheckSquare size={15} className="text-amber-500" />
             <input
               className="bg-transparent text-[14px] font-medium text-white outline-none"
               defaultValue={block.label}
@@ -79,26 +78,27 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
             />
           </div>
           {totalCount > 0 && (
-            <span className="font-mono text-[11px] text-neutral-500">
+            <span className="font-mono text-[12px] text-neutral-500">
               {doneCount}/{totalCount}
             </span>
           )}
         </div>
 
         {/* Task list */}
-        <div data-scrollable className="flex-1 overflow-auto p-2 space-y-0.5">
+        <div data-scrollable className="flex-1 overflow-auto p-3 space-y-0.5">
           {block.taskItems
             .sort((a, b) => (a.priority ?? 3) - (b.priority ?? 3))
             .map((item) => (
               <div
                 key={item.id}
-                className={`group flex items-center gap-2 rounded px-2 py-1.5 ${
+                className={`group flex items-center gap-3 rounded-md px-3 py-2 ${
                   item.done ? 'opacity-40' : 'hover:bg-[#1a1a1a]'
                 }`}
+                style={{ minHeight: 36 }}
               >
                 <button
                   onClick={() => toggleDone(item.id)}
-                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[11px] ${
+                  className={`flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded border text-[11px] ${
                     item.done
                       ? 'border-amber-500 bg-amber-500 text-black'
                       : 'border-neutral-600'
@@ -108,7 +108,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                 </button>
                 {item.priority && (
                   <span
-                    className={`rounded px-1.5 py-0.5 font-mono text-[11px] font-bold ${
+                    className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold ${
                       PRIORITY_COLORS[item.priority] ?? PRIORITY_COLORS[3]
                     }`}
                   >
@@ -125,30 +125,30 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                 {!item.done && (
                   <button
                     onClick={() => handleFocus(item)}
-                    className="rounded bg-amber-500/20 p-1 text-amber-400 opacity-0 group-hover:opacity-100 hover:bg-amber-500/40"
+                    className="rounded bg-amber-500/20 p-1.5 text-amber-400 opacity-0 group-hover:opacity-100 hover:bg-amber-500/40"
                     title="Start Focus"
                   >
-                    <Play size={9} />
+                    <Play size={11} />
                   </button>
                 )}
                 <button
                   onClick={() => removeTask(item.id)}
                   className="text-neutral-700 opacity-0 group-hover:opacity-100 hover:text-red-400"
                 >
-                  <Trash2 size={10} />
+                  <Trash2 size={12} />
                 </button>
               </div>
             ))}
         </div>
 
         {/* Add task input */}
-        <div className="border-t border-[#2a2a2a] p-2">
-          <div className="flex gap-1">
+        <div className="border-t border-[#2a2a2a] p-3">
+          <div className="flex gap-1.5">
             <div className="flex gap-0.5">
               {([1, 2, 3] as const).map((p) => (
                 <button
                   key={p}
-                  className={`rounded px-1.5 py-1 font-mono text-[11px] font-bold ${
+                  className={`rounded px-2 py-1 font-mono text-[11px] font-bold ${
                     newPriority === p
                       ? PRIORITY_COLORS[p]
                       : 'text-neutral-600 hover:text-neutral-400'
@@ -160,7 +160,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               ))}
             </div>
             <input
-              className="flex-1 rounded bg-[#141414] px-2 py-1.5 text-[14px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded bg-[#141414] px-3 py-1.5 text-[13px] text-white outline-none placeholder:text-neutral-600"
               placeholder="Add task…"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
@@ -171,9 +171,9 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
             <button
               onClick={addTask}
               disabled={!newTitle.trim()}
-              className="rounded bg-amber-600 p-1 text-black disabled:opacity-30 hover:bg-amber-500"
+              className="rounded bg-amber-600 p-1.5 text-black disabled:opacity-30 hover:bg-amber-500"
             >
-              <Plus size={12} />
+              <Plus size={14} />
             </button>
           </div>
         </div>

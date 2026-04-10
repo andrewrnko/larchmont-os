@@ -41,7 +41,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
       ratio={block.naturalRatio}
     >
       <div
-        className="relative flex h-full w-full flex-col overflow-hidden rounded-md border border-[#2a2a2a] bg-[#1a1a1a] shadow-lg"
+        className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] shadow-lg"
         onDrop={(e) => {
           e.preventDefault()
           const file = e.dataTransfer.files[0]

@@ -62,7 +62,7 @@ export function TimerWidget() {
   return (
     <div className="absolute bottom-3 left-3 z-20 flex items-center gap-2 rounded-md border border-[#2a2a2a] bg-[#141414]/95 px-3 py-2 text-neutral-300 shadow-lg backdrop-blur">
       <TimerIcon size={13} className="text-amber-500" />
-      <span className="font-mono text-lg tabular-nums text-white">{fmt(elapsed)}</span>
+      <span className="font-mono text-[32px] tabular-nums text-white">{fmt(elapsed)}</span>
       <button
         onClick={toggle}
         className={`rounded p-1 ${running ? 'bg-amber-600/20 text-amber-400' : 'bg-green-600/20 text-green-400'} hover:opacity-80`}

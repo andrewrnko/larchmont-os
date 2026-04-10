@@ -47,11 +47,11 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
 
   return (
     <BlockWrapper block={block} kind="embed" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-md border border-[#2a2a2a] bg-[#111] shadow-lg">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#111] shadow-lg">
         {block.url ? (
           <>
             {/* Content */}
-            <div className="flex flex-1 flex-col justify-between p-3">
+            <div className="flex flex-1 flex-col justify-between p-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   {block.favicon && (

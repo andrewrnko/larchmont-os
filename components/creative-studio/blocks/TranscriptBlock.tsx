@@ -22,10 +22,10 @@ export function TranscriptBlockView({ block, onContextMenu }: Props) {
 
   return (
     <BlockWrapper block={block} kind="transcript" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-md border border-[#2a2a2a] bg-[#0e0e0d] shadow-lg">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#0e0e0d] shadow-lg">
         {/* Header */}
-        <div className="flex items-center gap-2 border-b border-[#2a2a2a] bg-[#141412] px-3 py-2">
-          <FileAudio size={14} className="text-amber-500" />
+        <div className="flex items-center gap-2 border-b border-[#2a2a2a] bg-[#141412] px-4 py-3">
+          <FileAudio size={15} className="text-amber-500" />
           <input
             className="flex-1 bg-transparent text-[14px] font-medium text-white outline-none"
             defaultValue={block.title}
@@ -35,7 +35,7 @@ export function TranscriptBlockView({ block, onContextMenu }: Props) {
         </div>
 
         {/* Source */}
-        <div className="border-b border-[#1a1a1a] px-3 py-1">
+        <div className="border-b border-[#1a1a1a] px-4 py-1.5">
           <input
             className="w-full bg-transparent text-[13px] text-neutral-500 outline-none placeholder:text-neutral-600"
             defaultValue={block.source ?? ''}

@@ -87,8 +87,8 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
       <BlockWrapper block={block} kind="storyboard" onContextMenu={onContextMenu}>
         <div className="flex h-full w-full flex-col overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141412] shadow-lg">
           {/* Header */}
-          <div data-no-drag className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#1a1a18] px-3 py-1.5">
-            <span className="font-mono text-[11px] text-amber-400">STORYBOARD</span>
+          <div data-no-drag className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#1a1a18] px-4 py-2">
+            <span className="font-mono text-[12px] uppercase tracking-[0.08em] text-amber-400">Storyboard</span>
             <div className="flex gap-1">
               <button
                 className="flex items-center gap-1 rounded bg-[#2a2a2a] px-2 py-1 text-[11px] text-white hover:bg-[#3a3a3a]"
@@ -108,10 +108,10 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
           {/* Frames */}
           <div data-no-drag data-scrollable className="flex flex-1 gap-3 overflow-auto p-3">
             {block.frames.map((frame, idx) => (
-              <div key={frame.id} className="flex w-64 shrink-0 flex-col rounded-md border border-[#2a2a2a] bg-[#0e0e0d]">
+              <div key={frame.id} className="flex w-[240px] shrink-0 flex-col rounded-lg border border-[#2a2a2a] bg-[#0e0e0d]">
                 {/* Frame header */}
-                <div className="flex items-center justify-between border-b border-[#2a2a2a] px-3 py-1.5">
-                  <span className="font-mono text-[11px] font-medium text-amber-500">
+                <div className="flex items-center justify-between border-b border-[#2a2a2a] px-3 py-2">
+                  <span className="font-mono text-[13px] font-medium text-amber-500">
                     FRAME {String(idx + 1).padStart(2, '0')}
                   </span>
                   <button

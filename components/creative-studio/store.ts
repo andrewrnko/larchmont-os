@@ -381,11 +381,11 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
   const base = { id: uid(), x, y, z: Date.now(), locked: false }
   switch (kind) {
     case 'text':
-      return { ...base, kind: 'text', w: 320, h: 160, html: '<p>Start writing…</p>', bg: '#1c1c1a', autoHeight: true }
+      return { ...base, kind: 'text', w: 340, h: 180, html: '<p>Start writing…</p>', bg: '#1c1c1a', autoHeight: true }
     case 'sticky':
-      return { ...base, kind: 'sticky', w: 180, h: 180, text: '', color: 'yellow' }
+      return { ...base, kind: 'sticky', w: 220, h: 220, text: '', color: 'yellow' }
     case 'image':
-      return { ...base, kind: 'image', w: 320, h: 220, src: '', lockAspect: true }
+      return { ...base, kind: 'image', w: 340, h: 240, src: '', lockAspect: true }
     case 'storyboard': {
       const frames: StoryboardFrame[] = [1, 2, 3].map((n, i) => ({
         id: uid(),
@@ -411,23 +411,23 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
       return {
         ...base,
         kind: 'page',
-        w: 240,
-        h: 120,
+        w: 280,
+        h: 140,
         title: 'Untitled Page',
         icon: '📄',
         color: '#1a1a1a',
         content: [{ id: uid(), type: 'p', text: '' }],
       }
     case 'tasks':
-      return { ...base, kind: 'tasks', w: 320, h: 300, label: 'Task List', taskItems: [] }
+      return { ...base, kind: 'tasks', w: 340, h: 320, label: 'Task List', taskItems: [] }
     case 'transcript':
-      return { ...base, kind: 'transcript', w: 400, h: 300, title: 'Transcript', transcript: '', source: '' }
+      return { ...base, kind: 'transcript', w: 420, h: 320, title: 'Transcript', transcript: '', source: '' }
     case 'assistant':
-      return { ...base, kind: 'assistant', w: 380, h: 420, messages: [], label: 'AI Assistant' }
+      return { ...base, kind: 'assistant', w: 400, h: 440, messages: [], label: 'AI Assistant' }
     case 'timeline':
       return { ...base, kind: 'timeline', w: 560, h: 140 }
     case 'embed':
-      return { ...base, kind: 'embed', w: 300, h: 160, url: '', title: '', description: '', favicon: '', image: '' }
+      return { ...base, kind: 'embed', w: 320, h: 180, url: '', title: '', description: '', favicon: '', image: '' }
     case 'section':
       return { ...base, kind: 'section', w: 480, h: 320, label: 'Section' }
     default:

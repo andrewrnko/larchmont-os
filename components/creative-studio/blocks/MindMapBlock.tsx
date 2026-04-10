@@ -218,10 +218,10 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
           const isEditing = editingId === n.id
           const shapeCls =
             n.shape === 'circle'
-              ? 'rounded-full h-20 w-20 flex items-center justify-center text-center'
+              ? 'rounded-full h-24 w-24 flex items-center justify-center text-center'
               : n.shape === 'square'
-              ? 'rounded-md px-5 py-3'
-              : 'rounded-full px-6 py-3'
+              ? 'rounded-lg px-6 py-3'
+              : 'rounded-full px-7 py-3'
           return (
             <div
               key={n.id}
@@ -232,7 +232,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                 e.stopPropagation()
                 setMenuId(n.id)
               }}
-              className={`group/node absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer border-2 text-[16px] font-semibold text-black shadow-lg select-none ${shapeCls}`}
+              className={`group/node absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer border-2 text-[15px] font-semibold text-black shadow-lg select-none ${shapeCls}`}
               style={{
                 left: n.dx,
                 top: n.dy,

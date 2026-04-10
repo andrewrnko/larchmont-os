@@ -162,30 +162,30 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
 
   return (
     <BlockWrapper block={block} kind="assistant" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-md border border-amber-800/40 bg-[#0a0a0a] shadow-[0_0_24px_rgba(245,158,11,0.08)]">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-amber-800/40 bg-[#0a0a0a] shadow-[0_0_24px_rgba(245,158,11,0.08)]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#111] px-3 py-2">
+        <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#111] px-4 py-3">
           <div className="flex items-center gap-2">
-            <Bot size={14} className="text-amber-500" />
-            <span className="font-mono text-[11px] uppercase tracking-[0.08em] font-medium text-amber-400">AI Assistant</span>
+            <Bot size={15} className="text-amber-500" />
+            <span className="font-mono text-[13px] uppercase tracking-[0.08em] font-medium text-amber-400">AI Assistant</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-neutral-500">{connectedCount} node{connectedCount !== 1 ? 's' : ''}</span>
+            <span className="text-[12px] text-neutral-500">{connectedCount} node{connectedCount !== 1 ? 's' : ''}</span>
             <button onClick={clearChat} className="text-neutral-600 hover:text-red-400" title="Clear chat">
-              <Trash2 size={12} />
+              <Trash2 size={14} />
             </button>
           </div>
         </div>
 
         {/* Messages */}
-        <div ref={scrollRef} data-scrollable className="flex-1 overflow-auto p-2 space-y-2">
+        <div ref={scrollRef} data-scrollable className="flex-1 overflow-auto p-3 space-y-2">
           {block.messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center text-center p-4">
-              <Bot size={24} className="mb-2 text-amber-500/40" />
-              <p className="text-[14px] text-neutral-500">
+              <Bot size={32} className="mb-3 text-amber-500/40" />
+              <p className="text-[14px] leading-relaxed text-neutral-500">
                 Connect blocks to me, then ask questions about them.
               </p>
-              <p className="mt-1 text-[13px] text-neutral-600">
+              <p className="mt-1 text-[13px] leading-relaxed text-neutral-600">
                 I can read sticky notes, text, transcripts, pages, mind maps, and storyboards.
               </p>
             </div>
@@ -193,7 +193,7 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
           {block.messages.map((msg, i) => (
             <div
               key={i}
-              className={`rounded-md px-3 py-2 text-[14px] leading-relaxed overflow-hidden ${
+              className={`rounded-lg px-4 py-3 text-[14px] leading-relaxed overflow-hidden ${
                 msg.role === 'user'
                   ? 'ml-6 bg-amber-600/15 text-amber-100'
                   : 'mr-6 bg-[#1a1a1a] text-neutral-300'
@@ -216,10 +216,10 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
         </div>
 
         {/* Input */}
-        <div className="border-t border-[#2a2a2a] p-2">
-          <div className="flex gap-1">
+        <div className="border-t border-[#2a2a2a] p-3">
+          <div className="flex gap-2">
             <input
-              className="flex-1 rounded bg-[#141414] px-3 py-2 text-[14px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded-md bg-[#141414] px-3 py-2 text-[13px] text-white outline-none placeholder:text-neutral-600"
               placeholder="Ask about connected blocks…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -228,9 +228,9 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
             <button
               onClick={send}
               disabled={loading || !input.trim()}
-              className="rounded bg-amber-600 p-2 text-black hover:bg-amber-500 disabled:opacity-30"
+              className="rounded-md bg-amber-600 p-2 text-black hover:bg-amber-500 disabled:opacity-30"
             >
-              <Send size={12} />
+              <Send size={16} />
             </button>
           </div>
         </div>
