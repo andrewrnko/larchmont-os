@@ -346,7 +346,7 @@ export function SubpageEditor() {
       item.type === 'h1' ? 'text-3xl font-bold'
       : item.type === 'h2' ? 'text-2xl font-semibold'
       : item.type === 'h3' ? 'text-xl font-semibold'
-      : 'text-base'
+      : 'text-[15px]'
     // Compute numbered list index
     const numberedIndex = item.type === 'numbered'
       ? (() => {
@@ -368,8 +368,8 @@ export function SubpageEditor() {
         {...dropProps}
       >
         {dragHandle}
-        {item.type === 'bullet' && <span className="shrink-0 leading-[1.5rem] text-neutral-500 mr-1">•</span>}
-        {item.type === 'numbered' && <span className="shrink-0 min-w-[1.2em] text-right font-mono leading-[1.5rem] text-neutral-500 mr-1">{numberedIndex}.</span>}
+        {item.type === 'bullet' && <span className="shrink-0 text-[18px] leading-[1.6rem] text-neutral-400 mr-1.5">•</span>}
+        {item.type === 'numbered' && <span className="shrink-0 min-w-[1.4em] text-right font-mono text-[15px] leading-[1.6rem] text-neutral-400 mr-1.5">{numberedIndex}.</span>}
         {item.type === 'todo' && (
           <input
             type="checkbox"
@@ -379,7 +379,7 @@ export function SubpageEditor() {
                 pageBlock.content.map((x) => (x.id === item.id ? ({ ...x, checked: e.target.checked } as SubPageBlock) : x))
               )
             }
-            className="shrink-0 mt-[5px] mr-1"
+            className="shrink-0 mt-[5px] mr-1.5 h-4 w-4"
           />
         )}
         <textarea
@@ -526,7 +526,7 @@ export function SubpageEditor() {
                 const lastItem = pageBlock.content[pageBlock.content.length - 1]
                 insertAfter(lastItem?.id ?? '', 'p')
               }}
-              className="mt-2 w-full rounded py-2 text-center text-[12px] text-neutral-600 hover:bg-[#1a1a1a] hover:text-neutral-400"
+              className="mt-2 w-full rounded py-2 text-center text-[13px] text-neutral-600 hover:bg-[#1a1a1a] hover:text-neutral-400"
             >
               + Add a line
             </button>
@@ -588,7 +588,7 @@ export function SubpageEditor() {
               {!blockMenu.showTurnInto ? (
                 <>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-neutral-200 hover:bg-[#1a1a1a]"
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] text-neutral-200 hover:bg-[#1a1a1a]"
                     onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setBlockMenu((m) => m ? { ...m, showTurnInto: true } : m) }}
                   >
                     <ArrowRightLeft size={12} className="text-neutral-500" />
@@ -596,7 +596,7 @@ export function SubpageEditor() {
                     <span className="text-[10px] text-neutral-600">›</span>
                   </button>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-neutral-200 hover:bg-[#1a1a1a]"
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] text-neutral-200 hover:bg-[#1a1a1a]"
                     onMouseDown={(e) => {
                       e.preventDefault(); e.stopPropagation()
                       duplicateItem(blockMenu.blockId)

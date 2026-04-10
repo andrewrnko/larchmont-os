@@ -100,8 +100,8 @@ export function DailyRepeatables() {
               <div key={key} className="rounded-lg border border-[#2a2a2a] bg-[#111]">
                 <div className="flex items-center gap-2 border-b border-[#2a2a2a] px-3 py-1.5">
                   <Icon size={12} className="text-amber-500" />
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-400">{label}</span>
-                  <span className="ml-auto font-mono text-[9px] text-neutral-600">{slotItems.filter((i) => isChecked(i.id)).length}/{slotItems.length}</span>
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-400">{label}</span>
+                  <span className="ml-auto font-mono text-[10px] text-neutral-600">{slotItems.filter((i) => isChecked(i.id)).length}/{slotItems.length}</span>
                 </div>
                 <div className="space-y-0.5 p-2">
                   {slotItems.map((item) => {
@@ -123,17 +123,17 @@ export function DailyRepeatables() {
                         >
                           {checked && '✓'}
                         </button>
-                        <span className={`flex-1 text-[12px] ${checked ? 'text-neutral-500 line-through' : 'text-white'}`}>
+                        <span className={`flex-1 text-[13px] ${checked ? 'text-neutral-500 line-through' : 'text-white'}`}>
                           {item.title}
                         </span>
                         {item.category && (
-                          <span className="rounded bg-[#1a1a1a] px-1.5 py-0.5 text-[9px] text-neutral-500">
+                          <span className="rounded bg-[#1a1a1a] px-1.5 py-0.5 text-[10px] text-neutral-500">
                             {item.category}
                           </span>
                         )}
                         {item.streak > 0 && (
-                          <span className="flex items-center gap-0.5 text-[9px] text-orange-400" title={`${item.streak} day streak`}>
-                            <Flame size={9} /> {item.streak}
+                          <span className="flex items-center gap-0.5 text-[10px] text-orange-400" title={`${item.streak} day streak`}>
+                            <Flame size={10} /> {item.streak}
                           </span>
                         )}
                         <button
