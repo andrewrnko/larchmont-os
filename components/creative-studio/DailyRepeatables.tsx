@@ -123,7 +123,7 @@ export function DailyRepeatables() {
                         >
                           {checked && '✓'}
                         </button>
-                        <span className={`flex-1 text-[13px] ${checked ? 'text-neutral-500 line-through' : 'text-white'}`}>
+                        <span className={`flex-1 text-sm ${checked ? 'text-neutral-500 line-through' : 'text-white'}`}>
                           {item.title}
                         </span>
                         {item.category && (

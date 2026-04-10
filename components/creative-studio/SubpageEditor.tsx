@@ -346,7 +346,7 @@ export function SubpageEditor() {
       item.type === 'h1' ? 'text-3xl font-bold'
       : item.type === 'h2' ? 'text-2xl font-semibold'
       : item.type === 'h3' ? 'text-xl font-semibold'
-      : 'text-[15px]'
+      : 'text-base'
     // Compute numbered list index
     const numberedIndex = item.type === 'numbered'
       ? (() => {
@@ -368,8 +368,8 @@ export function SubpageEditor() {
         {...dropProps}
       >
         {dragHandle}
-        {item.type === 'bullet' && <span className="shrink-0 text-[18px] leading-[1.6rem] text-neutral-400 mr-1.5">•</span>}
-        {item.type === 'numbered' && <span className="shrink-0 min-w-[1.4em] text-right font-mono text-[15px] leading-[1.6rem] text-neutral-400 mr-1.5">{numberedIndex}.</span>}
+        {item.type === 'bullet' && <span className="shrink-0 text-lg leading-[1.6rem] text-neutral-400 mr-1.5">•</span>}
+        {item.type === 'numbered' && <span className="shrink-0 min-w-[1.4em] text-right font-mono text-base leading-[1.6rem] text-neutral-400 mr-1.5">{numberedIndex}.</span>}
         {item.type === 'todo' && (
           <input
             type="checkbox"

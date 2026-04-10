@@ -80,7 +80,7 @@ export function BoardSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
     return (
       <div key={id}>
         <div
-          className={`group flex items-center gap-2 rounded px-2 py-1.5 text-[13px] cursor-pointer ${
+          className={`group flex items-center gap-2 rounded px-2 py-1.5 text-sm cursor-pointer ${
             activeId === id ? 'bg-amber-500/20 text-amber-300' : 'text-neutral-300 hover:bg-[#1a1a1a]'
           }`}
           style={{ paddingLeft: 8 + depth * 12 }}

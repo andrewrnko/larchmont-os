@@ -60,14 +60,14 @@ export function DayHyperplanner() {
     <div key={task.id} className={`flex items-start gap-2 ${task.done ? 'opacity-50' : ''}`}>
       <button
         onClick={() => toggleDone(task.id)}
-        className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+        className={`mt-1.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
           task.done ? 'border-amber-500 bg-amber-500 text-black' : 'border-neutral-500'
         }`}
       >
-        {task.done && <Check size={9} />}
+        {task.done && <Check size={10} />}
       </button>
       <input
-        className={`flex-1 bg-transparent outline-none ${isP1 ? 'text-[14px]' : 'text-[13px]'} text-white ${
+        className={`flex-1 bg-transparent outline-none ${isP1 ? 'text-base' : 'text-sm'} text-white ${
           task.done ? 'line-through' : ''
         }`}
         value={task.title}
@@ -86,12 +86,12 @@ export function DayHyperplanner() {
       {!task.done && (
         <button
           onClick={() => startFocus(task.id, task.estimateMin ?? 25)}
-          className={`flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-medium hover:opacity-80 ${
+          className={`flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium hover:opacity-80 ${
             isP1 ? 'bg-amber-500 text-black' : 'bg-amber-500/20 text-amber-400'
           }`}
           title="Start Focus"
         >
-          <Play size={9} />
+          <Play size={10} />
         </button>
       )}
     </div>
@@ -106,11 +106,11 @@ export function DayHyperplanner() {
           isP1
             ? 'border-amber-600 bg-gradient-to-br from-[#2a1a0a] to-[#1a1208] shadow-[0_0_32px_rgba(245,158,11,0.18)]'
             : 'border-[#2a2a2a] bg-[#141414]'
-        } ${isP1 ? 'p-2.5' : 'p-2'}`}
+        } ${isP1 ? 'p-4' : 'p-2.5'}`}
       >
         <div
-          className={`mb-1.5 flex items-center justify-between font-mono ${
-            isP1 ? 'text-[11px] text-amber-500' : 'text-[10px] text-neutral-500'
+          className={`mb-2 flex items-center justify-between font-mono ${
+            isP1 ? 'text-[11px] text-amber-500' : 'text-[9px] text-neutral-500'
           } uppercase tracking-wider`}
         >
           <span>P{rank}</span>
@@ -118,7 +118,7 @@ export function DayHyperplanner() {
             {items.length}/{MAX_PER_RANK}
           </span>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           {items.map((t) => renderTaskRow(t, isP1))}
           {items.length < MAX_PER_RANK && <AddTaskInput rank={rank} isP1={isP1} onAdd={addTask} />}
         </div>
@@ -139,8 +139,8 @@ export function DayHyperplanner() {
 
   return (
     <>
-      <div className="border-b border-[#2a2a2a] bg-[#0d0d0d] px-3 py-2">
-        <div className="mb-1.5 flex items-center justify-between">
+      <div className="border-b border-[#2a2a2a] bg-[#0d0d0d] p-3">
+        <div className="mb-2 flex items-center justify-between">
           <span className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Day Hyperplanner</span>
           <div className="flex items-center gap-2 text-[10px] text-neutral-500">
             <button onClick={() => setLogOpen(true)} className="flex items-center gap-1 hover:text-white">
@@ -157,16 +157,16 @@ export function DayHyperplanner() {
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-1.5 md:grid-cols-[2fr_1fr_1fr]">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-[2fr_1fr_1fr]">
           {renderRankCol(1)}
           {renderRankCol(2)}
           {renderRankCol(3)}
         </div>
         {firstP1Open && (
-          <div className="mt-1.5 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-2">
             <span className="font-mono text-[9px] uppercase text-neutral-500">Currently drifting to</span>
             <input
-              className="flex-1 rounded bg-[#141414] px-2 py-0.5 text-[11px] text-white outline-none"
+              className="flex-1 rounded bg-[#141414] px-2 py-1 text-[11px] text-white outline-none"
               placeholder="what are you actually doing right now?"
               value={drifting}
               onChange={(e) => setDrifting(e.target.value)}
@@ -228,7 +228,7 @@ function AddTaskInput({
       <input
         ref={inputRef}
         className={`flex-1 bg-transparent outline-none placeholder:text-neutral-600 ${
-          isP1 ? 'text-[14px] text-white' : 'text-[13px] text-neutral-300'
+          isP1 ? 'text-base text-white' : 'text-sm text-neutral-300'
         }`}
         placeholder={isP1 ? 'Add a P1 priority…' : `Add P${rank}…`}
         value={val}
