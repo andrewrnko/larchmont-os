@@ -78,14 +78,14 @@ export function Toolbar({ active, setActive }: Props) {
               <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap">
                 <div className="rounded-md border border-[#2a2a2a] bg-[#111] px-3 py-2 shadow-xl">
                   <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-medium text-white">{t.label}</span>
+                    <span className="text-[13px] font-medium text-white">{t.label}</span>
                     {t.shortcut && (
-                      <span className="rounded bg-[#2a2a2a] px-1.5 py-0.5 font-mono text-[14px] text-neutral-400">
+                      <span className="rounded bg-[#2a2a2a] px-1.5 py-0.5 font-mono text-[11px] text-neutral-400">
                         {t.shortcut}
                       </span>
                     )}
                   </div>
-                  <div className="mt-0.5 text-[14px] text-neutral-500">{t.desc}</div>
+                  <div className="mt-0.5 text-[11px] text-neutral-500">{t.desc}</div>
                 </div>
               </div>
             )}

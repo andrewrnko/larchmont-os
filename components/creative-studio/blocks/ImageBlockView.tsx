@@ -76,7 +76,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
           <div data-no-drag className="absolute right-1 top-8 z-20 rounded bg-black/90 p-1">
             <input
               autoFocus
-              className="w-48 bg-black text-[12px] text-white outline-none"
+              className="w-48 bg-black text-[13px] text-white outline-none"
               placeholder="https://..."
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -95,7 +95,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
           ) : (
             <button
               data-no-drag
-              className="flex h-full w-full items-center justify-center text-[16px] text-neutral-500 hover:text-neutral-300"
+              className="flex h-full w-full items-center justify-center text-[13px] text-neutral-500 hover:text-neutral-300"
               onClick={(e) => {
                 e.stopPropagation()
                 fileRef.current?.click()
@@ -118,7 +118,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
 
         <div
           data-no-drag
-          className="border-t border-[#2a2a2a] bg-[#111] px-3 py-1.5 text-[15px] text-neutral-400"
+          className="border-t border-[#2a2a2a] bg-[#111] px-3 py-1.5 text-[10px] text-neutral-400"
           onDoubleClick={() => setEditCaption(true)}
         >
           {editCaption ? (

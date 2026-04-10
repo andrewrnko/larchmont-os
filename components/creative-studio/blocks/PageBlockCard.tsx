@@ -45,7 +45,7 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
             {block.icon}
           </button>
           <input
-            className="flex-1 bg-transparent text-sm font-medium text-white outline-none"
+            className="flex-1 bg-transparent text-[13px] font-semibold text-white outline-none"
             defaultValue={block.title}
             onBlur={(e) => updateBlock(block.id, { title: e.target.value })}
             onPointerDown={(e) => e.stopPropagation()}
@@ -53,7 +53,7 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
         </div>
 
         {block.deadline && (
-          <div className="mt-1 flex items-center gap-1 text-[14px] text-amber-400">
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-amber-400">
             <Calendar size={10} /> Due {block.deadline}
           </div>
         )}

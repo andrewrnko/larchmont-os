@@ -72,13 +72,13 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
           <div className="flex items-center gap-2">
             <CheckSquare size={15} className="text-amber-500" />
             <input
-              className="bg-transparent text-[16px] font-medium text-white outline-none"
+              className="bg-transparent text-[17px] font-semibold text-white outline-none"
               defaultValue={block.label}
               onBlur={(e) => updateBlock(block.id, { label: e.target.value })}
             />
           </div>
           {totalCount > 0 && (
-            <span className="font-mono text-[15px] text-neutral-500">
+            <span className="font-mono text-[11px] text-neutral-500">
               {doneCount}/{totalCount}
             </span>
           )}
@@ -98,13 +98,13 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               >
                 <button
                   onClick={() => toggleDone(item.id)}
-                  className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border-2 text-[12px] ${
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
                     item.done
                       ? 'border-amber-500 bg-amber-500 text-black'
                       : 'border-neutral-600'
                   }`}
                 >
-                  {item.done && '✓'}
+                  {item.done && <span className="text-[11px] leading-none">✓</span>}
                 </button>
                 {item.priority && (
                   <span
@@ -116,7 +116,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                   </span>
                 )}
                 <span
-                  className={`flex-1 text-[16px] ${
+                  className={`flex-1 text-[13px] leading-[1.5] ${
                     item.done ? 'text-neutral-500 line-through' : 'text-white'
                   }`}
                 >
@@ -160,7 +160,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               ))}
             </div>
             <input
-              className="flex-1 rounded bg-[#141414] px-3 py-1.5 text-[16px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded bg-[#141414] px-3 py-1.5 text-[13px] leading-[1.5] text-white outline-none placeholder:text-neutral-600"
               placeholder="Add task…"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}

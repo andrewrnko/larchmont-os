@@ -27,7 +27,7 @@ export function TranscriptBlockView({ block, onContextMenu }: Props) {
         <div className="flex items-center gap-2 border-b border-[#2a2a2a] bg-[#141412] px-4 py-3">
           <FileAudio size={15} className="text-amber-500" />
           <input
-            className="flex-1 bg-transparent text-[16px] font-medium text-white outline-none"
+            className="flex-1 bg-transparent text-[17px] font-semibold text-white outline-none"
             defaultValue={block.title}
             placeholder="Transcript title…"
             onBlur={(e) => updateBlock(block.id, { title: e.target.value })}
@@ -37,7 +37,7 @@ export function TranscriptBlockView({ block, onContextMenu }: Props) {
         {/* Source */}
         <div className="border-b border-[#1a1a1a] px-4 py-1.5">
           <input
-            className="w-full bg-transparent text-[15px] text-neutral-500 outline-none placeholder:text-neutral-600"
+            className="w-full bg-transparent text-[13px] text-neutral-500 outline-none placeholder:text-neutral-600"
             defaultValue={block.source ?? ''}
             placeholder="Source: e.g. Client call, Podcast ep 12…"
             onBlur={(e) => updateBlock(block.id, { source: e.target.value })}
@@ -47,7 +47,7 @@ export function TranscriptBlockView({ block, onContextMenu }: Props) {
         {/* Transcript body */}
         <textarea
           ref={taRef}
-          className="flex-1 resize-none bg-transparent p-4 font-mono text-[16px] leading-relaxed text-neutral-300 outline-none placeholder:text-neutral-600"
+          className="flex-1 resize-none bg-transparent p-4 text-[13px] leading-[1.5] text-neutral-300 outline-none placeholder:text-neutral-600"
           defaultValue={block.transcript}
           placeholder="Paste your transcript here… (type / for commands)"
           onBlur={(e) => updateBlock(block.id, { transcript: e.target.value })}
