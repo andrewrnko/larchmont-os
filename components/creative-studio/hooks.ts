@@ -28,12 +28,19 @@ export function useCanvasViewport(containerRef: React.RefObject<HTMLDivElement |
     const onWheel = (e: WheelEvent) => {
       // If the cursor is over a scrollable element inside a block, let it scroll naturally
       const target = e.target as HTMLElement
-      const scrollable = target.closest('[data-scrollable], [data-no-drag]')
-      if (scrollable && scrollable.closest('[data-block]')) {
-        const el2 = scrollable as HTMLElement
-        const canScrollV = el2.scrollHeight > el2.clientHeight
-        const canScrollH = el2.scrollWidth > el2.clientWidth
-        if (canScrollV || canScrollH) return // let the block scroll
+      const blockEl = target.closest('[data-block]')
+      if (blockEl) {
+        // Check if any scrollable ancestor exists within the block
+        const scrollable = target.closest('[data-scrollable]') ?? blockEl.querySelector('[data-scrollable]')
+        if (scrollable) {
+          const el2 = scrollable as HTMLElement
+          const canScrollV = el2.scrollHeight > el2.clientHeight
+          const canScrollH = el2.scrollWidth > el2.clientWidth
+          if (canScrollV || canScrollH) {
+            // Let the block's scrollable area handle it — don't pan the canvas
+            return
+          }
+        }
       }
       e.preventDefault()
       // Ctrl/meta + wheel OR trackpad pinch → zoom. Plain wheel → pan.

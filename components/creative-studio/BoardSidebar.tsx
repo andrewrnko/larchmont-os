@@ -2,10 +2,10 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { useCanvasStore } from './store'
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react'
+import { useCanvasStore, exportAllData, importAllData } from './store'
+import { ChevronLeft, ChevronRight, Plus, Trash2, Download, Upload } from 'lucide-react'
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
@@ -22,6 +22,34 @@ export function BoardSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
   const [icon, setIcon] = useState('📄')
   const [pickerOpen, setPickerOpen] = useState(false)
   const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [importStatus, setImportStatus] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleExport = () => {
+    const json = exportAllData()
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `larchmont-cs-export-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const json = e.target?.result as string
+      const result = importAllData(json)
+      if (result.ok) {
+        setImportStatus(`Imported ${result.boardCount} board${result.boardCount === 1 ? '' : 's'}`)
+      } else {
+        setImportStatus(result.error ?? 'Import failed')
+      }
+      setTimeout(() => setImportStatus(null), 3000)
+    }
+    reader.readAsText(file)
+  }
 
   const rootBoards = boards.filter((b) => !b.parentId)
   const childrenOf = (id: string) => boards.filter((b) => b.parentId === id)
@@ -151,6 +179,44 @@ export function BoardSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
           <div className="p-2 text-[11px] text-neutral-600">No boards yet. Click + to create one.</div>
         )}
         {rootBoards.map((b) => renderBoard(b.id))}
+      </div>
+
+      {/* Export / Import */}
+      <div className="border-t border-[#2a2a2a] p-2 space-y-1">
+        {importStatus && (
+          <div className="rounded bg-amber-500/10 px-2 py-1 text-[11px] text-amber-300 text-center">
+            {importStatus}
+          </div>
+        )}
+        <div className="flex gap-1">
+          <button
+            onClick={handleExport}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded bg-[#1a1a1a] px-2 py-1.5 text-[11px] text-neutral-400 hover:bg-[#222] hover:text-white"
+            title="Export all boards as JSON"
+          >
+            <Download size={12} />
+            Export
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded bg-[#1a1a1a] px-2 py-1.5 text-[11px] text-neutral-400 hover:bg-[#222] hover:text-white"
+            title="Import boards from JSON"
+          >
+            <Upload size={12} />
+            Import
+          </button>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handleImport(file)
+            e.target.value = ''
+          }}
+        />
       </div>
     </div>
   )

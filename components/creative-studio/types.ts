@@ -81,7 +81,7 @@ export interface MindMapBlock extends BaseBlock {
 }
 
 export type SubPageBlock =
-  | { id: string; type: 'h1' | 'h2' | 'h3' | 'p' | 'bullet' | 'todo' | 'divider'; text: string; checked?: boolean }
+  | { id: string; type: 'h1' | 'h2' | 'h3' | 'p' | 'bullet' | 'numbered' | 'todo' | 'divider'; text: string; checked?: boolean }
   | { id: string; type: 'image'; src: string }
 
 export interface PageBlock extends BaseBlock {

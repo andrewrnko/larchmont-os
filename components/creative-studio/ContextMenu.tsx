@@ -70,7 +70,10 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.1 }}
           className="fixed z-[100] w-52 overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141414] py-1 shadow-2xl"
-          style={{ left: state.x, top: state.y }}
+          style={{
+            left: Math.min(state.x, window.innerWidth - 220),
+            top: Math.min(state.y, window.innerHeight - 320),
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {state.blockId ? (

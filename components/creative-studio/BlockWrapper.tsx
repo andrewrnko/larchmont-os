@@ -92,7 +92,7 @@ export function BlockWrapper({ block, kind, children, className, lockAspect, rat
         <div
           data-drag-handle
           onPointerDown={onDragStart}
-          className="absolute left-0 top-0 z-[9999] h-3 w-full cursor-move rounded-t-md opacity-0 transition-opacity group-hover:opacity-100"
+          className="absolute left-0 top-0 z-[9999] h-3 w-full cursor-move rounded-t-md opacity-0 group-hover:opacity-100"
           style={{ background: 'linear-gradient(180deg, rgba(245,158,11,0.35) 0%, transparent 100%)' }}
           title="Drag to move"
         />
@@ -105,7 +105,7 @@ export function BlockWrapper({ block, kind, children, className, lockAspect, rat
             key={side}
             data-anchor
             onPointerDown={(e) => handleAnchorDown(side, e)}
-            className="absolute z-[99999] h-2.5 w-2.5 cursor-crosshair rounded-full border border-white bg-amber-500 opacity-0 shadow transition-all group-hover:opacity-100 hover:scale-150 hover:border-2"
+            className="absolute z-[99999] h-2.5 w-2.5 cursor-crosshair rounded-full border border-white bg-amber-500 opacity-0 shadow group-hover:opacity-100 hover:scale-150 hover:border-2"
             style={style}
           />
         ))}

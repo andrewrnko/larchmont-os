@@ -638,3 +638,69 @@ function persistPlanner() {
 export function useActiveBoard(): Board | null {
   return useCanvasStore((s) => s.boards.find((b) => b.id === s.activeBoardId) ?? null)
 }
+
+// ──────────────────────────────────────────────────────────────
+// Export / Import
+// ──────────────────────────────────────────────────────────────
+export function exportAllData(): string {
+  const canvas = useCanvasStore.getState()
+  const planner = usePlannerStore.getState()
+  const payload = {
+    _format: 'larchmont-cs-export',
+    _version: 1,
+    _exportedAt: new Date().toISOString(),
+    boards: canvas.boards,
+    activeBoardId: canvas.activeBoardId,
+    prefs: {
+      snapToGrid: canvas.snapToGrid,
+      gridSize: canvas.gridSize,
+      showGrid: canvas.showGrid,
+    },
+    planner: {
+      tasks: planner.tasks,
+      drifting: planner.drifting,
+      focus: planner.focus,
+      driftingSince: planner.driftingSince,
+      lastResetDate: planner.lastResetDate,
+    },
+    plannerLog: loadJSON<unknown[]>(LS_LOG, []),
+  }
+  return JSON.stringify(payload, null, 2)
+}
+
+export function importAllData(json: string): { ok: boolean; error?: string; boardCount?: number } {
+  try {
+    const data = JSON.parse(json)
+    if (data._format !== 'larchmont-cs-export') {
+      return { ok: false, error: 'Not a valid Larchmont OS export file.' }
+    }
+
+    // Restore canvas
+    if (Array.isArray(data.boards)) {
+      useCanvasStore.setState({ boards: data.boards, activeBoardId: data.activeBoardId ?? data.boards[0]?.id })
+      saveJSON(LS_BOARDS, data.boards)
+      saveJSON(LS_ACTIVE, data.activeBoardId ?? data.boards[0]?.id)
+    }
+
+    // Restore prefs
+    if (data.prefs) {
+      useCanvasStore.setState(data.prefs)
+      saveJSON(LS_PREFS, data.prefs)
+    }
+
+    // Restore planner
+    if (data.planner) {
+      usePlannerStore.setState(data.planner)
+      saveJSON(LS_PLANNER, data.planner)
+    }
+
+    // Restore planner log
+    if (data.plannerLog) {
+      saveJSON(LS_LOG, data.plannerLog)
+    }
+
+    return { ok: true, boardCount: data.boards?.length ?? 0 }
+  } catch (e) {
+    return { ok: false, error: 'Failed to parse JSON: ' + (e instanceof Error ? e.message : String(e)) }
+  }
+}
