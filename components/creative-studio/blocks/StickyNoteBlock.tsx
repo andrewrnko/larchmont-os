@@ -49,7 +49,7 @@ export function StickyNoteBlock({ block, onContextMenu }: Props) {
         </div>
         <textarea
           ref={taRef}
-          className="h-full w-full resize-none whitespace-pre-wrap break-words bg-transparent p-3 pt-6 text-sm text-black/80 outline-none placeholder:text-black/30"
+          className="h-full w-full resize-none whitespace-pre-wrap break-words bg-transparent p-4 pt-6 text-[15px] leading-relaxed text-black/80 outline-none placeholder:text-black/30"
           defaultValue={block.text}
           placeholder="Type / for commands…"
           onBlur={(e) => updateBlock(block.id, { text: e.target.value })}

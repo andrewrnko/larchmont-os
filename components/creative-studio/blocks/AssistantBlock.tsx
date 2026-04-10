@@ -193,7 +193,7 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
           {block.messages.map((msg, i) => (
             <div
               key={i}
-              className={`rounded-md px-3 py-2 text-[12px] leading-relaxed overflow-hidden ${
+              className={`rounded-md px-3 py-2 text-[13px] leading-relaxed overflow-hidden ${
                 msg.role === 'user'
                   ? 'ml-6 bg-amber-600/15 text-amber-100'
                   : 'mr-6 bg-[#1a1a1a] text-neutral-300'

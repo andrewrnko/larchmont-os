@@ -138,7 +138,7 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
           </div>
         )}
 
-        <div data-no-drag data-scrollable className="flex-1 overflow-auto p-3 text-sm text-white">
+        <div data-no-drag data-scrollable className="flex-1 overflow-auto p-4 text-[15px] leading-relaxed text-white">
           {editor && (
             <EditorContent
               editor={editor}

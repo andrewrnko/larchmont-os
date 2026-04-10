@@ -127,7 +127,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
                 <div className="flex flex-1 gap-2 p-2" style={{ minHeight: 120 }}>
                   {/* Image area */}
                   <label
-                    className="relative flex w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[11px] text-neutral-500"
+                    className="relative flex w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[12px] text-neutral-500"
                     onDrop={(e) => {
                       e.preventDefault()
                       const f = e.dataTransfer.files[0]

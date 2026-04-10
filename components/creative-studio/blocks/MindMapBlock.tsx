@@ -232,7 +232,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                 e.stopPropagation()
                 setMenuId(n.id)
               }}
-              className={`group/node absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer border-2 text-[14px] font-semibold text-black shadow-lg select-none ${shapeCls}`}
+              className={`group/node absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer border-2 text-[16px] font-semibold text-black shadow-lg select-none ${shapeCls}`}
               style={{
                 left: n.dx,
                 top: n.dy,
