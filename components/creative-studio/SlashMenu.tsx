@@ -160,7 +160,7 @@ export function useSlashMenu(
           style={{ left: menu.x, top: menu.y }}
           onMouseDown={(e) => e.stopPropagation()} // prevent the outside-click close
         >
-          <div className="px-3 py-1 text-[9px] uppercase tracking-wider text-neutral-600">
+          <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-neutral-600">
             Insert format {menu.filter && <span className="text-amber-500">· {menu.filter}</span>}
           </div>
           {filtered.length === 0 && (

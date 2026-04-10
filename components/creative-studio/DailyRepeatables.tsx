@@ -167,7 +167,7 @@ export function DailyRepeatables() {
                         {CATEGORIES.map((c) => (
                           <button
                             key={c}
-                            className={`rounded px-1.5 py-0.5 text-[9px] ${
+                            className={`rounded px-1.5 py-0.5 text-[10px] ${
                               newCat === c ? 'bg-amber-500/20 text-amber-400' : 'bg-[#1a1a1a] text-neutral-500 hover:text-white'
                             }`}
                             onClick={() => setNewCat(newCat === c ? '' : c)}

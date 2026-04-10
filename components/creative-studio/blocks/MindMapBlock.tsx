@@ -188,7 +188,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
         className="relative h-full w-full rounded-md border border-[#2a2a2a] bg-[#101010] shadow-lg"
         style={{ overflow: 'visible' }}
       >
-        <div className="absolute left-2 top-2 z-10 font-mono text-[10px] text-amber-500">MIND MAP</div>
+        <div className="absolute left-3 top-2 z-10 font-mono text-[11px] uppercase tracking-wider text-amber-500">Mind Map</div>
 
         {/* Edges (SVG) */}
         <svg className="pointer-events-none absolute inset-0 h-full w-full" style={{ overflow: 'visible' }}>
@@ -287,15 +287,15 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
               {/* Right-click context menu */}
               {menuId === n.id && (
                 <div
-                  className="absolute left-full top-0 z-30 ml-2 flex flex-col gap-1 rounded-md bg-neutral-900 p-2 text-white shadow-xl border border-neutral-700"
+                  className="absolute left-full top-0 z-30 ml-2 flex flex-col gap-1 rounded-md bg-[#141414] p-2 text-white shadow-2xl border border-[#2a2a2a]"
                   onPointerDown={(e) => e.stopPropagation()}
                 >
-                  <div className="mb-1 text-[9px] uppercase text-neutral-500">Shape</div>
+                  <div className="mb-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500">Shape</div>
                   <div className="flex gap-1">
                     {(['circle', 'square', 'pill'] as const).map((s) => (
                       <button
                         key={s}
-                        className="rounded bg-neutral-800 px-2 py-0.5 text-[10px] hover:bg-neutral-700"
+                        className="rounded bg-[#1a1a1a] px-2 py-1 text-[11px] hover:bg-[#222]"
                         onClick={() => {
                           setNodes((ns) => ns.map((x) => (x.id === n.id ? { ...x, shape: s } : x)))
                           setMenuId(null)
@@ -305,7 +305,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                       </button>
                     ))}
                   </div>
-                  <div className="mt-1 mb-1 text-[9px] uppercase text-neutral-500">Color</div>
+                  <div className="mt-1 mb-1 text-[10px] font-mono uppercase tracking-wider text-neutral-500">Color</div>
                   <div className="flex gap-1">
                     {COLORS.map((c) => (
                       <button
@@ -320,7 +320,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                     ))}
                   </div>
                   <button
-                    className="mt-1 rounded bg-red-900/80 px-2 py-0.5 text-[10px] text-red-300 hover:bg-red-800"
+                    className="mt-1 rounded bg-red-900/80 px-2 py-1 text-[11px] text-red-300 hover:bg-red-800"
                     onClick={() => {
                       // Recursively delete node and all descendants
                       const toDelete = new Set<string>()
@@ -368,7 +368,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                   {/* Header */}
                   <div className="flex items-center justify-between border-b border-[#2a2a2a] px-6 py-4">
                     <div className="flex-1">
-                      <div className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Mind Map Node</div>
+                      <div className="font-mono text-[11px] uppercase tracking-wider text-amber-500">Mind Map Node</div>
                       <input
                         autoFocus
                         className="mt-1 w-full bg-transparent text-2xl font-bold text-white outline-none"

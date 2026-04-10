@@ -118,7 +118,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
 
         <div
           data-no-drag
-          className="border-t border-[#2a2a2a] bg-[#111] px-2 py-1 text-[11px] text-neutral-400"
+          className="border-t border-[#2a2a2a] bg-[#111] px-3 py-1.5 text-[11px] text-neutral-400"
           onDoubleClick={() => setEditCaption(true)}
         >
           {editCaption ? (

@@ -162,7 +162,7 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-3 py-1 text-[9px] uppercase tracking-wider text-neutral-600">Format</div>
+            <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-neutral-600">Format</div>
             {fmt('Bold', () => editor.chain().focus().toggleBold().run(), editor.isActive('bold'))}
             {fmt('Italic', () => editor.chain().focus().toggleItalic().run(), editor.isActive('italic'))}
             {fmt('Underline', () => editor.chain().focus().toggleUnderline().run(), editor.isActive('underline'))}

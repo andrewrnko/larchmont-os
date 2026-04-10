@@ -170,9 +170,9 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
             <span className="font-mono text-[11px] font-medium text-amber-400">AI ASSISTANT</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[9px] text-neutral-500">{connectedCount} node{connectedCount !== 1 ? 's' : ''}</span>
+            <span className="text-[11px] text-neutral-500">{connectedCount} node{connectedCount !== 1 ? 's' : ''}</span>
             <button onClick={clearChat} className="text-neutral-600 hover:text-red-400" title="Clear chat">
-              <Trash2 size={10} />
+              <Trash2 size={12} />
             </button>
           </div>
         </div>
@@ -182,10 +182,10 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
           {block.messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center text-center p-4">
               <Bot size={24} className="mb-2 text-amber-500/40" />
-              <p className="text-[11px] text-neutral-500">
+              <p className="text-[12px] text-neutral-500">
                 Connect blocks to me, then ask questions about them.
               </p>
-              <p className="mt-1 text-[10px] text-neutral-700">
+              <p className="mt-1 text-[11px] text-neutral-600">
                 I can read sticky notes, text, transcripts, pages, mind maps, and storyboards.
               </p>
             </div>

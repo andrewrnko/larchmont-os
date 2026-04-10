@@ -17,7 +17,7 @@ export function PlaceholderBlock({ block, label, onContextMenu }: Props) {
     <BlockWrapper block={block} kind={block.kind} onContextMenu={onContextMenu}>
       <div className="flex h-full w-full flex-col items-center justify-center rounded-md border border-dashed border-[#3a3a3a] bg-[#141414] text-center">
         <div className="font-mono text-[11px] uppercase tracking-wider text-amber-500">{label}</div>
-        <div className="mt-1 text-[10px] text-neutral-500">Coming next session</div>
+        <div className="mt-1 text-[11px] text-neutral-500">Coming next session</div>
       </div>
     </BlockWrapper>
   )

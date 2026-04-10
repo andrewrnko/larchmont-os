@@ -58,7 +58,7 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={block.favicon} alt="" className="h-4 w-4 rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                   )}
-                  <span className="text-[10px] text-neutral-500 truncate">{hostname}</span>
+                  <span className="text-[11px] text-neutral-500 truncate">{hostname}</span>
                 </div>
                 {loading ? (
                   <div className="flex items-center gap-2 text-[11px] text-neutral-500">
@@ -81,7 +81,7 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
                 href={block.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 flex items-center gap-1 self-start rounded bg-amber-600/20 px-2 py-1 text-[10px] text-amber-400 hover:bg-amber-600/40"
+                className="mt-2 flex items-center gap-1 self-start rounded bg-amber-600/20 px-2 py-1 text-[11px] text-amber-400 hover:bg-amber-600/40"
                 onPointerDown={(e) => e.stopPropagation()}
               >
                 <ExternalLink size={9} /> Open link

@@ -116,7 +116,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
                   </span>
                   <button
                     onClick={(e) => { e.stopPropagation(); setOpenFrameId(frame.id) }}
-                    className="flex items-center gap-1 rounded bg-amber-600/20 px-1.5 py-0.5 text-[10px] text-amber-400 hover:bg-amber-600/40"
+                    className="flex items-center gap-1 rounded bg-amber-600/20 px-2 py-1 text-[11px] text-amber-400 hover:bg-amber-600/40"
                     title="Open detailed notes"
                   >
                     Open <ArrowRight size={9} />
@@ -190,7 +190,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
               >
                 <div className="flex items-center justify-between border-b border-[#2a2a2a] px-6 py-4">
                   <div>
-                    <div className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Storyboard Frame</div>
+                    <div className="font-mono text-[11px] uppercase tracking-wider text-amber-500">Storyboard Frame</div>
                     <input
                       className="mt-1 w-full bg-transparent text-2xl font-bold text-white outline-none"
                       defaultValue={openFrame.label}
@@ -214,7 +214,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
 
                 {/* Quick notes (from card) */}
                 <div className="border-b border-[#2a2a2a] px-6 py-3">
-                  <div className="mb-1 font-mono text-[10px] uppercase text-neutral-500">Quick Notes</div>
+                  <div className="mb-1 font-mono text-[11px] uppercase tracking-wider text-neutral-500">Quick Notes</div>
                   <textarea
                     defaultValue={openFrame.notes}
                     placeholder="- Bullet notes…"

@@ -53,8 +53,8 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
         </div>
 
         {block.deadline && (
-          <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-400">
-            <Calendar size={9} /> Due {block.deadline}
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-amber-400">
+            <Calendar size={10} /> Due {block.deadline}
           </div>
         )}
 
@@ -76,7 +76,7 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
               e.stopPropagation()
               openPage(block.id)
             }}
-            className="flex items-center gap-1 rounded bg-amber-600/20 px-2 py-1 text-[11px] text-amber-400 hover:bg-amber-600/40"
+            className="flex items-center gap-1 rounded bg-amber-600/20 px-2 py-1 text-[12px] text-amber-400 hover:bg-amber-600/40"
           >
             Open <ArrowRight size={10} />
           </button>

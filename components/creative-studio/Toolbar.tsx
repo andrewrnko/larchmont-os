@@ -80,12 +80,12 @@ export function Toolbar({ active, setActive }: Props) {
                   <div className="flex items-center gap-2">
                     <span className="text-[12px] font-medium text-white">{t.label}</span>
                     {t.shortcut && (
-                      <span className="rounded bg-[#2a2a2a] px-1.5 py-0.5 font-mono text-[9px] text-neutral-400">
+                      <span className="rounded bg-[#2a2a2a] px-1.5 py-0.5 font-mono text-[10px] text-neutral-400">
                         {t.shortcut}
                       </span>
                     )}
                   </div>
-                  <div className="mt-0.5 text-[10px] text-neutral-500">{t.desc}</div>
+                  <div className="mt-0.5 text-[11px] text-neutral-500">{t.desc}</div>
                 </div>
               </div>
             )}

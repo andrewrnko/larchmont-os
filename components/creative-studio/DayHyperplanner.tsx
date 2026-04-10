@@ -110,7 +110,7 @@ export function DayHyperplanner() {
       >
         <div
           className={`mb-2 flex items-center justify-between font-mono ${
-            isP1 ? 'text-[11px] text-amber-500' : 'text-[9px] text-neutral-500'
+            isP1 ? 'text-[11px] text-amber-500' : 'text-[10px] text-neutral-500'
           } uppercase tracking-wider`}
         >
           <span>P{rank}</span>
@@ -164,7 +164,7 @@ export function DayHyperplanner() {
         </div>
         {firstP1Open && (
           <div className="mt-2 flex items-center gap-2">
-            <span className="font-mono text-[9px] uppercase text-neutral-500">Currently drifting to</span>
+            <span className="font-mono text-[10px] uppercase text-neutral-500">Currently drifting to</span>
             <input
               className="flex-1 rounded bg-[#141414] px-2 py-1 text-[11px] text-white outline-none"
               placeholder="what are you actually doing right now?"
@@ -198,7 +198,7 @@ export function DayHyperplanner() {
                 {entry.tasks.map((t) => (
                   <div key={t.id} className="flex items-center gap-2 text-[11px] text-neutral-300">
                     <span className={t.done ? 'text-amber-500' : 'text-neutral-600'}>{t.done ? '✓' : '○'}</span>
-                    <span className="font-mono text-[9px] text-neutral-600">P{t.rank}</span>
+                    <span className="font-mono text-[10px] text-neutral-600">P{t.rank}</span>
                     <span className={t.done ? 'line-through' : ''}>{t.title}</span>
                   </div>
                 ))}

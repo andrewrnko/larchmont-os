@@ -505,7 +505,7 @@ export function SubpageEditor() {
                     onClick={() => centerOnBlock(other!.id)}
                     className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[12px] text-neutral-300 hover:bg-amber-500/10"
                   >
-                    <span className="font-mono text-[9px] uppercase text-neutral-500">{other!.kind}</span>
+                    <span className="font-mono text-[10px] uppercase text-neutral-500">{other!.kind}</span>
                     <span className="flex-1 truncate">
                       {('title' in other! ? (other as { title?: string }).title : null) ||
                         ('text' in other! ? (other as { text?: string }).text : null) ||
@@ -546,7 +546,7 @@ export function SubpageEditor() {
               }}
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <div className="px-3 py-1 text-[9px] uppercase tracking-wider text-neutral-600">
+              <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-neutral-600">
                 Turn into {slashMenu.filter && <span className="text-amber-500">· {slashMenu.filter}</span>}
               </div>
               {filtered.length === 0 && (

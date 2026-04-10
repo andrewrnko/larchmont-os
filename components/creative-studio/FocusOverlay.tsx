@@ -46,7 +46,7 @@ export function FocusOverlay() {
             className="fixed left-1/2 top-4 z-[95] flex -translate-x-1/2 items-center gap-4 rounded-lg border border-amber-600 bg-[#140d03] px-5 py-3 shadow-[0_0_40px_rgba(245,158,11,0.35)]"
           >
             <div>
-              <div className="font-mono text-[9px] uppercase tracking-wider text-amber-500">Focus · P1</div>
+              <div className="font-mono text-[11px] uppercase tracking-wider text-amber-500">Focus · P1</div>
               <div className="text-base font-medium text-white">{task.title}</div>
             </div>
             <div className="font-mono text-2xl tabular-nums text-amber-400">

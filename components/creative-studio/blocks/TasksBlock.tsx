@@ -98,7 +98,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               >
                 <button
                   onClick={() => toggleDone(item.id)}
-                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[9px] ${
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] ${
                     item.done
                       ? 'border-amber-500 bg-amber-500 text-black'
                       : 'border-neutral-600'
@@ -108,7 +108,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                 </button>
                 {item.priority && (
                   <span
-                    className={`rounded px-1 py-0.5 font-mono text-[8px] font-bold ${
+                    className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-bold ${
                       PRIORITY_COLORS[item.priority] ?? PRIORITY_COLORS[3]
                     }`}
                   >
@@ -116,7 +116,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                   </span>
                 )}
                 <span
-                  className={`flex-1 text-[12px] ${
+                  className={`flex-1 text-[13px] ${
                     item.done ? 'text-neutral-500 line-through' : 'text-white'
                   }`}
                 >
@@ -148,7 +148,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               {([1, 2, 3] as const).map((p) => (
                 <button
                   key={p}
-                  className={`rounded px-1.5 py-1 font-mono text-[9px] font-bold ${
+                  className={`rounded px-1.5 py-1 font-mono text-[10px] font-bold ${
                     newPriority === p
                       ? PRIORITY_COLORS[p]
                       : 'text-neutral-600 hover:text-neutral-400'
@@ -160,7 +160,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               ))}
             </div>
             <input
-              className="flex-1 rounded bg-[#141414] px-2 py-1 text-[11px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded bg-[#141414] px-2 py-1.5 text-[12px] text-white outline-none placeholder:text-neutral-600"
               placeholder="Add task…"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
