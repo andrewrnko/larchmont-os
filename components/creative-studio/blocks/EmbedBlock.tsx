@@ -66,7 +66,7 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
                   </div>
                 ) : (
                   <>
-                    <div className="text-[13px] font-medium text-white leading-snug line-clamp-2">
+                    <div className="text-[14px] font-medium text-white leading-snug line-clamp-2">
                       {block.title || hostname}
                     </div>
                     {block.description && (
@@ -89,7 +89,7 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
             </div>
           </>
         ) : (
-          <div className="flex h-full items-center justify-center p-4 text-[11px] text-neutral-500">
+          <div className="flex h-full items-center justify-center p-4 text-[14px] text-neutral-500">
             Paste a URL to see a preview
           </div>
         )}

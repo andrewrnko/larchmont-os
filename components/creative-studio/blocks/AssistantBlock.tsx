@@ -182,10 +182,10 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
           {block.messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center text-center p-4">
               <Bot size={24} className="mb-2 text-amber-500/40" />
-              <p className="text-[13px] text-neutral-500">
+              <p className="text-[14px] text-neutral-500">
                 Connect blocks to me, then ask questions about them.
               </p>
-              <p className="mt-1 text-[12px] text-neutral-600">
+              <p className="mt-1 text-[13px] text-neutral-600">
                 I can read sticky notes, text, transcripts, pages, mind maps, and storyboards.
               </p>
             </div>
@@ -193,7 +193,7 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
           {block.messages.map((msg, i) => (
             <div
               key={i}
-              className={`rounded-md px-3 py-2 text-[13px] leading-relaxed overflow-hidden ${
+              className={`rounded-md px-3 py-2 text-[14px] leading-relaxed overflow-hidden ${
                 msg.role === 'user'
                   ? 'ml-6 bg-amber-600/15 text-amber-100'
                   : 'mr-6 bg-[#1a1a1a] text-neutral-300'
@@ -219,7 +219,7 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
         <div className="border-t border-[#2a2a2a] p-2">
           <div className="flex gap-1">
             <input
-              className="flex-1 rounded bg-[#141414] px-3 py-2 text-[13px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded bg-[#141414] px-3 py-2 text-[14px] text-white outline-none placeholder:text-neutral-600"
               placeholder="Ask about connected blocks…"
               value={input}
               onChange={(e) => setInput(e.target.value)}

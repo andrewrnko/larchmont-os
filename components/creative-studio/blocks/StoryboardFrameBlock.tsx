@@ -127,7 +127,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
                 <div className="flex flex-1 gap-2 p-2" style={{ minHeight: 120 }}>
                   {/* Image area */}
                   <label
-                    className="relative flex w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[12px] text-neutral-500"
+                    className="relative flex w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[13px] text-neutral-500"
                     onDrop={(e) => {
                       e.preventDefault()
                       const f = e.dataTransfer.files[0]
@@ -152,7 +152,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
                   {/* Notes area with auto-bullet */}
                   <textarea
                     ref={(el) => { if (el && document.activeElement === el) (activeNotesRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el }}
-                    className="w-1/2 resize-none rounded bg-black/40 p-2 text-[13px] leading-relaxed text-white outline-none placeholder:text-neutral-600"
+                    className="w-1/2 resize-none rounded bg-black/40 p-2 text-[14px] leading-relaxed text-white outline-none placeholder:text-neutral-600"
                     placeholder="Type / for commands…"
                     defaultValue={frame.notes}
                     onFocus={(e) => { (activeNotesRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e.currentTarget }}

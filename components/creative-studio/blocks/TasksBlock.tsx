@@ -116,7 +116,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                   </span>
                 )}
                 <span
-                  className={`flex-1 text-[13px] ${
+                  className={`flex-1 text-[14px] ${
                     item.done ? 'text-neutral-500 line-through' : 'text-white'
                   }`}
                 >
@@ -160,7 +160,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               ))}
             </div>
             <input
-              className="flex-1 rounded bg-[#141414] px-2 py-1.5 text-[13px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded bg-[#141414] px-2 py-1.5 text-[14px] text-white outline-none placeholder:text-neutral-600"
               placeholder="Add task…"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
