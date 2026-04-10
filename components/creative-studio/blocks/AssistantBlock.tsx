@@ -178,7 +178,7 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
         </div>
 
         {/* Messages */}
-        <div ref={scrollRef} className="flex-1 overflow-auto p-2 space-y-2">
+        <div ref={scrollRef} data-scrollable className="flex-1 overflow-auto p-2 space-y-2">
           {block.messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center text-center p-4">
               <Bot size={24} className="mb-2 text-amber-500/40" />

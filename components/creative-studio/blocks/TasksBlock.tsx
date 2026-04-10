@@ -86,7 +86,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
         </div>
 
         {/* Task list */}
-        <div className="flex-1 overflow-auto p-2 space-y-0.5">
+        <div data-scrollable className="flex-1 overflow-auto p-2 space-y-0.5">
           {block.taskItems
             .sort((a, b) => (a.priority ?? 3) - (b.priority ?? 3))
             .map((item) => (

@@ -6,6 +6,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface SlashCommand {
@@ -148,7 +149,7 @@ export function useSlashMenu(
 
   const filtered = COMMANDS.filter((c) => c.label.toLowerCase().includes(menu.filter.toLowerCase()))
 
-  const menuElement = (
+  const menuElement = typeof window !== 'undefined' ? createPortal(
     <AnimatePresence>
       {menu.open && (
         <motion.div
@@ -185,8 +186,9 @@ export function useSlashMenu(
           ))}
         </motion.div>
       )}
-    </AnimatePresence>
-  )
+    </AnimatePresence>,
+    document.body
+  ) : null
 
   return { handleKeyDown, menu: menuElement, isOpen: menu.open }
 }

@@ -106,7 +106,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
           </div>
 
           {/* Frames */}
-          <div data-no-drag className="flex flex-1 gap-3 overflow-auto p-3">
+          <div data-no-drag data-scrollable className="flex flex-1 gap-3 overflow-auto p-3">
             {block.frames.map((frame, idx) => (
               <div key={frame.id} className="flex w-64 shrink-0 flex-col rounded-md border border-[#2a2a2a] bg-[#0e0e0d]">
                 {/* Frame header */}

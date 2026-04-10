@@ -116,9 +116,21 @@ export function SubpageEditor() {
       e.preventDefault()
       insertAfter(item.id, item.type === 'bullet' || item.type === 'todo' ? item.type : 'p')
     }
-    if (e.key === 'Backspace' && e.currentTarget.value === '' && pageBlock.content.length > 1) {
-      e.preventDefault()
-      removeItem(item.id)
+    // Only delete a block on backspace if the textarea is truly empty AND it's not the last block
+    if (e.key === 'Backspace' && pageBlock.content.length > 1) {
+      const val = e.currentTarget.value
+      const cursor = e.currentTarget.selectionStart
+      // Only remove the block if content is empty and cursor is at start
+      if (val === '' && cursor === 0) {
+        e.preventDefault()
+        // Focus the previous block
+        const idx = pageBlock.content.findIndex((x) => x.id === item.id)
+        if (idx > 0) {
+          const prevId = pageBlock.content[idx - 1].id
+          focusNextRef.current = prevId
+        }
+        removeItem(item.id)
+      }
     }
   }
 
@@ -338,8 +350,17 @@ export function SubpageEditor() {
                 key={t.type}
                 className="block w-full px-3 py-1 text-left text-[12px] text-neutral-200 hover:bg-amber-500/20"
                 onClick={() => {
+                  // Clear the "/" from the textarea before changing type
+                  const el = refs.current[slashMenu.blockId]
+                  if (el && (el.value === '/' || el.value.trim() === '/')) {
+                    el.value = ''
+                    // Commit empty text
+                    setContent(pageBlock.content.map((x) => (x.id === slashMenu.blockId ? ({ ...x, text: '' } as SubPageBlock) : x)))
+                  }
                   changeType(slashMenu.blockId, t.type)
                   setSlashMenu(null)
+                  // Re-focus the textarea
+                  focusNextRef.current = slashMenu.blockId
                 }}
               >
                 {t.label}
