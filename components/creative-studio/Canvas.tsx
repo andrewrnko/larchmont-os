@@ -292,7 +292,7 @@ export function Canvas({ tool, setTool }: Props) {
       </div>
 
       {/* Zoom + grid controls */}
-      <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 rounded-md border border-[#2a2a2a] bg-[#141414]/95 px-2 py-1 text-[11px] text-neutral-400 backdrop-blur">
+      <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 rounded-md border border-[#2a2a2a] bg-[#141414]/95 px-2 py-1 text-[14px] text-neutral-400 backdrop-blur">
         <button
           className={`rounded px-1 ${showGrid ? 'text-amber-400' : ''}`}
           onClick={() => setShowGrid(!showGrid)}
@@ -301,7 +301,7 @@ export function Canvas({ tool, setTool }: Props) {
           <Grid3x3 size={12} />
         </button>
         <button
-          className={`rounded px-1 text-[11px] ${snapToGrid ? 'text-amber-400' : ''}`}
+          className={`rounded px-1 text-[14px] ${snapToGrid ? 'text-amber-400' : ''}`}
           onClick={() => setSnapToGrid(!snapToGrid)}
           title="Snap to grid"
         >
@@ -315,11 +315,13 @@ export function Canvas({ tool, setTool }: Props) {
         <button onClick={() => setViewport({ ...viewport, scale: Math.min(4, viewport.scale + 0.1) })}>
           <PlusIcon size={12} />
         </button>
-        <button className="text-[11px] hover:text-white" onClick={zoomToFit}>FIT</button>
+        <button className="text-[14px] hover:text-white" onClick={zoomToFit}>FIT</button>
       </div>
 
       <TimerWidget />
       <ContextMenu state={ctxMenu} onClose={() => setCtxMenu(null)} onZoomToFit={zoomToFit} />
+
+
 
     </div>
   )

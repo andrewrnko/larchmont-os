@@ -51,7 +51,7 @@ export function TimerWidget() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-md border border-[#2a2a2a] bg-[#141414]/95 px-2.5 py-1.5 text-[11px] text-neutral-400 backdrop-blur hover:text-white"
+        className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-md border border-[#2a2a2a] bg-[#141414]/95 px-2.5 py-1.5 text-[14px] text-neutral-400 backdrop-blur hover:text-white"
         title="Timer"
       >
         <TimerIcon size={13} />

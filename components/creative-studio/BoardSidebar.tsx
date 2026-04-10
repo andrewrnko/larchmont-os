@@ -120,7 +120,7 @@ export function BoardSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
   return (
     <div className="flex h-full w-56 flex-col border-r border-[#2a2a2a] bg-[#101010]">
       <div className="flex items-center justify-between border-b border-[#2a2a2a] px-2 py-2">
-        <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-amber-500">Boards</span>
+        <span className="font-mono text-[14px] uppercase tracking-[0.08em] text-amber-500">Boards</span>
         <div className="flex gap-1">
           <button
             className="text-neutral-500 hover:text-white"
@@ -176,7 +176,7 @@ export function BoardSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
 
       <div className="flex-1 overflow-auto p-1">
         {rootBoards.length === 0 && (
-          <div className="p-2 text-[11px] text-neutral-600">No boards yet. Click + to create one.</div>
+          <div className="p-2 text-[14px] text-neutral-600">No boards yet. Click + to create one.</div>
         )}
         {rootBoards.map((b) => renderBoard(b.id))}
       </div>
@@ -184,7 +184,7 @@ export function BoardSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
       {/* Export / Import */}
       <div className="border-t border-[#2a2a2a] p-2 space-y-1">
         {importStatus && (
-          <div className="rounded bg-amber-500/10 px-2 py-1 text-[11px] text-amber-300 text-center">
+          <div className="rounded bg-amber-500/10 px-2 py-1 text-[14px] text-amber-300 text-center">
             {importStatus}
           </div>
         )}

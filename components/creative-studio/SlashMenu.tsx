@@ -160,11 +160,11 @@ export function useSlashMenu(
           style={{ left: menu.x, top: menu.y }}
           onMouseDown={(e) => e.stopPropagation()} // prevent the outside-click close
         >
-          <div className="px-3 py-1 text-[11px] uppercase tracking-wider text-neutral-600">
+          <div className="px-3 py-1 text-[14px] uppercase tracking-wider text-neutral-600">
             Insert format {menu.filter && <span className="text-amber-500">· {menu.filter}</span>}
           </div>
           {filtered.length === 0 && (
-            <div className="px-3 py-2 text-[11px] text-neutral-500">No match — press Esc</div>
+            <div className="px-3 py-2 text-[14px] text-neutral-500">No match — press Esc</div>
           )}
           {filtered.map((cmd, i) => (
             <button
@@ -181,7 +181,7 @@ export function useSlashMenu(
             >
               <span className="w-5 text-center text-[14px] leading-none">{cmd.icon}</span>
               <span className="flex-1">{cmd.label}</span>
-              <span className="text-[11px] text-neutral-600">{cmd.description}</span>
+              <span className="text-[14px] text-neutral-600">{cmd.description}</span>
             </button>
           ))}
         </motion.div>

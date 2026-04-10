@@ -72,13 +72,13 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
           <div className="flex items-center gap-2">
             <CheckSquare size={15} className="text-amber-500" />
             <input
-              className="bg-transparent text-[14px] font-medium text-white outline-none"
+              className="bg-transparent text-[16px] font-medium text-white outline-none"
               defaultValue={block.label}
               onBlur={(e) => updateBlock(block.id, { label: e.target.value })}
             />
           </div>
           {totalCount > 0 && (
-            <span className="font-mono text-[12px] text-neutral-500">
+            <span className="font-mono text-[15px] text-neutral-500">
               {doneCount}/{totalCount}
             </span>
           )}
@@ -98,7 +98,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               >
                 <button
                   onClick={() => toggleDone(item.id)}
-                  className={`flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded border text-[11px] ${
+                  className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border-2 text-[12px] ${
                     item.done
                       ? 'border-amber-500 bg-amber-500 text-black'
                       : 'border-neutral-600'
@@ -108,7 +108,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                 </button>
                 {item.priority && (
                   <span
-                    className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold ${
+                    className={`rounded px-2.5 py-0.5 font-mono text-[13px] font-bold ${
                       PRIORITY_COLORS[item.priority] ?? PRIORITY_COLORS[3]
                     }`}
                   >
@@ -116,7 +116,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                   </span>
                 )}
                 <span
-                  className={`flex-1 text-[14px] ${
+                  className={`flex-1 text-[16px] ${
                     item.done ? 'text-neutral-500 line-through' : 'text-white'
                   }`}
                 >
@@ -148,7 +148,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               {([1, 2, 3] as const).map((p) => (
                 <button
                   key={p}
-                  className={`rounded px-2 py-1 font-mono text-[11px] font-bold ${
+                  className={`rounded px-2.5 py-1 font-mono text-[13px] font-bold ${
                     newPriority === p
                       ? PRIORITY_COLORS[p]
                       : 'text-neutral-600 hover:text-neutral-400'
@@ -160,7 +160,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               ))}
             </div>
             <input
-              className="flex-1 rounded bg-[#141414] px-3 py-1.5 text-[13px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded bg-[#141414] px-3 py-1.5 text-[16px] text-white outline-none placeholder:text-neutral-600"
               placeholder="Add task…"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}

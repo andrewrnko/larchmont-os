@@ -46,7 +46,7 @@ export function FocusOverlay() {
             className="fixed left-1/2 top-4 z-[95] flex -translate-x-1/2 items-center gap-4 rounded-lg border border-amber-600 bg-[#140d03] px-5 py-3 shadow-[0_0_40px_rgba(245,158,11,0.35)]"
           >
             <div>
-              <div className="font-mono text-[11px] uppercase tracking-wider text-amber-500">Focus · P1</div>
+              <div className="font-mono text-[14px] uppercase tracking-wider text-amber-500">Focus · P1</div>
               <div className="text-base font-medium text-white">{task.title}</div>
             </div>
             <div className="font-mono text-2xl tabular-nums text-amber-400">
@@ -55,7 +55,7 @@ export function FocusOverlay() {
             <div className="flex gap-1">
               <button
                 onClick={() => stopFocus(true)}
-                className="flex items-center gap-1 rounded bg-amber-500 px-3 py-1.5 text-[11px] font-medium text-black hover:bg-amber-400"
+                className="flex items-center gap-1 rounded bg-amber-500 px-3 py-1.5 text-[14px] font-medium text-black hover:bg-amber-400"
               >
                 <Check size={12} /> Done
               </button>

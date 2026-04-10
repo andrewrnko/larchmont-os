@@ -53,7 +53,7 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
         </div>
 
         {block.deadline && (
-          <div className="mt-1 flex items-center gap-1 text-[11px] text-amber-400">
+          <div className="mt-1 flex items-center gap-1 text-[14px] text-amber-400">
             <Calendar size={10} /> Due {block.deadline}
           </div>
         )}

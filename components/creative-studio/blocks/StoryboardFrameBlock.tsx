@@ -91,13 +91,13 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
             <span className="font-mono text-[12px] uppercase tracking-[0.08em] text-amber-400">Storyboard</span>
             <div className="flex gap-1">
               <button
-                className="flex items-center gap-1 rounded bg-[#2a2a2a] px-2 py-1 text-[11px] text-white hover:bg-[#3a3a3a]"
+                className="flex items-center gap-1 rounded bg-[#2a2a2a] px-2 py-1 text-[14px] text-white hover:bg-[#3a3a3a]"
                 onClick={(e) => { e.stopPropagation(); sequence() }}
               >
                 <Film size={11} /> Sequence
               </button>
               <button
-                className="flex items-center gap-1 rounded bg-amber-600 px-2 py-1 text-[11px] text-black hover:bg-amber-500"
+                className="flex items-center gap-1 rounded bg-amber-600 px-2 py-1 text-[14px] text-black hover:bg-amber-500"
                 onClick={(e) => { e.stopPropagation(); addFrame() }}
               >
                 <Plus size={11} /> Frame
@@ -111,12 +111,12 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
               <div key={frame.id} className="flex w-[240px] shrink-0 flex-col rounded-lg border border-[#2a2a2a] bg-[#0e0e0d]">
                 {/* Frame header */}
                 <div className="flex items-center justify-between border-b border-[#2a2a2a] px-3 py-2">
-                  <span className="font-mono text-[13px] font-medium text-amber-500">
+                  <span className="font-mono text-[14px] font-medium text-amber-500">
                     FRAME {String(idx + 1).padStart(2, '0')}
                   </span>
                   <button
                     onClick={(e) => { e.stopPropagation(); setOpenFrameId(frame.id) }}
-                    className="flex items-center gap-1 rounded bg-amber-600/20 px-2 py-1 text-[11px] text-amber-400 hover:bg-amber-600/40"
+                    className="flex items-center gap-1 rounded bg-amber-600/20 px-2 py-1 text-[14px] text-amber-400 hover:bg-amber-600/40"
                     title="Open detailed notes"
                   >
                     Open <ArrowRight size={9} />
@@ -127,7 +127,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
                 <div className="flex flex-1 gap-2 p-2" style={{ minHeight: 120 }}>
                   {/* Image area */}
                   <label
-                    className="relative flex w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[13px] text-neutral-500"
+                    className="relative flex w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[15px] text-neutral-500"
                     onDrop={(e) => {
                       e.preventDefault()
                       const f = e.dataTransfer.files[0]
@@ -152,7 +152,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
                   {/* Notes area with auto-bullet */}
                   <textarea
                     ref={(el) => { if (el && document.activeElement === el) (activeNotesRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el }}
-                    className="w-1/2 resize-none rounded bg-black/40 p-2 text-[14px] leading-relaxed text-white outline-none placeholder:text-neutral-600"
+                    className="w-1/2 resize-none rounded bg-black/40 p-2 text-[16px] leading-relaxed text-white outline-none placeholder:text-neutral-600"
                     placeholder="Type / for commands…"
                     defaultValue={frame.notes}
                     onFocus={(e) => { (activeNotesRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e.currentTarget }}
@@ -190,7 +190,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
               >
                 <div className="flex items-center justify-between border-b border-[#2a2a2a] px-6 py-4">
                   <div>
-                    <div className="font-mono text-[11px] uppercase tracking-wider text-amber-500">Storyboard Frame</div>
+                    <div className="font-mono text-[14px] uppercase tracking-wider text-amber-500">Storyboard Frame</div>
                     <input
                       className="mt-1 w-full bg-transparent text-2xl font-bold text-white outline-none"
                       defaultValue={openFrame.label}
@@ -214,7 +214,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
 
                 {/* Quick notes (from card) */}
                 <div className="border-b border-[#2a2a2a] px-6 py-3">
-                  <div className="mb-1 font-mono text-[11px] uppercase tracking-wider text-neutral-500">Quick Notes</div>
+                  <div className="mb-1 font-mono text-[14px] uppercase tracking-wider text-neutral-500">Quick Notes</div>
                   <textarea
                     defaultValue={openFrame.notes}
                     placeholder="- Bullet notes…"
@@ -229,7 +229,7 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
 
                 {/* Detailed notes */}
                 <div className="flex-1 overflow-auto px-6 py-4">
-                  <div className="mb-2 font-mono text-[11px] uppercase text-neutral-500">Detailed Notes</div>
+                  <div className="mb-2 font-mono text-[14px] uppercase text-neutral-500">Detailed Notes</div>
                   <textarea
                     autoFocus
                     key={openFrame.id}

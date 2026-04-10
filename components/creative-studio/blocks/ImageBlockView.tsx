@@ -95,7 +95,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
           ) : (
             <button
               data-no-drag
-              className="flex h-full w-full items-center justify-center text-[14px] text-neutral-500 hover:text-neutral-300"
+              className="flex h-full w-full items-center justify-center text-[16px] text-neutral-500 hover:text-neutral-300"
               onClick={(e) => {
                 e.stopPropagation()
                 fileRef.current?.click()
@@ -118,7 +118,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
 
         <div
           data-no-drag
-          className="border-t border-[#2a2a2a] bg-[#111] px-3 py-1.5 text-[13px] text-neutral-400"
+          className="border-t border-[#2a2a2a] bg-[#111] px-3 py-1.5 text-[15px] text-neutral-400"
           onDoubleClick={() => setEditCaption(true)}
         >
           {editCaption ? (
