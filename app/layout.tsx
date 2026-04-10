@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/layout/sidebar'
 import { ToastStack } from '@/components/layout/toast-stack'
 import { CommandPalette } from '@/components/layout/command-palette'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { AuthGate } from '@/components/auth-gate'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -41,18 +42,20 @@ export default function RootLayout({
           disableTransitionOnChange={false}
           storageKey="larchmont-theme"
         >
-          <div className="flex h-screen overflow-hidden">
-            <Sidebar />
-            <main
-              id="main-content"
-              className="flex-1 overflow-y-auto"
-              tabIndex={-1}
-            >
-              <ErrorBoundary>{children}</ErrorBoundary>
-            </main>
-          </div>
-          <CommandPalette />
-          <ToastStack />
+          <AuthGate>
+            <div className="flex h-screen overflow-hidden">
+              <Sidebar />
+              <main
+                id="main-content"
+                className="flex-1 overflow-y-auto"
+                tabIndex={-1}
+              >
+                <ErrorBoundary>{children}</ErrorBoundary>
+              </main>
+            </div>
+            <CommandPalette />
+            <ToastStack />
+          </AuthGate>
         </ThemeProvider>
       </body>
     </html>

@@ -9,8 +9,9 @@ import {
   LayoutDashboard, Inbox, FolderKanban, FileEdit,
   Megaphone, ImageIcon, Library, Palette, CalendarDays, Film,
   Archive, Settings, Zap, ChevronLeft, ChevronRight, Bot, Mic,
-  Moon, BarChart2, TrendingUp, Sparkles,
+  Moon, BarChart2, TrendingUp, Sparkles, LogOut,
 } from 'lucide-react'
+import { logout } from '@/components/auth-gate'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
@@ -227,6 +228,21 @@ export function Sidebar() {
               </Link>
             )
           })}
+          {process.env.NEXT_PUBLIC_APP_PASSWORD && (
+            <button
+              onClick={logout}
+              className={cn(
+                'group flex items-center gap-2.5 rounded-[6px] px-2 py-1.5 text-[13px]',
+                'transition-all duration-150',
+                collapsed && 'justify-center px-0 py-2',
+                'text-[var(--text-tertiary)] hover:bg-red-500/10 hover:text-red-400'
+              )}
+              title={collapsed ? 'Logout' : undefined}
+            >
+              <LogOut className="h-4 w-4 flex-shrink-0" />
+              {!collapsed && <span>Logout</span>}
+            </button>
+          )}
         </nav>
       </div>
 
