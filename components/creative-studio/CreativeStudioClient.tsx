@@ -8,6 +8,7 @@ import { Canvas } from './Canvas'
 import { Toolbar, type ToolId } from './Toolbar'
 import { BoardSidebar } from './BoardSidebar'
 import { DayHyperplanner } from './DayHyperplanner'
+import { DailyRepeatables } from './DailyRepeatables'
 import { FocusOverlay } from './FocusOverlay'
 import { SubpageEditor } from './SubpageEditor'
 
@@ -55,6 +56,7 @@ export function CreativeStudioClient() {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-[#0a0a0a]">
       <DayHyperplanner />
+      <DailyRepeatables />
       <div className="relative flex flex-1 overflow-hidden">
         <BoardSidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
         <div className="relative flex-1">

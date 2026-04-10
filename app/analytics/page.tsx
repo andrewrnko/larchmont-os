@@ -416,6 +416,63 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
+
+      {/* ── Creative Studio Analytics ── */}
+      <div className="mt-8 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-6">
+        <h2 className="mb-4 text-[14px] font-semibold uppercase tracking-wider text-[var(--accent)]">
+          Creative Studio
+        </h2>
+        {(() => {
+          if (!data) return <ChartEmpty message="Loading..." />
+          const csTasksDone = data.metrics.filter((m) => m.metricType === 'cs_task_completed')
+          const csFocus = data.metrics.filter((m) => m.metricType === 'cs_focus_session')
+          const csSummaries = data.metrics.filter((m) => m.metricType === 'cs_daily_summary')
+
+          const totalTasksDone = csTasksDone.length
+          const totalFocusMin = csFocus.reduce((s, m) => s + (m.metricValue ?? 0), 0)
+          const avgCompletionRate = csSummaries.length > 0
+            ? Math.round(csSummaries.reduce((s, m) => s + (m.metricValue ?? 0), 0) / csSummaries.length)
+            : null
+          const focusSessions = csFocus.length
+          const completedFocusSessions = csFocus.filter((m) => (m.metadata as Record<string,unknown>)?.completed).length
+
+          const p1Done = csTasksDone.filter((m) => m.metricKey === 'p1').length
+          const p2Done = csTasksDone.filter((m) => m.metricKey === 'p2').length
+          const p3Done = csTasksDone.filter((m) => m.metricKey === 'p3').length
+
+          if (totalTasksDone === 0 && focusSessions === 0) {
+            return <ChartEmpty message="No Creative Studio activity yet — complete tasks and focus sessions to see data here" />
+          }
+
+          return (
+            <div className="space-y-4">
+              {/* KPI row */}
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+                <KpiCard label="Tasks Completed" value={String(totalTasksDone)} sub={`P1: ${p1Done} · P2: ${p2Done} · P3: ${p3Done}`} />
+                <KpiCard label="Focus Sessions" value={String(focusSessions)} sub={`${completedFocusSessions} completed`} />
+                <KpiCard label="Focus Time" value={totalFocusMin >= 60 ? `${Math.floor(totalFocusMin / 60)}h ${totalFocusMin % 60}m` : `${totalFocusMin}m`} />
+                <KpiCard label="Avg Completion" value={avgCompletionRate !== null ? `${avgCompletionRate}%` : '—'} />
+                <KpiCard label="Active Days" value={String(csSummaries.length)} sub="days with tasks" />
+              </div>
+
+              {/* Focus sessions chart */}
+              {csFocus.length > 1 && (
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={csFocus.map((m) => ({ date: m.date, minutes: m.metricValue ?? 0 }))}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
+                      <YAxis tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
+                      <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }} />
+                      <Bar dataKey="minutes" fill="var(--accent)" radius={[4, 4, 0, 0]} name="Focus (min)" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+          )
+        })()}
+      </div>
     </ErrorBoundary>
   )
 }

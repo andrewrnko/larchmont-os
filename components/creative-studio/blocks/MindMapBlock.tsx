@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCanvasStore, uid } from '../store'
+import { useSlashMenu } from '../SlashMenu'
 import type { MindMapBlock, MindMapNode } from '../types'
 import { BlockWrapper } from '../BlockWrapper'
 import { Plus, X } from 'lucide-react'
@@ -36,6 +37,11 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
     cursor: { x: number; y: number }
   } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const modalTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const { handleKeyDown: slashKeyDown, menu: slashMenu } = useSlashMenu(
+    modalTextareaRef,
+    (val) => { if (modalId) setNodes((ns) => ns.map((x) => (x.id === modalId ? { ...x, notes: val } : x))) }
+  )
 
   const setNodes = (fn: (n: MindMapNode[]) => MindMapNode[]) => {
     updateBlock(block.id, { nodes: fn(block.nodes) })
@@ -364,6 +370,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                     <div className="flex-1">
                       <div className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Mind Map Node</div>
                       <input
+                        autoFocus
                         className="mt-1 w-full bg-transparent text-2xl font-bold text-white outline-none"
                         defaultValue={modalNode.label}
                         placeholder="Node title…"
@@ -389,15 +396,17 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
 
                   {/* Body */}
                   <textarea
-                    autoFocus
+                    ref={modalTextareaRef}
                     key={modalNode.id}
                     defaultValue={modalNode.notes ?? ''}
-                    placeholder="Write your ideas, sub-notes, action items, detailed breakdown — anything about this node…"
+                    placeholder="Type / for commands… Write ideas, sub-notes, action items…"
                     className="flex-1 resize-none bg-transparent p-6 text-[15px] leading-relaxed text-white outline-none placeholder:text-neutral-600"
                     onBlur={(e) =>
                       setNodes((ns) => ns.map((x) => (x.id === modalNode.id ? { ...x, notes: e.target.value } : x)))
                     }
+                    onKeyDown={slashKeyDown}
                   />
+                  {slashMenu}
                 </motion.div>
               </motion.div>
             )}

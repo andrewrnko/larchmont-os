@@ -125,29 +125,39 @@ export function useDraggable(blockId: string, opts?: { disabled?: boolean }) {
       if (!block || block.locked) return
 
       e.stopPropagation()
-      e.preventDefault() // prevent native text selection during drag
+      e.preventDefault()
       bringToFront(blockId)
-      if (!e.shiftKey) setSelection([blockId])
+      // If this block is already in a multi-selection, keep it. Otherwise select just this one.
+      const isInSelection = cs.selection.includes(blockId)
+      if (!e.shiftKey && !isInSelection) setSelection([blockId])
       pushHistorySnapshot()
 
-      // Disable text selection globally while dragging
       document.body.style.userSelect = 'none'
 
       const scale = board.viewport.scale
       const startX = e.clientX
       const startY = e.clientY
-      const origX = block.x
-      const origY = block.y
+
+      // Capture original positions of ALL selected blocks for group move
+      const sel = isInSelection ? cs.selection : [blockId]
+      const origins = sel.map((id) => {
+        const b = board.blocks.find((x) => x.id === id)
+        return { id, x: b?.x ?? 0, y: b?.y ?? 0 }
+      })
 
       const onMove = (ev: PointerEvent) => {
         ev.preventDefault()
-        let nx = origX + (ev.clientX - startX) / scale
-        let ny = origY + (ev.clientY - startY) / scale
-        if (snapToGrid) {
-          nx = Math.round(nx / gridSize) * gridSize
-          ny = Math.round(ny / gridSize) * gridSize
+        const dx = (ev.clientX - startX) / scale
+        const dy = (ev.clientY - startY) / scale
+        for (const orig of origins) {
+          let nx = orig.x + dx
+          let ny = orig.y + dy
+          if (snapToGrid) {
+            nx = Math.round(nx / gridSize) * gridSize
+            ny = Math.round(ny / gridSize) * gridSize
+          }
+          updateBlock(orig.id, { x: nx, y: ny })
         }
-        updateBlock(blockId, { x: nx, y: ny })
       }
       const onUp = () => {
         window.removeEventListener('pointermove', onMove)

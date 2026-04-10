@@ -1,13 +1,18 @@
-// Storyboard frame: image | notes split. Number badge. Frames stored inside one block.
+// Storyboard block — frames with image + notes.
+// - Images use object-contain so they don't get cropped
+// - Notes auto-format bullets: pressing Enter after "- " continues the bullet
+// - Each frame has an "Open" button → full-page modal for detailed notes
+// - Bigger text, scales better when block is resized
 
 'use client'
 
-import { useRef } from 'react'
-import { useCanvasStore } from '../store'
-import type { StoryboardBlock } from '../types'
+import { useRef, useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useCanvasStore, uid } from '../store'
+import type { StoryboardBlock, StoryboardFrame } from '../types'
 import { BlockWrapper } from '../BlockWrapper'
-import { uid } from '../store'
-import { Plus, Film } from 'lucide-react'
+import { Plus, Film, ArrowRight, X } from 'lucide-react'
 
 interface Props {
   block: StoryboardBlock
@@ -17,8 +22,12 @@ interface Props {
 export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
   const updateBlock = useCanvasStore((s) => s.updateBlock)
   const seqRef = useRef(false)
+  const [openFrameId, setOpenFrameId] = useState<string | null>(null)
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
 
-  const setFrames = (fn: (frames: typeof block.frames) => typeof block.frames) => {
+  useEffect(() => { setPortalTarget(document.body) }, [])
+
+  const setFrames = (fn: (frames: StoryboardFrame[]) => StoryboardFrame[]) => {
     updateBlock(block.id, { frames: fn(block.frames) })
   }
 
@@ -30,9 +39,8 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
   }
 
   const sequence = () => {
-    // Simple flag: widen block horizontally based on frame count
     if (!seqRef.current) {
-      updateBlock(block.id, { w: Math.max(block.w, block.frames.length * 240 + 24), y: 50 })
+      updateBlock(block.id, { w: Math.max(block.w, block.frames.length * 280 + 32), y: 50 })
       seqRef.current = true
     } else {
       seqRef.current = false
@@ -47,74 +55,191 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
     reader.readAsDataURL(file)
   }
 
+  // Auto-bullet: when user presses Enter and the current line starts with "- ", continue with "- "
+  const handleNotesKey = (e: React.KeyboardEvent<HTMLTextAreaElement>, frameId: string) => {
+    if (e.key === 'Enter') {
+      const ta = e.currentTarget
+      const val = ta.value
+      const pos = ta.selectionStart
+      const lineStart = val.lastIndexOf('\n', pos - 1) + 1
+      const line = val.slice(lineStart, pos)
+      if (line.startsWith('- ') && line.trim() !== '-') {
+        e.preventDefault()
+        const before = val.slice(0, pos)
+        const after = val.slice(pos)
+        const newVal = before + '\n- ' + after
+        ta.value = newVal
+        ta.selectionStart = ta.selectionEnd = pos + 3
+        setFrames((f) => f.map((fr) => (fr.id === frameId ? { ...fr, notes: newVal } : fr)))
+      }
+    }
+  }
+
+  const openFrame = openFrameId ? block.frames.find((f) => f.id === openFrameId) : null
+
   return (
-    <BlockWrapper block={block} kind="storyboard" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141412] shadow-lg">
-        <div data-no-drag className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#1a1a18] px-2 py-1">
-          <span className="font-mono text-[11px] text-amber-400">STORYBOARD</span>
-          <div className="flex gap-1">
-            <button
-              className="flex items-center gap-1 rounded bg-[#2a2a2a] px-2 py-0.5 text-[10px] text-white hover:bg-[#3a3a3a]"
-              onClick={(e) => {
-                e.stopPropagation()
-                sequence()
-              }}
-            >
-              <Film size={10} /> Sequence
-            </button>
-            <button
-              className="flex items-center gap-1 rounded bg-amber-600 px-2 py-0.5 text-[10px] text-black hover:bg-amber-500"
-              onClick={(e) => {
-                e.stopPropagation()
-                addFrame()
-              }}
-            >
-              <Plus size={10} /> Frame
-            </button>
+    <>
+      <BlockWrapper block={block} kind="storyboard" onContextMenu={onContextMenu}>
+        <div className="flex h-full w-full flex-col overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141412] shadow-lg">
+          {/* Header */}
+          <div data-no-drag className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#1a1a18] px-3 py-1.5">
+            <span className="font-mono text-xs text-amber-400">STORYBOARD</span>
+            <div className="flex gap-1">
+              <button
+                className="flex items-center gap-1 rounded bg-[#2a2a2a] px-2 py-1 text-[11px] text-white hover:bg-[#3a3a3a]"
+                onClick={(e) => { e.stopPropagation(); sequence() }}
+              >
+                <Film size={11} /> Sequence
+              </button>
+              <button
+                className="flex items-center gap-1 rounded bg-amber-600 px-2 py-1 text-[11px] text-black hover:bg-amber-500"
+                onClick={(e) => { e.stopPropagation(); addFrame() }}
+              >
+                <Plus size={11} /> Frame
+              </button>
+            </div>
+          </div>
+
+          {/* Frames */}
+          <div data-no-drag className="flex flex-1 gap-3 overflow-auto p-3">
+            {block.frames.map((frame, idx) => (
+              <div key={frame.id} className="flex w-64 shrink-0 flex-col rounded-md border border-[#2a2a2a] bg-[#0e0e0d]">
+                {/* Frame header */}
+                <div className="flex items-center justify-between border-b border-[#2a2a2a] px-3 py-1.5">
+                  <span className="font-mono text-[11px] font-medium text-amber-500">
+                    FRAME {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setOpenFrameId(frame.id) }}
+                    className="flex items-center gap-1 rounded bg-amber-600/20 px-1.5 py-0.5 text-[10px] text-amber-400 hover:bg-amber-600/40"
+                    title="Open detailed notes"
+                  >
+                    Open <ArrowRight size={9} />
+                  </button>
+                </div>
+
+                {/* Image + notes side by side */}
+                <div className="flex flex-1 gap-2 p-2" style={{ minHeight: 120 }}>
+                  {/* Image area */}
+                  <label
+                    className="relative flex w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[11px] text-neutral-500"
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      const f = e.dataTransfer.files[0]
+                      if (f) loadImage(frame.id, f)
+                    }}
+                    onDragOver={(e) => e.preventDefault()}
+                  >
+                    {frame.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={frame.image} alt="" className="h-full w-full object-contain" draggable={false} />
+                    ) : (
+                      <span className="p-2 text-center">Drop or click to add image</span>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={(e) => e.target.files?.[0] && loadImage(frame.id, e.target.files[0])}
+                    />
+                  </label>
+
+                  {/* Notes area with auto-bullet */}
+                  <textarea
+                    className="w-1/2 resize-none rounded bg-black/40 p-2 text-[13px] leading-relaxed text-white outline-none placeholder:text-neutral-600"
+                    placeholder="- Add notes…"
+                    defaultValue={frame.notes}
+                    onBlur={(e) =>
+                      setFrames((f) => f.map((fr) => (fr.id === frame.id ? { ...fr, notes: e.target.value } : fr)))
+                    }
+                    onKeyDown={(e) => handleNotesKey(e, frame.id)}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <div data-no-drag className="flex flex-1 gap-2 overflow-auto p-2">
-          {block.frames.map((frame, idx) => (
-            <div key={frame.id} className="flex w-56 shrink-0 flex-col rounded border border-[#2a2a2a] bg-[#0e0e0d]">
-              <div className="flex items-center justify-between border-b border-[#2a2a2a] px-2 py-1">
-                <span className="font-mono text-[10px] text-amber-500">FRAME {String(idx + 1).padStart(2, '0')}</span>
-              </div>
-              <div className="flex flex-1 gap-1 p-1">
-                <label
-                  className="relative flex h-full w-1/2 cursor-pointer items-center justify-center overflow-hidden rounded bg-black/40 text-[10px] text-neutral-600"
-                  onDrop={(e) => {
-                    e.preventDefault()
-                    const f = e.dataTransfer.files[0]
-                    if (f) loadImage(frame.id, f)
-                  }}
-                  onDragOver={(e) => e.preventDefault()}
-                >
-                  {frame.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={frame.image} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    'drop image'
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={(e) => e.target.files?.[0] && loadImage(frame.id, e.target.files[0])}
+      </BlockWrapper>
+
+      {/* Frame detail modal — portaled to body */}
+      {portalTarget && createPortal(
+        <AnimatePresence>
+          {openFrame && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80"
+              onClick={(e) => { if (e.target === e.currentTarget) setOpenFrameId(null) }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 20 }}
+                className="flex h-[80vh] w-[min(800px,92vw)] flex-col overflow-hidden rounded-lg border border-amber-700/60 bg-[#0a0a0a] shadow-[0_0_80px_rgba(245,158,11,0.2)]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between border-b border-[#2a2a2a] px-6 py-4">
+                  <div>
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Storyboard Frame</div>
+                    <input
+                      className="mt-1 w-full bg-transparent text-2xl font-bold text-white outline-none"
+                      defaultValue={openFrame.label}
+                      onBlur={(e) =>
+                        setFrames((f) => f.map((fr) => (fr.id === openFrame.id ? { ...fr, label: e.target.value } : fr)))
+                      }
+                    />
+                  </div>
+                  <button onClick={() => setOpenFrameId(null)} className="text-neutral-500 hover:text-white">
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Image preview */}
+                {openFrame.image && (
+                  <div className="border-b border-[#2a2a2a] bg-black/40 p-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={openFrame.image} alt="" className="mx-auto max-h-48 rounded object-contain" />
+                  </div>
+                )}
+
+                {/* Quick notes (from card) */}
+                <div className="border-b border-[#2a2a2a] px-6 py-3">
+                  <div className="mb-1 font-mono text-[10px] uppercase text-neutral-500">Quick Notes</div>
+                  <textarea
+                    defaultValue={openFrame.notes}
+                    placeholder="- Bullet notes…"
+                    className="w-full resize-none bg-transparent text-[13px] leading-relaxed text-white outline-none placeholder:text-neutral-600"
+                    rows={3}
+                    onBlur={(e) =>
+                      setFrames((f) => f.map((fr) => (fr.id === openFrame.id ? { ...fr, notes: e.target.value } : fr)))
+                    }
+                    onKeyDown={(e) => handleNotesKey(e, openFrame.id)}
                   />
-                </label>
-                <textarea
-                  className="h-full w-1/2 resize-none rounded bg-black/40 p-1 text-[11px] text-white outline-none"
-                  placeholder="notes…"
-                  defaultValue={frame.notes}
-                  onBlur={(e) =>
-                    setFrames((f) => f.map((fr) => (fr.id === frame.id ? { ...fr, notes: e.target.value } : fr)))
-                  }
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </BlockWrapper>
+                </div>
+
+                {/* Detailed notes */}
+                <div className="flex-1 overflow-auto px-6 py-4">
+                  <div className="mb-2 font-mono text-[10px] uppercase text-neutral-500">Detailed Notes</div>
+                  <textarea
+                    autoFocus
+                    key={openFrame.id}
+                    defaultValue={openFrame.detailedNotes ?? ''}
+                    placeholder="Write in-depth scene breakdown, direction notes, dialogue, action beats…"
+                    className="h-full min-h-[200px] w-full resize-none bg-transparent text-[15px] leading-relaxed text-white outline-none placeholder:text-neutral-600"
+                    onBlur={(e) =>
+                      setFrames((f) =>
+                        f.map((fr) => (fr.id === openFrame.id ? { ...fr, detailedNotes: e.target.value } : fr))
+                      )
+                    }
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        portalTarget
+      )}
+    </>
   )
 }

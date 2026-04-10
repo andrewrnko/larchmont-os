@@ -418,10 +418,14 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
         color: '#1a1a1a',
         content: [{ id: uid(), type: 'p', text: '' }],
       }
+    case 'transcript':
+      return { ...base, kind: 'transcript', w: 400, h: 300, title: 'Transcript', transcript: '', source: '' }
+    case 'assistant':
+      return { ...base, kind: 'assistant', w: 380, h: 420, messages: [], label: 'AI Assistant' }
     case 'timeline':
       return { ...base, kind: 'timeline', w: 560, h: 140 }
     case 'embed':
-      return { ...base, kind: 'embed', w: 360, h: 220 }
+      return { ...base, kind: 'embed', w: 300, h: 160, url: '', title: '', description: '', favicon: '', image: '' }
     case 'section':
       return { ...base, kind: 'section', w: 480, h: 320, label: 'Section' }
     default:
@@ -549,10 +553,17 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   },
 
   toggleDone: (id) => {
+    const s = get()
+    const task = s.tasks.find((t) => t.id === id)
+    const nowDone = task ? !task.done : false
     set((s) => ({
       tasks: s.tasks.map((t) => (t.id === id ? { ...t, done: !t.done, completedAt: !t.done ? Date.now() : undefined } : t)),
     }))
     persistPlanner()
+    // Track to analytics
+    if (task && nowDone) {
+      import('./tracking').then((m) => m.trackTaskCompleted({ rank: task.rank, title: task.title, estimateMin: task.estimateMin }))
+    }
   },
 
   setDrifting: (text) => {
@@ -566,9 +577,19 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   },
   stopFocus: (completed) => {
     const s = get()
-    if (completed && s.focus) {
+    if (s.focus) {
       const tid = s.focus.taskId
-      set({ tasks: s.tasks.map((t) => (t.id === tid ? { ...t, done: true, completedAt: Date.now() } : t)) })
+      const task = s.tasks.find((t) => t.id === tid)
+      const durationMs = Date.now() - s.focus.startedAt
+      if (completed) {
+        set({ tasks: s.tasks.map((t) => (t.id === tid ? { ...t, done: true, completedAt: Date.now() } : t)) })
+      }
+      // Track focus session to analytics
+      if (task) {
+        import('./tracking').then((m) =>
+          m.trackFocusSession({ taskTitle: task.title, rank: task.rank, durationMs, completed: !!completed })
+        )
+      }
     }
     set({ focus: null })
     persistPlanner()
@@ -585,6 +606,11 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       saveJSON(LS_LOG, log)
       set({ log })
     }
+    // Track daily summary to analytics
+    const completed = s.tasks.filter((t) => t.done).length
+    import('./tracking').then((m) =>
+      m.trackDailySummary({ totalTasks: s.tasks.length, completedTasks: completed, totalFocusMin: 0 })
+    )
     set({ tasks: [], drifting: '', driftingSince: null, focus: null, lastResetDate: today })
     persistPlanner()
   },

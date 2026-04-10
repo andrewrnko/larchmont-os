@@ -13,10 +13,14 @@ import { StoryboardFrameBlock } from './blocks/StoryboardFrameBlock'
 import { MindMapBlockView } from './blocks/MindMapBlock'
 import { PageBlockCard } from './blocks/PageBlockCard'
 import { PlaceholderBlock } from './blocks/PlaceholderBlock'
+import { TranscriptBlockView } from './blocks/TranscriptBlock'
+import { AssistantBlockView } from './blocks/AssistantBlock'
+import { EmbedBlockView } from './blocks/EmbedBlock'
 import { ConnectorLines } from './Connectors'
 import { ContextMenu, type ContextMenuState } from './ContextMenu'
 import type { ToolId } from './Toolbar'
 import { Grid3x3, Minus, Plus as PlusIcon } from 'lucide-react'
+import { TimerWidget } from './Timer'
 
 interface Props {
   tool: ToolId
@@ -129,34 +133,60 @@ export function Canvas({ tool, setTool }: Props) {
     return () => window.removeEventListener('keydown', onKey)
   }, [selection, removeBlocks])
 
-  // Paste image from clipboard
+  // Paste from clipboard — handles images, URLs, and plain text
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable) return
-      const item = Array.from(e.clipboardData?.items ?? []).find((i) => i.type.startsWith('image/'))
-      if (!item) return
-      const file = item.getAsFile()
-      if (!file) return
-      const reader = new FileReader()
-      reader.onload = () => {
-        const cs = useCanvasStore.getState()
-        const b = cs.boards.find((x) => x.id === cs.activeBoardId)
-        if (!b) return
-        const wx = (-b.viewport.x + window.innerWidth / 2) / b.viewport.scale
-        const wy = (-b.viewport.y + window.innerHeight / 2) / b.viewport.scale
-        const id = addBlockAt('image', wx, wy)
-        if (id) {
-          const img = new Image()
-          img.onload = () => {
-            useCanvasStore
-              .getState()
-              .updateBlock(id, { src: reader.result as string, naturalRatio: img.width / img.height })
+
+      const cs = useCanvasStore.getState()
+      const b = cs.boards.find((x) => x.id === cs.activeBoardId)
+      if (!b) return
+      const wx = (-b.viewport.x + window.innerWidth / 2) / b.viewport.scale
+      const wy = (-b.viewport.y + window.innerHeight / 2) / b.viewport.scale
+
+      // 1. Image file
+      const imageItem = Array.from(e.clipboardData?.items ?? []).find((i) => i.type.startsWith('image/'))
+      if (imageItem) {
+        e.preventDefault()
+        const file = imageItem.getAsFile()
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = () => {
+          const id = addBlockAt('image', wx, wy)
+          if (id) {
+            const img = new Image()
+            img.onload = () => {
+              useCanvasStore.getState().updateBlock(id, { src: reader.result as string, naturalRatio: img.width / img.height })
+            }
+            img.src = reader.result as string
           }
-          img.src = reader.result as string
         }
+        reader.readAsDataURL(file)
+        return
       }
-      reader.readAsDataURL(file)
+
+      // 2. Text content
+      const text = e.clipboardData?.getData('text/plain')?.trim()
+      if (!text) return
+      e.preventDefault()
+
+      // Check if it's a URL
+      const urlRegex = /^https?:\/\/\S+$/i
+      if (urlRegex.test(text)) {
+        // Create an embed block with the URL
+        const id = addBlockAt('embed', wx, wy)
+        if (id) {
+          useCanvasStore.getState().updateBlock(id, { url: text })
+        }
+        return
+      }
+
+      // Otherwise create a sticky note with the pasted text
+      const id = addBlockAt('sticky', wx, wy)
+      if (id) {
+        useCanvasStore.getState().updateBlock(id, { text })
+      }
     }
     window.addEventListener('paste', onPaste)
     return () => window.removeEventListener('paste', onPaste)
@@ -166,7 +196,7 @@ export function Canvas({ tool, setTool }: Props) {
   const handleCanvasClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('[data-block]')) return
     if (tool === 'select' || tool === 'pan' || tool === 'connector') return
-    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page']
+    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page', 'transcript', 'assistant']
     if (!placementKinds.includes(tool as BlockKind)) return
     const rect = containerRef.current!.getBoundingClientRect()
     const sx = e.clientX - rect.left
@@ -200,8 +230,17 @@ export function Canvas({ tool, setTool }: Props) {
     <div className="relative h-full w-full overflow-hidden bg-[#0a0a0a]">
       <div
         ref={containerRef}
-        className="absolute inset-0"
-        onClick={handleCanvasClick}
+        className="absolute inset-0 outline-none"
+        tabIndex={0}
+        onClick={(e) => {
+          // Focus the canvas so paste events fire — but not if clicking inside a block's input
+          const tag = (e.target as HTMLElement)?.tagName
+          const isInteractive = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable
+          if (!isInteractive && !(e.target as HTMLElement).closest('[data-block]')) {
+            containerRef.current?.focus()
+          }
+          handleCanvasClick(e)
+        }}
         onContextMenu={handleContextMenu}
         style={{
           cursor: connectDrag ? 'crosshair' : tool === 'pan' ? 'grab' : tool === 'connector' ? 'crosshair' : 'default',
@@ -278,6 +317,7 @@ export function Canvas({ tool, setTool }: Props) {
         <button className="text-[10px] hover:text-white" onClick={zoomToFit}>FIT</button>
       </div>
 
+      <TimerWidget />
       <ContextMenu state={ctxMenu} onClose={() => setCtxMenu(null)} onZoomToFit={zoomToFit} />
     </div>
   )
@@ -291,8 +331,10 @@ function renderBlock(block: AnyBlock, onContextMenu: (e: React.MouseEvent) => vo
     case 'storyboard':return <StoryboardFrameBlock key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'mindmap':   return <MindMapBlockView   key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'page':      return <PageBlockCard      key={block.id} block={block} onContextMenu={onContextMenu} />
+    case 'transcript':return <TranscriptBlockView key={block.id} block={block} onContextMenu={onContextMenu} />
+    case 'assistant': return <AssistantBlockView  key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'timeline':  return <PlaceholderBlock   key={block.id} block={block} label="Timeline" onContextMenu={onContextMenu} />
-    case 'embed':     return <PlaceholderBlock   key={block.id} block={block} label="Embed" onContextMenu={onContextMenu} />
+    case 'embed':     return <EmbedBlockView     key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'section':   return <PlaceholderBlock   key={block.id} block={block} label="Section" onContextMenu={onContextMenu} />
   }
 }

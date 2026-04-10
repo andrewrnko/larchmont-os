@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CheckSquare2, FolderKanban, Film, CalendarDays,
-  Check, AlertCircle, Sun
+  Check, AlertCircle, Sun, Sparkles
 } from 'lucide-react'
 import { useBriefingStore } from '@/lib/store'
-import { db, Task, Project, ContentItem, AppEvent, Campaign, InboxItem } from '@/lib/db'
+import { db, Task, Project, ContentItem, AppEvent, Campaign, InboxItem, PerformanceMetric } from '@/lib/db'
 import { StatCard } from '@/components/shared/stat-card'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { PriorityDot } from '@/components/shared/priority-dot'
@@ -52,6 +52,7 @@ export default function DashboardPage() {
   const [events, setEvents] = useState<AppEvent[]>([])
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [inboxItems, setInboxItems] = useState<InboxItem[]>([])
+  const [csMetrics, setCsMetrics] = useState<PerformanceMetric[]>([])
   const [loading, setLoading] = useState(true)
 
   const [completingTask, setCompletingTask] = useState<string | null>(null)
@@ -63,6 +64,7 @@ export default function DashboardPage() {
   const showBriefingBanner = mounted && !hasTodaysMorningBriefing() && !hasTodaysAfternoonBriefing()
 
   useEffect(() => {
+    const since7 = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)
     Promise.all([
       db.tasks.list(),
       db.projects.list(),
@@ -70,9 +72,11 @@ export default function DashboardPage() {
       db.events.list(),
       db.campaigns.list(),
       db.inbox.list(),
-    ]).then(([t, p, c, e, ca, i]) => {
+      db.metrics.list({ since: since7 }),
+    ]).then(([t, p, c, e, ca, i, m]) => {
       setTasks(t); setProjects(p); setContent(c)
       setEvents(e); setCampaigns(ca); setInboxItems(i)
+      setCsMetrics(m.filter((x) => x.metricType.startsWith('cs_')))
       setLoading(false)
     }).catch(console.error)
   }, [])
@@ -215,6 +219,28 @@ export default function DashboardPage() {
           icon={CalendarDays}
           subtext={nextEvent ? `In ${daysUntil(nextEvent.dateTime ?? '')} days · ${nextEvent.location ?? ''}` : 'No upcoming events'}
         />
+
+        {/* Creative Studio summary */}
+        <StatCard
+          label="Creative Studio"
+          value={(() => {
+            const done = csMetrics.filter((m) => m.metricType === 'cs_task_completed').length
+            return done > 0 ? `${done} done` : 'No activity'
+          })()}
+          icon={Sparkles}
+          subtext={(() => {
+            const focusMin = csMetrics
+              .filter((m) => m.metricType === 'cs_focus_session')
+              .reduce((s, m) => s + (m.metricValue ?? 0), 0)
+            const sessions = csMetrics.filter((m) => m.metricType === 'cs_focus_session').length
+            if (sessions === 0) return '7-day overview'
+            return `${focusMin}m focus · ${sessions} session${sessions !== 1 ? 's' : ''}`
+          })()}
+        >
+          <Link href="/creative-studio" className="mt-2 inline-block text-[12px] text-[var(--accent)] hover:underline">
+            Open Studio →
+          </Link>
+        </StatCard>
       </div>
 
       {/* ── Row 2: Today's Tasks + Projects Board ── */}

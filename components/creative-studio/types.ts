@@ -11,6 +11,8 @@ export type BlockKind =
   | 'timeline'
   | 'embed'
   | 'section'
+  | 'transcript'
+  | 'assistant'
 
 export interface BaseBlock {
   id: string
@@ -50,6 +52,7 @@ export interface StoryboardFrame {
   label: string
   image?: string
   notes: string
+  detailedNotes?: string
   order: number
 }
 
@@ -89,6 +92,25 @@ export interface PageBlock extends BaseBlock {
   content: SubPageBlock[]
 }
 
+export interface TranscriptBlock extends BaseBlock {
+  kind: 'transcript'
+  title: string
+  transcript: string
+  source?: string // e.g. "Client call 04/09", "Podcast ep 12"
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: number
+}
+
+export interface AssistantBlock extends BaseBlock {
+  kind: 'assistant'
+  messages: ChatMessage[]
+  label?: string
+}
+
 // Stubs (placeholders this session)
 export interface TimelineBlock extends BaseBlock {
   kind: 'timeline'
@@ -96,6 +118,10 @@ export interface TimelineBlock extends BaseBlock {
 export interface EmbedBlock extends BaseBlock {
   kind: 'embed'
   url?: string
+  title?: string
+  description?: string
+  favicon?: string
+  image?: string
 }
 export interface SectionBlock extends BaseBlock {
   kind: 'section'
@@ -112,6 +138,8 @@ export type AnyBlock =
   | TimelineBlock
   | EmbedBlock
   | SectionBlock
+  | TranscriptBlock
+  | AssistantBlock
 
 export interface Connector {
   id: string

@@ -83,10 +83,12 @@ export function DayHyperplanner() {
           }
         }}
       />
-      {isP1 && !task.done && (
+      {!task.done && (
         <button
           onClick={() => startFocus(task.id, task.estimateMin ?? 25)}
-          className="flex items-center gap-1 rounded bg-amber-500 px-2 py-1 text-[10px] font-medium text-black hover:bg-amber-400"
+          className={`flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium hover:opacity-80 ${
+            isP1 ? 'bg-amber-500 text-black' : 'bg-amber-500/20 text-amber-400'
+          }`}
           title="Start Focus"
         >
           <Play size={10} />
