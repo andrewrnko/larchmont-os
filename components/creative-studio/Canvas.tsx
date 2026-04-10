@@ -301,7 +301,7 @@ export function Canvas({ tool, setTool }: Props) {
           <Grid3x3 size={12} />
         </button>
         <button
-          className={`rounded px-1 text-[10px] ${snapToGrid ? 'text-amber-400' : ''}`}
+          className={`rounded px-1 text-[11px] ${snapToGrid ? 'text-amber-400' : ''}`}
           onClick={() => setSnapToGrid(!snapToGrid)}
           title="Snap to grid"
         >
@@ -315,7 +315,7 @@ export function Canvas({ tool, setTool }: Props) {
         <button onClick={() => setViewport({ ...viewport, scale: Math.min(4, viewport.scale + 0.1) })}>
           <PlusIcon size={12} />
         </button>
-        <button className="text-[10px] hover:text-white" onClick={zoomToFit}>FIT</button>
+        <button className="text-[11px] hover:text-white" onClick={zoomToFit}>FIT</button>
       </div>
 
       <TimerWidget />

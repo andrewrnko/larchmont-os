@@ -49,7 +49,7 @@ export function DailyRepeatables() {
     return (
       <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#0d0d0d] px-4 py-1">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Daily Repeatables</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-amber-500">Daily Repeatables</span>
           {total > 0 && (
             <span className="font-mono text-[10px] text-neutral-500">
               {todayChecked}/{total} · {pct}%
@@ -68,7 +68,7 @@ export function DailyRepeatables() {
       <div className="border-b border-[#2a2a2a] bg-[#0d0d0d] p-3">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Daily Repeatables</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-amber-500">Daily Repeatables</span>
             {total > 0 && (
               <div className="flex items-center gap-2">
                 <div className="h-1.5 w-20 rounded-full bg-[#2a2a2a]">
@@ -100,7 +100,7 @@ export function DailyRepeatables() {
               <div key={key} className="rounded-lg border border-[#2a2a2a] bg-[#111]">
                 <div className="flex items-center gap-2 border-b border-[#2a2a2a] px-3 py-1.5">
                   <Icon size={12} className="text-amber-500" />
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-400">{label}</span>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-neutral-400">{label}</span>
                   <span className="ml-auto font-mono text-[10px] text-neutral-600">{slotItems.filter((i) => isChecked(i.id)).length}/{slotItems.length}</span>
                 </div>
                 <div className="space-y-0.5 p-2">

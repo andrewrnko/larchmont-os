@@ -129,7 +129,7 @@ export function DayHyperplanner() {
   if (collapsed) {
     return (
       <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#0d0d0d] px-4 py-1">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Day Hyperplanner</span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-amber-500">Day Hyperplanner</span>
         <button onClick={() => setCollapsed(false)} className="text-neutral-500 hover:text-white">
           <ChevronDown size={14} />
         </button>
@@ -141,7 +141,7 @@ export function DayHyperplanner() {
     <>
       <div className="border-b border-[#2a2a2a] bg-[#0d0d0d] p-3">
         <div className="mb-2 flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Day Hyperplanner</span>
+          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-amber-500">Day Hyperplanner</span>
           <div className="flex items-center gap-2 text-[10px] text-neutral-500">
             <button onClick={() => setLogOpen(true)} className="flex items-center gap-1 hover:text-white">
               <Archive size={10} /> Yesterday
@@ -164,7 +164,7 @@ export function DayHyperplanner() {
         </div>
         {firstP1Open && (
           <div className="mt-2 flex items-center gap-2">
-            <span className="font-mono text-[10px] uppercase text-neutral-500">Currently drifting to</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-neutral-500">Currently drifting to</span>
             <input
               className="flex-1 rounded bg-[#141414] px-2 py-1 text-[11px] text-white outline-none"
               placeholder="what are you actually doing right now?"

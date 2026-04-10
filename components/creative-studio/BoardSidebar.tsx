@@ -120,7 +120,7 @@ export function BoardSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
   return (
     <div className="flex h-full w-56 flex-col border-r border-[#2a2a2a] bg-[#101010]">
       <div className="flex items-center justify-between border-b border-[#2a2a2a] px-2 py-2">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-amber-500">Boards</span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-amber-500">Boards</span>
         <div className="flex gap-1">
           <button
             className="text-neutral-500 hover:text-white"
@@ -191,7 +191,7 @@ export function BoardSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
         <div className="flex gap-1">
           <button
             onClick={handleExport}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded bg-[#1a1a1a] px-2 py-1.5 text-[11px] text-neutral-400 hover:bg-[#222] hover:text-white"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded bg-[#1a1a1a] px-2 py-1.5 text-[12px] text-neutral-400 hover:bg-[#222] hover:text-white"
             title="Export all boards as JSON"
           >
             <Download size={12} />
@@ -199,7 +199,7 @@ export function BoardSidebar({ collapsed, setCollapsed }: { collapsed: boolean; 
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded bg-[#1a1a1a] px-2 py-1.5 text-[11px] text-neutral-400 hover:bg-[#222] hover:text-white"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded bg-[#1a1a1a] px-2 py-1.5 text-[12px] text-neutral-400 hover:bg-[#222] hover:text-white"
             title="Import boards from JSON"
           >
             <Upload size={12} />

@@ -73,7 +73,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
           <div className="flex items-center gap-2">
             <CheckSquare size={14} className="text-amber-500" />
             <input
-              className="bg-transparent text-[13px] font-medium text-white outline-none"
+              className="bg-transparent text-[14px] font-medium text-white outline-none"
               defaultValue={block.label}
               onBlur={(e) => updateBlock(block.id, { label: e.target.value })}
             />
@@ -160,7 +160,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               ))}
             </div>
             <input
-              className="flex-1 rounded bg-[#141414] px-2 py-1.5 text-[12px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded bg-[#141414] px-2 py-1.5 text-[13px] text-white outline-none placeholder:text-neutral-600"
               placeholder="Add task…"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
