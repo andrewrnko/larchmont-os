@@ -105,6 +105,7 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
               {item('Add Storyboard Frame', () => addAt('storyboard'))}
               {item('Add Mind Map', () => addAt('mindmap'))}
               {item('Add Page Block', () => addAt('page'))}
+              {item('Add Task List', () => addAt('tasks'))}
               {item('Add Transcript', () => addAt('transcript'))}
               {item('Add AI Assistant', () => addAt('assistant'))}
               <div className="my-1 h-px bg-[#2a2a2a]" />

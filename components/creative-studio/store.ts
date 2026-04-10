@@ -418,6 +418,8 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
         color: '#1a1a1a',
         content: [{ id: uid(), type: 'p', text: '' }],
       }
+    case 'tasks':
+      return { ...base, kind: 'tasks', w: 320, h: 300, label: 'Task List', taskItems: [] }
     case 'transcript':
       return { ...base, kind: 'transcript', w: 400, h: 300, title: 'Transcript', transcript: '', source: '' }
     case 'assistant':

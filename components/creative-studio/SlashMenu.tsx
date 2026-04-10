@@ -1,40 +1,41 @@
 // Reusable slash command menu for any textarea.
-// Usage: wrap a textarea, pass its ref and value. When user types "/" at the
-// start of a line, this menu appears and inserts formatted text.
+// Inserts visual unicode prefixes that work in plain text (no markdown rendering needed).
 
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export interface SlashCommand {
   label: string
-  prefix: string      // inserted at line start
+  prefix: string
   description: string
 }
 
 const COMMANDS: SlashCommand[] = [
-  { label: 'Heading 1',   prefix: '# ',     description: 'Large heading' },
-  { label: 'Heading 2',   prefix: '## ',    description: 'Medium heading' },
-  { label: 'Heading 3',   prefix: '### ',   description: 'Small heading' },
-  { label: 'Bullet',      prefix: '- ',     description: 'Bullet list item' },
-  { label: 'To-do',       prefix: '[ ] ',   description: 'Checkbox item' },
-  { label: 'Numbered',    prefix: '1. ',    description: 'Numbered list item' },
-  { label: 'Quote',       prefix: '> ',     description: 'Block quote' },
-  { label: 'Divider',     prefix: '---\n',  description: 'Horizontal line' },
-  { label: 'Code',        prefix: '```\n',  description: 'Code block' },
+  { label: 'To-do',       prefix: '☐ ',      description: 'Checkbox item' },
+  { label: 'Done',        prefix: '☑ ',      description: 'Completed item' },
+  { label: 'Bullet',      prefix: '• ',      description: 'Bullet point' },
+  { label: 'Arrow',       prefix: '→ ',      description: 'Arrow item' },
+  { label: 'Numbered',    prefix: '1. ',     description: 'Numbered item' },
+  { label: 'Heading',     prefix: '▎ ',      description: 'Section heading' },
+  { label: 'Sub-heading', prefix: '  ▸ ',    description: 'Sub-section' },
+  { label: 'Quote',       prefix: '│ ',      description: 'Block quote' },
+  { label: 'Divider',     prefix: '────────────────\n', description: 'Horizontal line' },
+  { label: 'Note',        prefix: '📌 ',     description: 'Pinned note' },
+  { label: 'Warning',     prefix: '⚠️ ',     description: 'Warning callout' },
+  { label: 'Star',        prefix: '★ ',      description: 'Starred item' },
 ]
 
-interface Props {
-  textareaRef: React.RefObject<HTMLTextAreaElement | null>
-  onInsert: (newValue: string) => void
-}
-
-export function useSlashMenu(textareaRef: React.RefObject<HTMLTextAreaElement | null>, onInsert: (val: string) => void) {
+export function useSlashMenu(
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>,
+  onInsert: (val: string) => void
+) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ x: 0, y: 0 })
   const [filter, setFilter] = useState('')
   const [selected, setSelected] = useState(0)
+  const [slashStart, setSlashStart] = useState(0) // cursor position where "/" was typed
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const ta = textareaRef.current
@@ -45,10 +46,12 @@ export function useSlashMenu(textareaRef: React.RefObject<HTMLTextAreaElement | 
       const cursor = ta.selectionStart
       const lineStart = val.lastIndexOf('\n', cursor - 1) + 1
       const lineText = val.slice(lineStart, cursor)
-      // Only open if "/" is typed at start of line or after only whitespace
       if (lineText.trim() === '') {
         const rect = ta.getBoundingClientRect()
-        setPos({ x: rect.left + 12, y: rect.top + 24 })
+        // Position menu near cursor
+        const lines = val.slice(0, cursor).split('\n').length
+        setPos({ x: rect.left + 12, y: rect.top + Math.min(lines * 20, rect.height - 20) })
+        setSlashStart(cursor)
         setOpen(true)
         setFilter('')
         setSelected(0)
@@ -68,12 +71,12 @@ export function useSlashMenu(textareaRef: React.RefObject<HTMLTextAreaElement | 
 
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setSelected((s) => (s + 1) % filtered.length)
+      setSelected((s) => (s + 1) % Math.max(filtered.length, 1))
       return
     }
     if (e.key === 'ArrowUp') {
       e.preventDefault()
-      setSelected((s) => (s - 1 + filtered.length) % filtered.length)
+      setSelected((s) => (s - 1 + filtered.length) % Math.max(filtered.length, 1))
       return
     }
 
@@ -84,7 +87,6 @@ export function useSlashMenu(textareaRef: React.RefObject<HTMLTextAreaElement | 
       return
     }
 
-    // Build filter from characters after "/"
     if (e.key === 'Backspace') {
       if (filter.length === 0) {
         setOpen(false)
@@ -106,22 +108,17 @@ export function useSlashMenu(textareaRef: React.RefObject<HTMLTextAreaElement | 
     if (!ta) return
     const val = ta.value
     const cursor = ta.selectionStart
-    const lineStart = val.lastIndexOf('\n', cursor - 1) + 1
-    // Replace from lineStart to cursor (the "/" + any filter chars) with the prefix
+    // Find the "/" character and any filter text after it
+    const lineStart = val.lastIndexOf('\n', slashStart - 1) + 1
     const before = val.slice(0, lineStart)
-    const after = val.slice(cursor + 1) // +1 to eat the "/" character that triggered it
+    const after = val.slice(cursor + 1) // +1 for the next character after filter
     const newVal = before + cmd.prefix + after
+    ta.value = newVal
+    const newCursor = lineStart + cmd.prefix.length
+    ta.selectionStart = ta.selectionEnd = newCursor
+    ta.focus()
     onInsert(newVal)
     setOpen(false)
-    // Set cursor after prefix
-    setTimeout(() => {
-      if (ta) {
-        ta.value = newVal
-        const newCursor = lineStart + cmd.prefix.length
-        ta.selectionStart = ta.selectionEnd = newCursor
-        ta.focus()
-      }
-    }, 0)
   }
 
   const filtered = COMMANDS.filter((c) => c.label.toLowerCase().includes(filter.toLowerCase()))
@@ -133,9 +130,10 @@ export function useSlashMenu(textareaRef: React.RefObject<HTMLTextAreaElement | 
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
-          className="fixed z-[9999] w-52 overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141414] py-1 shadow-2xl"
+          className="fixed z-[9999] w-56 overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141414] py-1 shadow-2xl"
           style={{ left: pos.x, top: pos.y }}
         >
+          <div className="px-3 py-1 text-[9px] uppercase tracking-wider text-neutral-600">Insert format</div>
           {filtered.length === 0 && (
             <div className="px-3 py-2 text-[11px] text-neutral-500">No commands match</div>
           )}
@@ -147,11 +145,14 @@ export function useSlashMenu(textareaRef: React.RefObject<HTMLTextAreaElement | 
               }`}
               onMouseEnter={() => setSelected(i)}
               onMouseDown={(e) => {
-                e.preventDefault() // prevent textarea blur
+                e.preventDefault()
                 applyCommand(cmd)
               }}
             >
-              <span>{cmd.label}</span>
+              <span className="flex items-center gap-2">
+                <span className="w-5 text-center text-[13px]">{cmd.prefix.trim().slice(0, 2)}</span>
+                <span>{cmd.label}</span>
+              </span>
               <span className="text-[10px] text-neutral-600">{cmd.description}</span>
             </button>
           ))}

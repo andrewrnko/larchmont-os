@@ -13,6 +13,7 @@ export type BlockKind =
   | 'section'
   | 'transcript'
   | 'assistant'
+  | 'tasks'
 
 export interface BaseBlock {
   id: string
@@ -111,6 +112,21 @@ export interface AssistantBlock extends BaseBlock {
   label?: string
 }
 
+export interface TaskItem {
+  id: string
+  title: string
+  done: boolean
+  priority?: 1 | 2 | 3
+  createdAt: number
+  completedAt?: number
+}
+
+export interface TasksBlock extends BaseBlock {
+  kind: 'tasks'
+  label: string
+  taskItems: TaskItem[]
+}
+
 // Stubs (placeholders this session)
 export interface TimelineBlock extends BaseBlock {
   kind: 'timeline'
@@ -140,6 +156,7 @@ export type AnyBlock =
   | SectionBlock
   | TranscriptBlock
   | AssistantBlock
+  | TasksBlock
 
 export interface Connector {
   id: string

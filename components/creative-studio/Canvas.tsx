@@ -16,6 +16,7 @@ import { PlaceholderBlock } from './blocks/PlaceholderBlock'
 import { TranscriptBlockView } from './blocks/TranscriptBlock'
 import { AssistantBlockView } from './blocks/AssistantBlock'
 import { EmbedBlockView } from './blocks/EmbedBlock'
+import { TasksBlockView } from './blocks/TasksBlock'
 import { ConnectorLines } from './Connectors'
 import { ContextMenu, type ContextMenuState } from './ContextMenu'
 import type { ToolId } from './Toolbar'
@@ -196,7 +197,7 @@ export function Canvas({ tool, setTool }: Props) {
   const handleCanvasClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('[data-block]')) return
     if (tool === 'select' || tool === 'pan' || tool === 'connector') return
-    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page', 'transcript', 'assistant']
+    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page', 'transcript', 'assistant', 'tasks']
     if (!placementKinds.includes(tool as BlockKind)) return
     const rect = containerRef.current!.getBoundingClientRect()
     const sx = e.clientX - rect.left
@@ -331,6 +332,7 @@ function renderBlock(block: AnyBlock, onContextMenu: (e: React.MouseEvent) => vo
     case 'storyboard':return <StoryboardFrameBlock key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'mindmap':   return <MindMapBlockView   key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'page':      return <PageBlockCard      key={block.id} block={block} onContextMenu={onContextMenu} />
+    case 'tasks':     return <TasksBlockView      key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'transcript':return <TranscriptBlockView key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'assistant': return <AssistantBlockView  key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'timeline':  return <PlaceholderBlock   key={block.id} block={block} label="Timeline" onContextMenu={onContextMenu} />

@@ -4,10 +4,10 @@
 
 import { useRef, useState } from 'react'
 import Markdown from 'react-markdown'
-import { useCanvasStore, useActiveBoard } from '../store'
+import { useCanvasStore, useActiveBoard, uid } from '../store'
 import type {
   AssistantBlock, AnyBlock, TextBlock, StickyBlock, TranscriptBlock,
-  PageBlock, MindMapBlock, StoryboardBlock, ChatMessage,
+  PageBlock, MindMapBlock, StoryboardBlock, TasksBlock, ChatMessage,
 } from '../types'
 import { BlockWrapper } from '../BlockWrapper'
 import { Bot, Send, Loader2, Trash2 } from 'lucide-react'
@@ -35,6 +35,11 @@ function blockToText(block: AnyBlock): string {
       const s = block as StoryboardBlock
       const frames = s.frames.map((f) => `${f.label}: ${f.notes}${f.detailedNotes ? `\n${f.detailedNotes}` : ''}`).join('\n')
       return `[Storyboard]\n${frames}`
+    }
+    case 'tasks': {
+      const tk = block as TasksBlock
+      const items = tk.taskItems.map((t) => `${t.done ? '☑' : '☐'} ${t.priority ? `P${t.priority}` : ''} ${t.title}`).join('\n')
+      return `[Task List: ${tk.label}]\n${items || '(empty)'}`
     }
     case 'embed': {
       const e = block as import('../types').EmbedBlock
@@ -93,9 +98,47 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
         }),
       })
       const data = await res.json()
+      let responseText: string = data.response || data.error || 'No response'
+
+      // Check for task creation block in response
+      const taskMatch = responseText.match(/```tasks\n([\s\S]*?)```/)
+      if (taskMatch) {
+        try {
+          const taskData = JSON.parse(taskMatch[1]) as { title: string; priority?: number }[]
+          // Create a Tasks block on the canvas near the assistant
+          const addBlockAt = useCanvasStore.getState().addBlockAt
+          const taskBlockId = addBlockAt('tasks', block.x + block.w + 40, block.y)
+          if (taskBlockId && taskData.length > 0) {
+            const taskItems = taskData.map((t) => ({
+              id: uid(),
+              title: t.title,
+              done: false,
+              priority: (t.priority ?? 2) as 1 | 2 | 3,
+              createdAt: Date.now(),
+            }))
+            useCanvasStore.getState().updateBlock(taskBlockId, {
+              label: 'AI-Generated Tasks',
+              taskItems,
+            })
+            // Connect the new task block to this assistant
+            useCanvasStore.getState().addConnector({
+              id: uid(),
+              fromBlockId: block.id,
+              toBlockId: taskBlockId,
+              style: 'curved',
+              arrow: 'one',
+              color: '#e8a045',
+              weight: 2,
+            })
+          }
+        } catch {}
+        // Remove the tasks code block from the displayed message
+        responseText = responseText.replace(/```tasks\n[\s\S]*?```/, '✅ *Task list created on canvas*')
+      }
+
       const assistantMsg: ChatMessage = {
         role: 'assistant',
-        content: data.response || data.error || 'No response',
+        content: responseText,
         timestamp: Date.now(),
       }
       updateBlock(block.id, { messages: [...nextMessages, assistantMsg] })

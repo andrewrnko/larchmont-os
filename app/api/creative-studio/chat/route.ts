@@ -60,7 +60,13 @@ export async function POST(req: NextRequest) {
 CONNECTED BLOCK CONTENT:
 ${enrichedContext || '(No blocks connected yet — ask the user to connect blocks to you using the connector anchors)'}
 
-Be concise, direct, and helpful. Use markdown formatting (bold, lists, headings) for clarity. Reference specific content from the connected blocks when relevant.`
+Be concise, direct, and helpful. Use markdown formatting (bold, lists, headings) for clarity. Reference specific content from the connected blocks when relevant.
+
+TASK CREATION: When the user asks you to create a task list, make tasks, or generate action items, include a JSON block at the END of your response in this exact format:
+\`\`\`tasks
+[{"title":"Task name","priority":1},{"title":"Another task","priority":2}]
+\`\`\`
+Priority is 1, 2, or 3. This will auto-create a Tasks node on their canvas. Only include this when the user explicitly asks for tasks to be created.`
 
     const messages: Anthropic.MessageParam[] = [
       ...history.slice(-20).map((m) => ({

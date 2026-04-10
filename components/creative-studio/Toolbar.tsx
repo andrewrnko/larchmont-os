@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 import {
   MousePointer2, Hand, Type, StickyNote, ImageIcon, Film, GitBranch,
-  FileText, Link2, Clock, Globe, SquareDashed, FileAudio, Bot,
+  FileText, Link2, Clock, Globe, SquareDashed, FileAudio, Bot, CheckSquare,
 } from 'lucide-react'
 import type { BlockKind } from './types'
 
@@ -25,6 +25,7 @@ const TOOLS: { id: ToolId; label: string; shortcut: string; desc: string; icon: 
   { id: 'storyboard', label: 'Storyboard',     shortcut: 'F', desc: 'Frame-by-frame layout for video/ad planning',    icon: Film },
   { id: 'mindmap',    label: 'Mind Map',        shortcut: 'M', desc: 'Visual brainstorm — click nodes to write notes', icon: GitBranch },
   { id: 'page',       label: 'Page',            shortcut: 'P', desc: 'Full document with headings, lists, media',      icon: FileText },
+  { id: 'tasks',      label: 'Tasks',             shortcut: 'K', desc: 'Task list with checkboxes and focus timer',      icon: CheckSquare },
   { id: 'connector',  label: 'Connector',       shortcut: 'C', desc: 'Draw lines between blocks (also hover edges)',   icon: Link2 },
   { id: 'transcript', label: 'Transcript',      shortcut: 'R', desc: 'Paste audio transcripts for reference',          icon: FileAudio },
   { id: 'assistant',  label: 'AI Assistant',    shortcut: 'A', desc: 'Chat with AI about connected blocks',            icon: Bot },
@@ -44,7 +45,7 @@ export function Toolbar({ active, setActive }: Props) {
       const map: Record<string, ToolId> = {
         v: 'select', h: 'pan', t: 'text', s: 'sticky', i: 'image',
         f: 'storyboard', m: 'mindmap', p: 'page', c: 'connector',
-        r: 'transcript', a: 'assistant',
+        r: 'transcript', a: 'assistant', k: 'tasks',
       }
       const id = map[e.key.toLowerCase()]
       if (id) setActive(id)
