@@ -13,6 +13,7 @@ import { useCanvasStore, uid } from '../store'
 import type { StoryboardBlock, StoryboardFrame } from '../types'
 import { BlockWrapper } from '../BlockWrapper'
 import { Plus, Film, ArrowRight, X } from 'lucide-react'
+import { useSlashMenu } from '../SlashMenu'
 
 interface Props {
   block: StoryboardBlock
@@ -24,6 +25,10 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
   const seqRef = useRef(false)
   const [openFrameId, setOpenFrameId] = useState<string | null>(null)
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
+  const activeNotesRef = useRef<HTMLTextAreaElement>(null)
+  const { handleKeyDown: slashKeyDown, menu: slashMenu } = useSlashMenu(activeNotesRef, (val) => {
+    // The active frame's notes updated — we persist on blur, this just keeps the ref in sync
+  })
 
   useEffect(() => { setPortalTarget(document.body) }, [])
 
@@ -146,13 +151,15 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
 
                   {/* Notes area with auto-bullet */}
                   <textarea
+                    ref={(el) => { if (el && document.activeElement === el) (activeNotesRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el }}
                     className="w-1/2 resize-none rounded bg-black/40 p-2 text-[13px] leading-relaxed text-white outline-none placeholder:text-neutral-600"
-                    placeholder="- Add notes…"
+                    placeholder="Type / for commands…"
                     defaultValue={frame.notes}
+                    onFocus={(e) => { (activeNotesRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e.currentTarget }}
                     onBlur={(e) =>
                       setFrames((f) => f.map((fr) => (fr.id === frame.id ? { ...fr, notes: e.target.value } : fr)))
                     }
-                    onKeyDown={(e) => handleNotesKey(e, frame.id)}
+                    onKeyDown={(e) => { slashKeyDown(e); if (!e.defaultPrevented) handleNotesKey(e, frame.id) }}
                   />
                 </div>
               </div>
@@ -160,6 +167,8 @@ export function StoryboardFrameBlock({ block, onContextMenu }: Props) {
           </div>
         </div>
       </BlockWrapper>
+
+      {slashMenu}
 
       {/* Frame detail modal — portaled to body */}
       {portalTarget && createPortal(

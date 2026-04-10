@@ -117,7 +117,7 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
               createdAt: Date.now(),
             }))
             useCanvasStore.getState().updateBlock(taskBlockId, {
-              label: 'AI-Generated Tasks',
+              label: 'Next Steps',
               taskItems,
             })
             // Connect the new task block to this assistant
