@@ -1,0 +1,63 @@
+// Sticky note: plain text, 6 colors, compact.
+
+'use client'
+
+import { useState } from 'react'
+import { useCanvasStore } from '../store'
+import type { StickyBlock } from '../types'
+import { BlockWrapper } from '../BlockWrapper'
+
+const COLORS: Record<string, string> = {
+  yellow: '#f5d97a',
+  pink: '#f59ec4',
+  blue: '#8ec4f5',
+  green: '#9ed8a0',
+  orange: '#f5b07a',
+  purple: '#c79ef5',
+}
+
+interface Props {
+  block: StickyBlock
+  onContextMenu?: (e: React.MouseEvent) => void
+}
+
+export function StickyNoteBlock({ block, onContextMenu }: Props) {
+  const updateBlock = useCanvasStore((s) => s.updateBlock)
+  const [showPalette, setShowPalette] = useState(false)
+  const bg = COLORS[block.color] || COLORS.yellow
+
+  return (
+    <BlockWrapper block={block} kind="sticky" onContextMenu={onContextMenu}>
+      <div
+        className="relative h-full w-full rounded-sm shadow-lg"
+        style={{ background: bg, boxShadow: '0 6px 14px rgba(0,0,0,0.35)' }}
+      >
+        <div
+          data-no-drag
+          className="absolute right-1 top-1 z-10 flex gap-0.5 opacity-0 group-hover:opacity-100"
+        >
+          {(Object.keys(COLORS) as (keyof typeof COLORS)[]).map((c) => (
+            <button
+              key={c}
+              className="h-3 w-3 rounded-full border border-black/20"
+              style={{ background: COLORS[c] }}
+              onClick={(e) => {
+                e.stopPropagation()
+                updateBlock(block.id, { color: c as StickyBlock['color'] })
+              }}
+            />
+          ))}
+        </div>
+        <div
+          data-no-drag
+          contentEditable
+          suppressContentEditableWarning
+          className="h-full w-full whitespace-pre-wrap break-words p-3 pt-6 text-sm text-black/80 focus:outline-none"
+          onBlur={(e) => updateBlock(block.id, { text: e.currentTarget.innerText })}
+        >
+          {block.text}
+        </div>
+      </div>
+    </BlockWrapper>
+  )
+}

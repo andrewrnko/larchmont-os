@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Inbox, FolderKanban, FileEdit,
   Megaphone, ImageIcon, Library, Palette, CalendarDays, Film,
   Archive, Settings, Zap, ChevronLeft, ChevronRight, Bot, Mic,
-  Moon, BarChart2, TrendingUp,
+  Moon, BarChart2, TrendingUp, Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/lib/store'
@@ -33,6 +33,7 @@ const NAV_ITEMS: { href: string; label: string; icon: ElementType; badge?: boole
   { href: '/events', label: 'Events & Shoots', icon: CalendarDays },
   { href: '/content', label: 'Content Pipeline', icon: Film },
   { href: '/voice-notes', label: 'Voice Notes', icon: Mic },
+  { href: '/creative-studio', label: 'Creative Studio', icon: Sparkles },
 ]
 
 const BOTTOM_NAV = [

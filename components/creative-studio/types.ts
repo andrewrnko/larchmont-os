@@ -1,0 +1,161 @@
+// Creative Studio — shared types
+// All canvas blocks inherit from BaseBlock. Position is in canvas (world) space.
+
+export type BlockKind =
+  | 'text'
+  | 'sticky'
+  | 'image'
+  | 'storyboard'
+  | 'mindmap'
+  | 'page'
+  | 'timeline'
+  | 'embed'
+  | 'section'
+
+export interface BaseBlock {
+  id: string
+  kind: BlockKind
+  x: number
+  y: number
+  w: number
+  h: number
+  z: number
+  locked?: boolean
+  rotation?: number
+}
+
+export interface TextBlock extends BaseBlock {
+  kind: 'text'
+  html: string
+  bg: string // hex
+  autoHeight: boolean
+}
+
+export interface StickyBlock extends BaseBlock {
+  kind: 'sticky'
+  text: string
+  color: 'yellow' | 'pink' | 'blue' | 'green' | 'orange'
+}
+
+export interface ImageBlock extends BaseBlock {
+  kind: 'image'
+  src: string // data url or http
+  caption?: string
+  lockAspect: boolean
+  naturalRatio?: number
+}
+
+export interface StoryboardFrame {
+  id: string
+  label: string
+  image?: string
+  notes: string
+  order: number
+}
+
+export interface StoryboardBlock extends BaseBlock {
+  kind: 'storyboard'
+  frames: StoryboardFrame[]
+}
+
+export interface MindMapNode {
+  id: string
+  parentId: string | null
+  label: string
+  // position relative to block origin
+  dx: number
+  dy: number
+  shape: 'circle' | 'square' | 'pill'
+  color: string
+  collapsed?: boolean
+  notes?: string
+}
+
+export interface MindMapBlock extends BaseBlock {
+  kind: 'mindmap'
+  nodes: MindMapNode[]
+}
+
+export type SubPageBlock =
+  | { id: string; type: 'h1' | 'h2' | 'h3' | 'p' | 'bullet' | 'todo' | 'divider'; text: string; checked?: boolean }
+  | { id: string; type: 'image'; src: string }
+
+export interface PageBlock extends BaseBlock {
+  kind: 'page'
+  title: string
+  icon: string
+  color?: string
+  deadline?: string // ISO date
+  content: SubPageBlock[]
+}
+
+// Stubs (placeholders this session)
+export interface TimelineBlock extends BaseBlock {
+  kind: 'timeline'
+}
+export interface EmbedBlock extends BaseBlock {
+  kind: 'embed'
+  url?: string
+}
+export interface SectionBlock extends BaseBlock {
+  kind: 'section'
+  label?: string
+}
+
+export type AnyBlock =
+  | TextBlock
+  | StickyBlock
+  | ImageBlock
+  | StoryboardBlock
+  | MindMapBlock
+  | PageBlock
+  | TimelineBlock
+  | EmbedBlock
+  | SectionBlock
+
+export interface Connector {
+  id: string
+  fromBlockId: string
+  toBlockId: string
+  style: 'straight' | 'curved' | 'elbow'
+  arrow: 'none' | 'one' | 'both'
+  label?: string
+  color: string
+  weight: number
+}
+
+export interface Board {
+  id: string
+  name: string
+  icon: string // emoji
+  parentId: string | null
+  blocks: AnyBlock[]
+  connectors: Connector[]
+  viewport: { x: number; y: number; scale: number }
+  createdAt: number
+  updatedAt: number
+}
+
+// Day Hyperplanner types
+export interface PriorityTask {
+  id: string
+  rank: 1 | 2 | 3
+  title: string
+  estimateMin?: number
+  dueAt?: number
+  done: boolean
+  createdAt: number
+  completedAt?: number
+}
+
+export interface LogEntry {
+  date: string // YYYY-MM-DD
+  tasks: PriorityTask[]
+}
+
+export interface FocusSession {
+  taskId: string
+  startedAt: number
+  durationMin: number
+  active: boolean
+}
