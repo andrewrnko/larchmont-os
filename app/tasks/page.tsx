@@ -165,12 +165,12 @@ function TaskCard({ task, projects, onDelete, onTimerStart, onTimerStop }: TaskC
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {project && (
-          <span className="rounded-[4px] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)] truncate max-w-[100px]">
+          <span className="rounded-[4px] bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px] text-[var(--text-tertiary)] truncate max-w-[100px]">
             {project.name}
           </span>
         )}
         {task.dueDate && (
-          <span className={cn('text-[10px] tabular-nums', new Date(task.dueDate) < new Date() && task.status !== 'Done' ? 'text-red-400' : 'text-[var(--text-tertiary)]')}>
+          <span className={cn('text-[11px] tabular-nums', new Date(task.dueDate) < new Date() && task.status !== 'Done' ? 'text-red-400' : 'text-[var(--text-tertiary)]')}>
             {formatDate(task.dueDate)}
           </span>
         )}
@@ -179,7 +179,7 @@ function TaskCard({ task, projects, onDelete, onTimerStart, onTimerStop }: TaskC
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => { e.stopPropagation(); isActive ? onTimerStop(task.id) : onTimerStart(task.id) }}
             className={cn(
-              'ml-auto flex items-center gap-1 rounded-[4px] px-1.5 py-0.5 text-[10px] transition-all',
+              'ml-auto flex items-center gap-1 rounded-[4px] px-1.5 py-0.5 text-[11px] transition-all',
               isActive
                 ? 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
                 : 'bg-[var(--surface-2)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] opacity-0 group-hover:opacity-100'

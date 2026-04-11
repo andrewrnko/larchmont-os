@@ -37,7 +37,7 @@ export function FilterBar({ filters, active, onToggle, onClear, className }: Fil
             {f.count !== undefined && (
               <span
                 className={cn(
-                  'rounded-full px-1 text-[10px]',
+                  'rounded-full px-1 text-[11px]',
                   isActive ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : 'bg-[var(--surface-2)] text-[var(--text-tertiary)]'
                 )}
               >

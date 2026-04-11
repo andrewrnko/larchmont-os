@@ -144,7 +144,7 @@ function EventModal({ initial = EMPTY_FIELDS, onClose, onSave }: EventModalProps
     >
       <div className="w-full max-w-md rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">
+          <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">
             {initial.name ? 'Edit Event' : 'Add Event'}
           </h2>
           <button
@@ -495,7 +495,7 @@ export default function EventsPage() {
                         <div className="flex-shrink-0 w-10 text-center">
                           {day !== null ? (
                             <>
-                              <div className="text-[22px] font-bold leading-none text-[var(--text-primary)]">
+                              <div className="text-[16px] font-bold leading-none text-[var(--text-primary)]">
                                 {day}
                               </div>
                               <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">{monthAbbr}</div>
@@ -571,7 +571,7 @@ export default function EventsPage() {
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">
+            <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">
               {MONTH_NAMES[calMonth]} {calYear}
             </h2>
             <button
@@ -632,7 +632,7 @@ export default function EventsPage() {
                               key={evt.id}
                               title={evt.name}
                               className={cn(
-                                'truncate rounded-[3px] px-1 py-0.5 text-[10px] font-medium text-white leading-snug opacity-80',
+                                'truncate rounded-[3px] px-1 py-0.5 text-[11px] font-medium text-white leading-snug opacity-80',
                                 bgColor
                               )}
                             >
@@ -641,7 +641,7 @@ export default function EventsPage() {
                           )
                         })}
                         {dayEvents.length > 3 && (
-                          <div className="px-1 text-[10px] text-[var(--text-tertiary)]">
+                          <div className="px-1 text-[11px] text-[var(--text-tertiary)]">
                             +{dayEvents.length - 3} more
                           </div>
                         )}

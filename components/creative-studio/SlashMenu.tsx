@@ -170,16 +170,16 @@ export function useSlashMenu(
           style={{ left: menu.x, top: menu.y }}
           onMouseDown={(e) => e.stopPropagation()} // prevent the outside-click close
         >
-          <div className="px-3 py-1 text-[11px] uppercase tracking-[0.06em] text-neutral-600">
+          <div className="px-3 py-1 text-[13px] uppercase tracking-[0.06em] text-neutral-600">
             Turn into {menu.filter && <span className="text-amber-500">· {menu.filter}</span>}
           </div>
           {filtered.length === 0 && (
-            <div className="px-3 py-2 text-[13px] text-neutral-500">No match — press Esc</div>
+            <div className="px-3 py-2 text-[15px] text-neutral-500">No match — press Esc</div>
           )}
           {filtered.map((cmd, i) => (
             <button
               key={cmd.label}
-              className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] ${
+              className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] ${
                 i === menu.selected ? 'bg-amber-500/20 text-amber-300' : 'text-neutral-200 hover:bg-[#1a1a1a]'
               }`}
               onMouseEnter={() => setMenu((m) => ({ ...m, selected: i }))}
@@ -189,9 +189,9 @@ export function useSlashMenu(
                 applyCommand(cmd)
               }}
             >
-              <span className="w-5 text-center text-[13px] leading-none">{cmd.icon}</span>
+              <span className="w-5 text-center text-[15px] leading-none">{cmd.icon}</span>
               <span className="flex-1">{cmd.label}</span>
-              <span className="text-[11px] text-neutral-600">{cmd.description}</span>
+              <span className="text-[13px] text-neutral-600">{cmd.description}</span>
             </button>
           ))}
         </motion.div>

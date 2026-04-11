@@ -61,7 +61,7 @@ function LabelRow({ labelKey, value, defaultValue, onChange }: {
       <div className="w-52 flex-shrink-0">
         <p className="text-[11px] text-[var(--text-tertiary)] font-mono">{labelKey}</p>
         {isModified && (
-          <p className="text-[10px] text-[var(--accent)] mt-0.5">Modified</p>
+          <p className="text-[11px] text-[var(--accent)] mt-0.5">Modified</p>
         )}
       </div>
       <input
@@ -208,6 +208,76 @@ export default function SettingsPage() {
               </div>
             </div>
           ))}
+
+          {/* ── SIZE TEST — Cohesive Type Scale ── */}
+          <div className="rounded-[10px] border border-dashed border-amber-500/40 bg-[var(--surface)] p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-amber-500" />
+              <h2 className="text-[11px] font-medium uppercase tracking-[0.08em] text-amber-500">SIZE TEST — Cohesive Type Scale</h2>
+            </div>
+
+            {/* ── Scale Reference ── */}
+            <div className="mb-6 space-y-3 rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] p-4">
+              <p className="text-[16px] font-medium text-[var(--text-primary)]">16px — Section titles / Block headers</p>
+              <p className="text-[14px] text-[var(--text-primary)]">14px — Body text / Task text / Node text</p>
+              <p className="text-[13px] text-[var(--text-primary)]">13px — Secondary text / Placeholders / Input</p>
+              <p className="text-[12px] text-[var(--text-primary)]">12px — Labels / Badges / Captions / Counts</p>
+              <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--text-primary)]">11px — Uppercase tracking labels (DAY HYPERPLANNER etc)</p>
+            </div>
+
+            {/* ── Sample Components ── */}
+            <div className="space-y-5">
+
+              {/* Task List Row */}
+              <div>
+                <p className="mb-2 text-[11px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Task List Row</p>
+                <div className="rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] p-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-[14px] w-[14px] flex-shrink-0 items-center justify-center rounded-[3px] border border-[var(--border-strong)]" />
+                    <span className="flex-1 text-[14px] text-[var(--text-primary)]">Review brand deck for Larchmont launch</span>
+                    <span className="rounded-[4px] bg-red-500/10 px-1.5 py-0.5 text-[11px] font-medium text-red-400">P1</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mind Map Node */}
+              <div>
+                <p className="mb-2 text-[11px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Mind Map Node</p>
+                <div className="inline-block rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-[20px] py-[10px]">
+                  <span className="text-[14px] text-[var(--text-primary)]">Content Strategy</span>
+                </div>
+              </div>
+
+              {/* Storyboard Frame */}
+              <div>
+                <p className="mb-2 text-[11px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Storyboard Frame</p>
+                <div className="w-[200px] rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] overflow-hidden">
+                  <div className="aspect-video bg-[var(--surface)] flex items-center justify-center">
+                    <span className="text-[13px] text-[var(--text-tertiary)]">Drop media here</span>
+                  </div>
+                  <div className="px-3 py-2">
+                    <span className="text-[13px] text-[var(--text-primary)]">Scene 1 — Opening</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Header */}
+              <div>
+                <p className="mb-2 text-[11px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]">Card Header</p>
+                <div className="rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[16px] font-medium text-[var(--text-primary)]">Campaign Overview</span>
+                    <span className="text-[12px] text-[var(--text-tertiary)]">12 items</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div className="mt-5 rounded-[6px] bg-amber-500/5 border border-amber-500/20 px-3 py-2">
+              <p className="text-[12px] text-amber-400/80">Rule: max 5px between adjacent scale levels. Scale: 16 → 14 → 13 → 12 → 11</p>
+            </div>
+          </div>
 
           <div className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-5">
             <h2 className="mb-1 text-[14px] font-semibold text-[var(--text-primary)]">API Keys</h2>

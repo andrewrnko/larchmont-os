@@ -67,7 +67,7 @@ export function DayHyperplanner() {
         {task.done && <Check size={11} />}
       </button>
       <input
-        className={`flex-1 bg-transparent outline-none text-[13px] leading-[1.5] text-white ${
+        className={`flex-1 bg-transparent outline-none text-[16px] leading-[1.5] text-white ${
           task.done ? 'line-through' : ''
         }`}
         value={task.title}
@@ -86,7 +86,7 @@ export function DayHyperplanner() {
       {!task.done && (
         <button
           onClick={() => startFocus(task.id, task.estimateMin ?? 25)}
-          className={`flex items-center gap-1 rounded px-2 py-1 text-[13px] font-medium hover:opacity-80 ${
+          className={`flex items-center gap-1 rounded px-2 py-1 text-[15px] font-medium hover:opacity-80 ${
             isP1 ? 'bg-amber-500 text-black' : 'bg-amber-500/20 text-amber-400'
           }`}
           title="Start Focus"
@@ -110,7 +110,7 @@ export function DayHyperplanner() {
       >
         <div
           className={`mb-2 flex items-center justify-between font-mono font-medium ${
-            isP1 ? 'text-[11px] text-amber-500' : 'text-[11px] text-neutral-500'
+            isP1 ? 'text-[13px] text-amber-500' : 'text-[13px] text-neutral-500'
           } uppercase tracking-[0.06em]`}
         >
           <span>P{rank}</span>
@@ -129,7 +129,7 @@ export function DayHyperplanner() {
   if (collapsed) {
     return (
       <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#0d0d0d] px-4 py-1">
-        <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Day Hyperplanner</span>
+        <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Day Hyperplanner</span>
         <button onClick={() => setCollapsed(false)} className="text-neutral-500 hover:text-white">
           <ChevronDown size={14} />
         </button>
@@ -141,8 +141,8 @@ export function DayHyperplanner() {
     <>
       <div className="border-b border-[#2a2a2a] bg-[#0d0d0d] p-3">
         <div className="mb-2 flex items-center justify-between">
-          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Day Hyperplanner</span>
-          <div className="flex items-center gap-2 text-[13px] text-neutral-500">
+          <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Day Hyperplanner</span>
+          <div className="flex items-center gap-2 text-[15px] text-neutral-500">
             <button onClick={() => setLogOpen(true)} className="flex items-center gap-1 hover:text-white">
               <Archive size={10} /> Yesterday
             </button>
@@ -164,14 +164,14 @@ export function DayHyperplanner() {
         </div>
         {firstP1Open && (
           <div className="mt-2 flex items-center gap-2">
-            <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-neutral-500">Currently drifting to</span>
+            <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-neutral-500">Currently drifting to</span>
             <input
-              className="flex-1 rounded bg-[#141414] px-2 py-1 text-[13px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded bg-[#141414] px-2 py-1 text-[16px] text-white outline-none placeholder:text-neutral-600"
               placeholder="what are you actually doing right now?"
               value={drifting}
               onChange={(e) => setDrifting(e.target.value)}
             />
-            {warn && <span className="font-mono text-[11px] text-red-400">⚠ drifting &gt; 10min</span>}
+            {warn && <span className="font-mono text-[13px] text-red-400">⚠ drifting &gt; 10min</span>}
           </div>
         )}
       </div>
@@ -186,19 +186,19 @@ export function DayHyperplanner() {
             className="fixed right-0 top-0 z-[60] h-full w-80 border-l border-[#2a2a2a] bg-[#0a0a0a] p-4 shadow-2xl"
           >
             <div className="mb-3 flex items-center justify-between">
-              <span className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Archive</span>
+              <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Archive</span>
               <button onClick={() => setLogOpen(false)} className="text-neutral-500 hover:text-white">
                 <X size={14} />
               </button>
             </div>
-            {log.length === 0 && <div className="text-[11px] text-neutral-600">Nothing archived yet.</div>}
+            {log.length === 0 && <div className="text-[13px] text-neutral-600">Nothing archived yet.</div>}
             {log.map((entry) => (
               <div key={entry.date} className="mb-3">
-                <div className="mb-1 font-mono text-[11px] text-neutral-500">{entry.date}</div>
+                <div className="mb-1 font-mono text-[13px] text-neutral-500">{entry.date}</div>
                 {entry.tasks.map((t) => (
-                  <div key={t.id} className="flex items-center gap-2 text-[13px] leading-[1.3] text-neutral-300">
+                  <div key={t.id} className="flex items-center gap-2 text-[16px] leading-[1.3] text-neutral-300">
                     <span className={t.done ? 'text-amber-500' : 'text-neutral-600'}>{t.done ? '✓' : '○'}</span>
-                    <span className="font-mono text-[11px] text-neutral-600">P{t.rank}</span>
+                    <span className="font-mono text-[13px] text-neutral-600">P{t.rank}</span>
                     <span className={t.done ? 'line-through' : ''}>{t.title}</span>
                   </div>
                 ))}
@@ -228,7 +228,7 @@ function AddTaskInput({
       <input
         ref={inputRef}
         className={`flex-1 bg-transparent outline-none placeholder:text-neutral-600 ${
-          isP1 ? 'text-[13px] text-white' : 'text-[13px] text-neutral-300'
+          isP1 ? 'text-[16px] text-white' : 'text-[16px] text-neutral-300'
         }`}
         placeholder={isP1 ? 'Add a P1 priority…' : `Add P${rank}…`}
         value={val}

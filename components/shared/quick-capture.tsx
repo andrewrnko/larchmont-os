@@ -47,7 +47,7 @@ export function QuickCapture() {
       >
         <Zap className="h-4 w-4 flex-shrink-0" />
         <span>Quick Capture</span>
-        <kbd className="ml-auto rounded bg-[rgba(0,0,0,0.15)] px-1 font-mono text-[10px]">⌘⇧N</kbd>
+        <kbd className="ml-auto rounded bg-[rgba(0,0,0,0.15)] px-1 font-mono text-[11px]">⌘⇧N</kbd>
       </button>
 
       <AnimatePresence>

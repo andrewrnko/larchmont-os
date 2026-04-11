@@ -186,7 +186,7 @@ export default function AssistantPage() {
           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)]/10">
             <Bot className="h-4 w-4 text-[var(--accent)]" />
           </div>
-          <span className="text-[15px] font-semibold text-[var(--text-primary)]">Assistant</span>
+          <span className="text-[16px] font-semibold text-[var(--text-primary)]">Assistant</span>
         </div>
         {messages.filter((m) => !m.isStreaming).length > 0 && (
           <button

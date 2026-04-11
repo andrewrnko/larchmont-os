@@ -164,9 +164,9 @@ function ColorGrid({ colors }: { colors: ColorSwatch[] }) {
           />
           <div>
             <p className="text-[12px] font-medium text-[var(--text-primary)]">{c.name}</p>
-            <p className="font-mono text-[10px] text-[var(--text-tertiary)]">{c.hex}</p>
+            <p className="font-mono text-[11px] text-[var(--text-tertiary)]">{c.hex}</p>
             {c.role && (
-              <p className="text-[10px] text-[var(--text-tertiary)] leading-tight">{c.role}</p>
+              <p className="text-[11px] text-[var(--text-tertiary)] leading-tight">{c.role}</p>
             )}
           </div>
         </div>
@@ -192,7 +192,7 @@ function TypographyRow({ fonts }: { fonts: FontSpec[] }) {
           className="rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] p-4"
         >
           <span className={cn(
-            'mb-3 inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium',
+            'mb-3 inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[11px] font-medium',
             USAGE_COLOR[f.usage]
           )}>
             {f.usage}
@@ -225,7 +225,7 @@ function LogoPlaceholder({ primaryColor, name }: { primaryColor: string; name: s
       style={{ backgroundColor: primaryColor + '10' }}
     >
       <span
-        className="select-none text-[18px] font-bold tracking-tight"
+        className="select-none text-[16px] font-bold tracking-tight"
         style={{ color: primaryColor }}
       >
         [{name} Logo]

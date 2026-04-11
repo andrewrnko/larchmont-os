@@ -54,7 +54,7 @@ function PreSession({ onStart }: { onStart: () => void }) {
                 <Moon className="h-6 w-6 text-indigo-400" />
               </div>
             </div>
-            <h1 className="mb-1 text-[24px] font-bold text-[var(--text-primary)]">End of Day Debrief</h1>
+            <h1 className="mb-1 text-[16px] font-bold text-[var(--text-primary)]">End of Day Debrief</h1>
             <p className="text-[14px] text-[var(--text-tertiary)]">{today}</p>
             {todayDebrief && (
               <div className="mt-2 flex items-center justify-center gap-1.5 text-[12px] text-green-400">
@@ -71,7 +71,7 @@ function PreSession({ onStart }: { onStart: () => void }) {
               { label: 'Completion', value: mounted && total > 0 ? `${rate}%` : '—', highlight: rate >= 75 },
             ].map((s) => (
               <div key={s.label} className="bg-[var(--surface)] px-4 py-3 text-center">
-                <div className={cn('text-[20px] font-bold', s.highlight ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]')}>{s.value}</div>
+                <div className={cn('text-[16px] font-bold', s.highlight ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]')}>{s.value}</div>
                 <div className="text-[11px] text-[var(--text-tertiary)]">{s.label}</div>
               </div>
             ))}
@@ -80,7 +80,7 @@ function PreSession({ onStart }: { onStart: () => void }) {
           <div className="px-6 py-5">
             <button
               onClick={onStart}
-              className="flex w-full items-center justify-center gap-2 rounded-[8px] bg-indigo-500 py-3 text-[15px] font-semibold text-white hover:opacity-90 transition-opacity"
+              className="flex w-full items-center justify-center gap-2 rounded-[8px] bg-indigo-500 py-3 text-[14px] font-semibold text-white hover:opacity-90 transition-opacity"
             >
               <Moon className="h-4 w-4" />
               Start Debrief

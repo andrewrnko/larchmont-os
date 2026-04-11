@@ -155,7 +155,7 @@ export default function BriefsPage() {
                     {brief.tone.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-[4px] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[var(--text-tertiary)]"
+                        className="rounded-[4px] bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px] text-[var(--text-tertiary)]"
                       >
                         {tag}
                       </span>
@@ -178,7 +178,7 @@ export default function BriefsPage() {
                     </span>
                   )}
                   {projectName && (
-                    <span className="ml-auto max-w-[140px] truncate rounded-[4px] bg-[var(--accent-muted)] px-1.5 py-0.5 text-[10px] text-[var(--accent)]">
+                    <span className="ml-auto max-w-[140px] truncate rounded-[4px] bg-[var(--accent-muted)] px-1.5 py-0.5 text-[11px] text-[var(--accent)]">
                       {projectName}
                     </span>
                   )}

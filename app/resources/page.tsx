@@ -60,7 +60,7 @@ function ResourceModal({ initial, onClose, onSave }: {
         className="w-full max-w-lg rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl"
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">
+          <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">
             {initial?.title ? 'Edit Resource' : 'Add Resource'}
           </h2>
           <button onClick={onClose} className="rounded-[6px] p-1 text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] transition-colors">
@@ -235,7 +235,7 @@ export default function ResourcesPage() {
               )}
             >
               {cat}
-              <span className={cn('ml-1.5 rounded-full px-1 text-[10px]', isActive ? 'bg-[var(--accent)]/20 text-[var(--accent)]' : 'bg-[var(--surface-2)] text-[var(--text-tertiary)]')}>
+              <span className={cn('ml-1.5 rounded-full px-1 text-[11px]', isActive ? 'bg-[var(--accent)]/20 text-[var(--accent)]' : 'bg-[var(--surface-2)] text-[var(--text-tertiary)]')}>
                 {count}
               </span>
             </button>

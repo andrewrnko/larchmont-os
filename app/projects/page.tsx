@@ -458,7 +458,7 @@ export default function ProjectsPage() {
                   <div className="p-4">
                     <div className="mb-2 flex items-start justify-between gap-2">
                       <Link href={`/projects/${project.id}`}
-                        className="text-[15px] font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
+                        className="text-[16px] font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
                         {project.name}
                       </Link>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

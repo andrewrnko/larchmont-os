@@ -78,7 +78,7 @@ export function CompletionHeatmap({ data, days = 90 }: CompletionHeatmapProps) {
           {weeks.map((_, wi) => {
             const ml = monthLabels.find((m) => m.col === wi)
             return (
-              <div key={wi} className="w-3 text-[10px] text-[var(--text-tertiary)]">
+              <div key={wi} className="w-3 text-[11px] text-[var(--text-tertiary)]">
                 {ml?.label ?? ''}
               </div>
             )
@@ -89,7 +89,7 @@ export function CompletionHeatmap({ data, days = 90 }: CompletionHeatmapProps) {
           {/* Day labels */}
           <div className="mr-[3px] flex flex-col gap-[3px]">
             {DAYS.map((d, i) => (
-              <div key={i} className="flex h-3 items-center text-[9px] text-[var(--text-tertiary)]">{d}</div>
+              <div key={i} className="flex h-3 items-center text-[11px] text-[var(--text-tertiary)]">{d}</div>
             ))}
           </div>
 
@@ -121,11 +121,11 @@ export function CompletionHeatmap({ data, days = 90 }: CompletionHeatmapProps) {
 
         {/* Legend */}
         <div className="mt-2 flex items-center gap-2 pl-[22px]">
-          <span className="text-[10px] text-[var(--text-tertiary)]">Less</span>
+          <span className="text-[11px] text-[var(--text-tertiary)]">Less</span>
           {[0, 25, 50, 75, 100].map((r) => (
             <div key={r} className={cn('h-3 w-3 rounded-[2px]', getIntensity(r))} />
           ))}
-          <span className="text-[10px] text-[var(--text-tertiary)]">More</span>
+          <span className="text-[11px] text-[var(--text-tertiary)]">More</span>
         </div>
       </div>
     </div>

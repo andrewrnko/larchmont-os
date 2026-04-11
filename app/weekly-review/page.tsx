@@ -65,7 +65,7 @@ function PreSession({ onStart }: { onStart: () => void }) {
                 <BarChart2 className="h-6 w-6 text-violet-400" />
               </div>
             </div>
-            <h1 className="mb-1 text-[24px] font-bold text-[var(--text-primary)]">Weekly Review</h1>
+            <h1 className="mb-1 text-[16px] font-bold text-[var(--text-primary)]">Weekly Review</h1>
             <p className="text-[14px] text-[var(--text-tertiary)]">{weekStart} — {weekEnd}</p>
             {thisWeekReview && (
               <div className="mt-2 flex items-center justify-center gap-1.5 text-[12px] text-green-400">
@@ -82,7 +82,7 @@ function PreSession({ onStart }: { onStart: () => void }) {
               { label: 'Avg Rate', value: mounted && weekStats.avgRate > 0 ? `${weekStats.avgRate}%` : '—', highlight: weekStats.avgRate >= 70 },
             ].map((s) => (
               <div key={s.label} className="bg-[var(--surface)] px-4 py-3 text-center">
-                <div className={cn('text-[20px] font-bold', s.highlight ? 'text-violet-400' : 'text-[var(--text-primary)]')}>{s.value}</div>
+                <div className={cn('text-[16px] font-bold', s.highlight ? 'text-violet-400' : 'text-[var(--text-primary)]')}>{s.value}</div>
                 <div className="text-[11px] text-[var(--text-tertiary)]">{s.label}</div>
               </div>
             ))}
@@ -91,7 +91,7 @@ function PreSession({ onStart }: { onStart: () => void }) {
           <div className="px-6 py-5">
             <button
               onClick={onStart}
-              className="flex w-full items-center justify-center gap-2 rounded-[8px] bg-violet-500 py-3 text-[15px] font-semibold text-white hover:opacity-90 transition-opacity"
+              className="flex w-full items-center justify-center gap-2 rounded-[8px] bg-violet-500 py-3 text-[14px] font-semibold text-white hover:opacity-90 transition-opacity"
             >
               <BarChart2 className="h-4 w-4" />
               Start Weekly Review

@@ -112,7 +112,7 @@ function CampaignModal({ initial = EMPTY_FIELDS, onClose, onSave }: CampaignModa
     >
       <div className="w-full max-w-md rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">
+          <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">
             {initial.name ? 'Edit Campaign' : 'New Campaign'}
           </h2>
           <button
@@ -523,7 +523,7 @@ export default function CampaignsPage() {
             >
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div>
-                  <h3 className="text-[15px] font-semibold text-[var(--text-primary)] mb-2">{c.name}</h3>
+                  <h3 className="text-[16px] font-semibold text-[var(--text-primary)] mb-2">{c.name}</h3>
                   <div className="flex items-center gap-2 flex-wrap">
                     <GoalPill goal={c.goal} />
                     <StatusBadge status={c.status} />

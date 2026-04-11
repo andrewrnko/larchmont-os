@@ -188,7 +188,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
         className="relative h-full w-full rounded-md border border-[#2a2a2a] bg-[#101010] shadow-lg"
         style={{ overflow: 'visible' }}
       >
-        <div className="absolute left-3 top-2 z-10 font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Mind Map</div>
+        <div className="absolute left-3 top-2 z-10 font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Mind Map</div>
 
         {/* Edges (SVG) */}
         <svg className="pointer-events-none absolute inset-0 h-full w-full" style={{ overflow: 'visible' }}>
@@ -232,7 +232,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                 e.stopPropagation()
                 setMenuId(n.id)
               }}
-              className={`group/node absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer border-2 text-[13px] font-semibold text-black shadow-lg select-none ${shapeCls}`}
+              className={`group/node absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer border-2 text-[15px] font-semibold text-black shadow-lg select-none ${shapeCls}`}
               style={{
                 left: n.dx,
                 top: n.dy,
@@ -273,7 +273,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
               {/* Collapse/expand */}
               {hasChildren && (
                 <button
-                  className="absolute -bottom-4 left-1/2 h-6 w-6 -translate-x-1/2 rounded-full bg-black/80 text-[12px] text-white shadow border border-neutral-600"
+                  className="absolute -bottom-4 left-1/2 h-6 w-6 -translate-x-1/2 rounded-full bg-black/80 text-[14px] text-white shadow border border-neutral-600"
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -290,12 +290,12 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                   className="absolute left-full top-0 z-30 ml-2 flex flex-col gap-1 rounded-md bg-[#141414] p-2 text-white shadow-2xl border border-[#2a2a2a]"
                   onPointerDown={(e) => e.stopPropagation()}
                 >
-                  <div className="mb-1 text-[12px] font-mono uppercase tracking-[0.06em] text-neutral-500">Shape</div>
+                  <div className="mb-1 text-[14px] font-mono uppercase tracking-[0.06em] text-neutral-500">Shape</div>
                   <div className="flex gap-1">
                     {(['circle', 'square', 'pill'] as const).map((s) => (
                       <button
                         key={s}
-                        className="rounded bg-[#1a1a1a] px-2 py-1 text-[12px] hover:bg-[#222]"
+                        className="rounded bg-[#1a1a1a] px-2 py-1 text-[14px] hover:bg-[#222]"
                         onClick={() => {
                           setNodes((ns) => ns.map((x) => (x.id === n.id ? { ...x, shape: s } : x)))
                           setMenuId(null)
@@ -305,7 +305,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                       </button>
                     ))}
                   </div>
-                  <div className="mt-1 mb-1 text-[12px] font-mono uppercase tracking-[0.06em] text-neutral-500">Color</div>
+                  <div className="mt-1 mb-1 text-[14px] font-mono uppercase tracking-[0.06em] text-neutral-500">Color</div>
                   <div className="flex gap-1">
                     {COLORS.map((c) => (
                       <button
@@ -320,7 +320,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                     ))}
                   </div>
                   <button
-                    className="mt-1 rounded bg-red-900/80 px-2 py-1 text-[12px] text-red-300 hover:bg-red-800"
+                    className="mt-1 rounded bg-red-900/80 px-2 py-1 text-[14px] text-red-300 hover:bg-red-800"
                     onClick={() => {
                       // Recursively delete node and all descendants
                       const toDelete = new Set<string>()
@@ -368,10 +368,10 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                   {/* Header */}
                   <div className="flex items-center justify-between border-b border-[#2a2a2a] px-6 py-4">
                     <div className="flex-1">
-                      <div className="font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Mind Map Node</div>
+                      <div className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Mind Map Node</div>
                       <input
                         autoFocus
-                        className="mt-1 w-full bg-transparent text-[13px] font-semibold text-white outline-none"
+                        className="mt-1 w-full bg-transparent text-[24px] font-bold leading-[1.2] text-white outline-none"
                         defaultValue={modalNode.label}
                         placeholder="Node title…"
                         onBlur={(e) =>
@@ -400,7 +400,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                     key={modalNode.id}
                     defaultValue={modalNode.notes ?? ''}
                     placeholder="Type / for commands… Write ideas, sub-notes, action items…"
-                    className="flex-1 resize-none bg-transparent p-6 text-[13px] leading-[1.5] text-white outline-none placeholder:text-neutral-600"
+                    className="flex-1 resize-none bg-transparent p-6 text-[15px] leading-[1.5] text-white outline-none placeholder:text-neutral-600"
                     onBlur={(e) =>
                       setNodes((ns) => ns.map((x) => (x.id === modalNode.id ? { ...x, notes: e.target.value } : x)))
                     }

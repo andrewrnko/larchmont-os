@@ -43,7 +43,7 @@ export function StatCard({
               {label}
             </span>
           </div>
-          <div className="text-[24px] font-semibold leading-tight tracking-tight text-[var(--text-primary)]">
+          <div className="text-[16px] font-semibold leading-tight tracking-tight text-[var(--text-primary)]">
             {value}
           </div>
           {subtext && (

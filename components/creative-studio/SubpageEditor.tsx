@@ -333,7 +333,7 @@ export function SubpageEditor() {
               <img src={item.src} alt="" className="max-h-96 rounded" />
             ) : (
               <input
-                className="w-full rounded bg-[#1a1a1a] px-3 py-2 text-[13px] text-white outline-none placeholder:text-neutral-600"
+                className="w-full rounded bg-[#1a1a1a] px-3 py-2 text-[15px] text-white outline-none placeholder:text-neutral-600"
                 placeholder="Paste image URL and press Enter…"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -348,10 +348,10 @@ export function SubpageEditor() {
       )
     }
     const cls =
-      item.type === 'h1' ? 'text-[20px] font-semibold leading-[1.2]'
-      : item.type === 'h2' ? 'text-[17px] font-semibold leading-[1.2]'
-      : item.type === 'h3' ? 'text-[15px] font-semibold leading-[1.2]'
-      : 'text-[13px] leading-[1.5]'
+      item.type === 'h1' ? 'text-[22px] font-semibold leading-[1.2]'
+      : item.type === 'h2' ? 'text-[19px] font-semibold leading-[1.2]'
+      : item.type === 'h3' ? 'text-[17px] font-semibold leading-[1.2]'
+      : 'text-[15px] leading-[1.5]'
     // Compute numbered list index
     const numberedIndex = item.type === 'numbered'
       ? (() => {
@@ -373,8 +373,8 @@ export function SubpageEditor() {
         {...dropProps}
       >
         {dragHandle}
-        {item.type === 'bullet' && <span className="shrink-0 text-[13px] leading-[1.5] text-neutral-400 mr-1.5">•</span>}
-        {item.type === 'numbered' && <span className="shrink-0 min-w-[1.4em] text-right font-mono text-[13px] leading-[1.5] text-neutral-400 mr-1.5">{numberedIndex}.</span>}
+        {item.type === 'bullet' && <span className="shrink-0 text-[15px] leading-[1.5] text-neutral-400 mr-1.5">•</span>}
+        {item.type === 'numbered' && <span className="shrink-0 min-w-[1.4em] text-right font-mono text-[15px] leading-[1.5] text-neutral-400 mr-1.5">{numberedIndex}.</span>}
         {item.type === 'todo' && (
           <button
             onClick={() =>
@@ -386,7 +386,7 @@ export function SubpageEditor() {
               item.checked ? 'border-amber-500 bg-amber-500 text-black' : 'border-neutral-600'
             }`}
           >
-            {item.checked && <span className="text-[11px] leading-none">✓</span>}
+            {item.checked && <span className="text-[13px] leading-none">✓</span>}
           </button>
         )}
         <textarea
@@ -424,7 +424,7 @@ export function SubpageEditor() {
         <div className="sticky top-0 z-10 border-b border-[#2a2a2a] bg-black/70 px-6 py-3 backdrop-blur">
           <button
             onClick={() => openPage(null)}
-            className="flex items-center gap-2 text-[13px] text-neutral-500 hover:text-white"
+            className="flex items-center gap-2 text-[15px] text-neutral-500 hover:text-white"
           >
             <ChevronLeft size={12} /> Creative Studio / {board?.name} /{' '}
             <span className="text-white">{pageBlock.title}</span>
@@ -442,14 +442,14 @@ export function SubpageEditor() {
               {pageBlock.icon}
             </button>
             <input
-              className="flex-1 bg-transparent text-[20px] font-bold leading-[1.2] text-white outline-none"
+              className="flex-1 bg-transparent text-[24px] font-bold leading-[1.2] text-white outline-none"
               defaultValue={pageBlock.title}
               onBlur={(e) => updateBlock(pageBlock.id, { title: e.target.value })}
             />
           </div>
 
           {/* Properties bar */}
-          <div className="mb-6 flex flex-wrap items-center gap-4 text-[13px] text-neutral-500">
+          <div className="mb-6 flex flex-wrap items-center gap-4 text-[15px] text-neutral-500">
             <div className="flex items-center gap-2">
               <Calendar size={12} />
               <span>Due</span>
@@ -504,15 +504,15 @@ export function SubpageEditor() {
           {/* Connections list */}
           {connections.length > 0 && (
             <div className="mb-6 rounded border border-[#2a2a2a] bg-black/30 p-3">
-              <div className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.06em] text-amber-500">Linked to</div>
+              <div className="mb-2 font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Linked to</div>
               <div className="space-y-1">
                 {connections.map(({ connector, other }) => (
                   <button
                     key={connector.id}
                     onClick={() => centerOnBlock(other!.id)}
-                    className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[12px] text-neutral-300 hover:bg-amber-500/10"
+                    className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[14px] text-neutral-300 hover:bg-amber-500/10"
                   >
-                    <span className="font-mono text-[11px] uppercase text-neutral-500">{other!.kind}</span>
+                    <span className="font-mono text-[13px] uppercase text-neutral-500">{other!.kind}</span>
                     <span className="flex-1 truncate">
                       {('title' in other! ? (other as { title?: string }).title : null) ||
                         ('text' in other! ? (other as { text?: string }).text : null) ||
@@ -533,7 +533,7 @@ export function SubpageEditor() {
                 const lastItem = pageBlock.content[pageBlock.content.length - 1]
                 insertAfter(lastItem?.id ?? '', 'p')
               }}
-              className="mt-2 w-full rounded py-2 text-center text-[13px] text-neutral-600 hover:bg-[#1a1a1a] hover:text-neutral-400"
+              className="mt-2 w-full rounded py-2 text-center text-[15px] text-neutral-600 hover:bg-[#1a1a1a] hover:text-neutral-400"
             >
               + Add a line
             </button>
@@ -553,16 +553,16 @@ export function SubpageEditor() {
               }}
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <div className="px-3 py-1 text-[11px] uppercase tracking-[0.06em] text-neutral-600">
+              <div className="px-3 py-1 text-[13px] uppercase tracking-[0.06em] text-neutral-600">
                 Turn into {slashMenu.filter && <span className="text-amber-500">· {slashMenu.filter}</span>}
               </div>
               {filtered.length === 0 && (
-                <div className="px-3 py-2 text-[13px] text-neutral-500">No match — press Esc</div>
+                <div className="px-3 py-2 text-[15px] text-neutral-500">No match — press Esc</div>
               )}
               {filtered.map((t, i) => (
                 <button
                   key={t.type}
-                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] ${
+                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] ${
                     i === slashMenu.selected ? 'bg-amber-500/20 text-amber-300' : 'text-neutral-200 hover:bg-[#1a1a1a]'
                   }`}
                   onMouseEnter={() => setSlashMenu((m) => m ? { ...m, selected: i } : m)}
@@ -572,9 +572,9 @@ export function SubpageEditor() {
                     applySlashCommand(t.type, slashMenu.blockId)
                   }}
                 >
-                  <span className="w-5 text-center text-[13px] leading-none">{t.icon}</span>
+                  <span className="w-5 text-center text-[15px] leading-none">{t.icon}</span>
                   <span className="flex-1">{t.label}</span>
-                  <span className="text-[11px] text-neutral-600">{t.description}</span>
+                  <span className="text-[13px] text-neutral-600">{t.description}</span>
                 </button>
               ))}
             </div>
@@ -595,15 +595,15 @@ export function SubpageEditor() {
               {!blockMenu.showTurnInto ? (
                 <>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] text-neutral-200 hover:bg-[#1a1a1a]"
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] text-neutral-200 hover:bg-[#1a1a1a]"
                     onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setBlockMenu((m) => m ? { ...m, showTurnInto: true } : m) }}
                   >
                     <ArrowRightLeft size={12} className="text-neutral-500" />
                     <span className="flex-1">Turn into</span>
-                    <span className="text-[11px] text-neutral-600">›</span>
+                    <span className="text-[13px] text-neutral-600">›</span>
                   </button>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] text-neutral-200 hover:bg-[#1a1a1a]"
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] text-neutral-200 hover:bg-[#1a1a1a]"
                     onMouseDown={(e) => {
                       e.preventDefault(); e.stopPropagation()
                       duplicateItem(blockMenu.blockId)
@@ -615,7 +615,7 @@ export function SubpageEditor() {
                   </button>
                   <div className="my-1 h-px bg-[#2a2a2a]" />
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] text-red-400 hover:bg-red-500/10"
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] text-red-400 hover:bg-red-500/10"
                     onMouseDown={(e) => {
                       e.preventDefault(); e.stopPropagation()
                       removeItem(blockMenu.blockId)
@@ -629,7 +629,7 @@ export function SubpageEditor() {
               ) : (
                 <>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1 text-left text-[13px] text-neutral-500 hover:bg-[#1a1a1a]"
+                    className="flex w-full items-center gap-2 px-3 py-1 text-left text-[15px] text-neutral-500 hover:bg-[#1a1a1a]"
                     onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setBlockMenu((m) => m ? { ...m, showTurnInto: false } : m) }}
                   >
                     ‹ Back
@@ -638,7 +638,7 @@ export function SubpageEditor() {
                   {BLOCK_TYPES.map((t) => (
                     <button
                       key={t.type}
-                      className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] ${
+                      className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] ${
                         menuBlock.type === t.type ? 'bg-amber-500/20 text-amber-300' : 'text-neutral-200 hover:bg-[#1a1a1a]'
                       }`}
                       onMouseDown={(e) => {
@@ -647,7 +647,7 @@ export function SubpageEditor() {
                         setBlockMenu(null)
                       }}
                     >
-                      <span className="w-5 text-center text-[13px] leading-none">{t.icon}</span>
+                      <span className="w-5 text-center text-[15px] leading-none">{t.icon}</span>
                       {t.label}
                     </button>
                   ))}

@@ -424,12 +424,12 @@ function TaskDetailPanel({
                 onChange={(e) => setNameValue(e.target.value)}
                 onBlur={commitName}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commitName() } if (e.key === 'Escape') { setNameValue(task.name); setEditingName(false) } }}
-                className="w-full bg-transparent text-[18px] font-semibold text-[var(--text-primary)] focus:outline-none leading-snug"
+                className="w-full bg-transparent text-[16px] font-semibold text-[var(--text-primary)] focus:outline-none leading-snug"
               />
             ) : (
               <p
                 onClick={() => setEditingName(true)}
-                className="cursor-text text-[18px] font-semibold leading-snug text-[var(--text-primary)] hover:bg-[var(--surface-2)] rounded-[4px] px-1 -mx-1 py-0.5 transition-colors"
+                className="cursor-text text-[16px] font-semibold leading-snug text-[var(--text-primary)] hover:bg-[var(--surface-2)] rounded-[4px] px-1 -mx-1 py-0.5 transition-colors"
               >
                 {task.name}
               </p>
@@ -766,7 +766,7 @@ export default function ProjectDetailPage() {
       <div className="px-6 pt-5 pb-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-[28px] font-semibold tracking-tight text-[var(--text-primary)] leading-tight truncate">
+            <h1 className="text-[16px] font-semibold tracking-tight text-[var(--text-primary)] leading-tight truncate">
               {project.name}
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -802,7 +802,7 @@ export default function ProjectDetailPage() {
       <div className="mx-6 mb-6 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-4">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
-            <span className="text-[24px] font-semibold tabular-nums text-[var(--text-primary)]">
+            <span className="text-[16px] font-semibold tabular-nums text-[var(--text-primary)]">
               {progress}%
             </span>
             <span className="text-[13px] text-[var(--text-secondary)]">complete</span>

@@ -128,7 +128,7 @@ export function ConnectorLines({ blocks, connectors }: Props) {
             {isSelected && (
               <foreignObject x={mid.x - 12} y={mid.y - 12} width={24} height={24}>
                 <button
-                  className="flex h-6 w-6 items-center justify-center rounded-full border border-red-600 bg-red-900 text-[13px] text-red-300 shadow-lg hover:bg-red-800"
+                  className="flex h-6 w-6 items-center justify-center rounded-full border border-red-600 bg-red-900 text-[15px] text-red-300 shadow-lg hover:bg-red-800"
                   onClick={(e) => {
                     e.stopPropagation()
                     removeConnector(c.id)
@@ -146,7 +146,7 @@ export function ConnectorLines({ blocks, connectors }: Props) {
                 <input
                   autoFocus
                   defaultValue={c.label ?? ''}
-                  className="w-full rounded bg-black/90 px-1 text-[13px] text-white outline-none"
+                  className="w-full rounded bg-black/90 px-1 text-[15px] text-white outline-none"
                   onBlur={(e) => {
                     updateConnector(c.id, { label: e.target.value })
                     setEditing(null)

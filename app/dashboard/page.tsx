@@ -248,7 +248,7 @@ export default function DashboardPage() {
         {/* Today's Tasks */}
         <div className="lg:col-span-4 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Today&apos;s Tasks</h2>
+            <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Today&apos;s Tasks</h2>
             <Link href="/tasks" className="text-[12px] text-[var(--accent)] hover:underline">
               View all
             </Link>
@@ -324,7 +324,7 @@ export default function DashboardPage() {
         {/* Mini Kanban — draggable project board */}
         <div className="lg:col-span-8 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Projects</h2>
+            <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Projects</h2>
             <Link href="/projects" className="text-[12px] text-[var(--accent)] hover:underline">
               Full board
             </Link>
@@ -374,14 +374,14 @@ export default function DashboardPage() {
         {/* Creative Queue */}
         <div className="rounded-[8px] border border-[var(--border)] bg-[var(--surface)] p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Creative Queue</h2>
+            <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Creative Queue</h2>
             <Link href="/briefs" className="text-[12px] text-[var(--accent)] hover:underline">View all</Link>
           </div>
           <div className="space-y-2">
             {activeBriefs.map((project) => (
               <div key={project.id} className="flex items-center gap-3 rounded-[6px] px-2 py-2 hover:bg-[var(--surface-2)] transition-colors">
                 <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[6px] bg-[var(--accent-muted)]">
-                  <span className="text-[10px] font-bold text-[var(--accent)]">
+                  <span className="text-[11px] font-bold text-[var(--accent)]">
                     {project.category ? project.category[0] : '?'}
                   </span>
                 </div>
@@ -401,7 +401,7 @@ export default function DashboardPage() {
         {/* Content Pipeline */}
         <div className="rounded-[8px] border border-[var(--border)] bg-[var(--surface)] p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Content Pipeline</h2>
+            <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Content Pipeline</h2>
             <Link href="/content" className="text-[12px] text-[var(--accent)] hover:underline">View all</Link>
           </div>
           {/* Stage pill row */}
@@ -421,7 +421,7 @@ export default function DashboardPage() {
                 >
                   {stage}
                   <span className={cn(
-                    'rounded-full px-1 text-[10px]',
+                    'rounded-full px-1 text-[11px]',
                     activeStage === stage ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : 'bg-[var(--surface)] text-[var(--text-tertiary)]'
                   )}>
                     {count}
@@ -447,7 +447,7 @@ export default function DashboardPage() {
         {/* Campaign Radar */}
         <div className="lg:col-span-8 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
           <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Campaign Radar</h2>
+            <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Campaign Radar</h2>
             <Link href="/campaigns" className="text-[12px] text-[var(--accent)] hover:underline">View all</Link>
           </div>
           <table className="w-full">
@@ -498,7 +498,7 @@ export default function DashboardPage() {
         {/* Upcoming Events */}
         <div className="lg:col-span-4 rounded-[8px] border border-[var(--border)] bg-[var(--surface)] p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">Upcoming Events</h2>
+            <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">Upcoming Events</h2>
             <Link href="/events" className="text-[12px] text-[var(--accent)] hover:underline">View all</Link>
           </div>
           <div className="space-y-3">
@@ -511,7 +511,7 @@ export default function DashboardPage() {
                   className="flex items-start gap-3 rounded-[6px] p-2 hover:bg-[var(--surface-2)] transition-colors"
                 >
                   <div className="flex-shrink-0 text-center w-10">
-                    <div className="text-[24px] font-bold leading-none text-[var(--text-primary)]">
+                    <div className="text-[16px] font-bold leading-none text-[var(--text-primary)]">
                       {d.getDate()}
                     </div>
                     <div className="text-[11px] text-[var(--text-tertiary)] uppercase">

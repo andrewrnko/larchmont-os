@@ -51,7 +51,7 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
 
   const item = (label: string, fn: () => void, danger?: boolean) => (
     <button
-      className={`w-full px-3 py-1.5 text-left text-[13px] hover:bg-amber-500/20 ${danger ? 'text-red-400' : 'text-neutral-200'}`}
+      className={`w-full px-3 py-1.5 text-left text-[15px] hover:bg-amber-500/20 ${danger ? 'text-red-400' : 'text-neutral-200'}`}
       onClick={(e) => {
         e.stopPropagation()
         fn()

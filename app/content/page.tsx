@@ -63,7 +63,7 @@ function ContentCard({ item, projectName, onEdit, onDelete }: ContentCardProps) 
       {item.format && (
         <div className="mb-2 flex flex-wrap items-center gap-1.5">
           <span className={cn(
-            'inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium',
+            'inline-flex items-center rounded-[4px] px-1.5 py-0.5 text-[11px] font-medium',
             formatColor ?? 'bg-[var(--surface-2)] text-[var(--text-tertiary)]'
           )}>
             {item.format}
@@ -72,7 +72,7 @@ function ContentCard({ item, projectName, onEdit, onDelete }: ContentCardProps) 
       )}
       <div className="flex items-center gap-1.5">
         {projectName && (
-          <span className="max-w-[100px] truncate rounded-[4px] bg-[var(--accent-muted)] px-1.5 py-0.5 text-[10px] text-[var(--accent)]">
+          <span className="max-w-[100px] truncate rounded-[4px] bg-[var(--accent-muted)] px-1.5 py-0.5 text-[11px] text-[var(--accent)]">
             {projectName}
           </span>
         )}
@@ -179,7 +179,7 @@ function ContentModal({ mode, item, projects, onClose, onSave }: ContentModalPro
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div className="w-full max-w-md rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xl">
-        <h2 className="mb-4 text-[15px] font-semibold text-[var(--text-primary)]">
+        <h2 className="mb-4 text-[16px] font-semibold text-[var(--text-primary)]">
           {mode === 'add' ? 'Add Content' : 'Edit Content'}
         </h2>
 
@@ -519,7 +519,7 @@ export default function ContentPage() {
           onClick={(e) => { if (e.target === e.currentTarget) setDeleteConfirm(null) }}
         >
           <div className="w-full max-w-sm rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-xl">
-            <h2 className="mb-2 text-[15px] font-semibold text-[var(--text-primary)]">Delete content?</h2>
+            <h2 className="mb-2 text-[16px] font-semibold text-[var(--text-primary)]">Delete content?</h2>
             <p className="mb-4 text-[13px] text-[var(--text-secondary)]">
               This action cannot be undone.
             </p>

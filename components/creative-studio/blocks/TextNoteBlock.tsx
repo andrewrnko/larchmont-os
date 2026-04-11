@@ -78,7 +78,7 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
   const fmt = (label: string, action: () => void, active?: boolean) => (
     <button
       key={label}
-      className={`w-full px-3 py-1.5 text-left text-[12px] ${
+      className={`w-full px-3 py-1.5 text-left text-[14px] ${
         active ? 'bg-amber-500/20 text-amber-300' : 'text-neutral-200 hover:bg-[#1e1e1e]'
       }`}
       onMouseDown={(e) => {
@@ -138,11 +138,11 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
           </div>
         )}
 
-        <div data-no-drag data-scrollable className="flex-1 overflow-auto p-4 text-[13px] leading-[1.5] text-white">
+        <div data-no-drag data-scrollable className="flex-1 overflow-auto p-4 text-[15px] leading-[1.5] text-white">
           {editor && (
             <EditorContent
               editor={editor}
-              className="max-w-none focus:outline-none [&_*]:outline-none [&_h1]:text-[20px] [&_h1]:font-semibold [&_h1]:leading-[1.2] [&_h1]:mb-2 [&_h2]:text-[17px] [&_h2]:font-semibold [&_h2]:leading-[1.2] [&_h2]:mb-1.5 [&_h3]:text-[15px] [&_h3]:font-semibold [&_h3]:leading-[1.2] [&_h3]:mb-1 [&_p]:my-1 [&_p]:leading-[1.5] [&_ul]:my-1 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:my-1 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:my-0.5 [&_li]:pl-1 [&_hr]:my-3 [&_hr]:border-[#2a2a2a] [&_blockquote]:border-l-2 [&_blockquote]:border-neutral-600 [&_blockquote]:pl-3 [&_blockquote]:text-neutral-400"
+              className="max-w-none focus:outline-none [&_*]:outline-none [&_h1]:text-[22px] [&_h1]:font-semibold [&_h1]:leading-[1.2] [&_h1]:mb-2 [&_h2]:text-[19px] [&_h2]:font-semibold [&_h2]:leading-[1.2] [&_h2]:mb-1.5 [&_h3]:text-[17px] [&_h3]:font-semibold [&_h3]:leading-[1.2] [&_h3]:mb-1 [&_p]:my-1 [&_p]:leading-[1.5] [&_ul]:my-1 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:my-1 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:my-0.5 [&_li]:pl-1 [&_hr]:my-3 [&_hr]:border-[#2a2a2a] [&_blockquote]:border-l-2 [&_blockquote]:border-neutral-600 [&_blockquote]:pl-3 [&_blockquote]:text-neutral-400"
             />
           )}
         </div>
@@ -162,7 +162,7 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-3 py-1 text-[11px] font-medium uppercase tracking-[0.06em] text-neutral-600">Format</div>
+            <div className="px-3 py-1 text-[13px] font-medium uppercase tracking-[0.06em] text-neutral-600">Format</div>
             {fmt('Bold', () => editor.chain().focus().toggleBold().run(), editor.isActive('bold'))}
             {fmt('Italic', () => editor.chain().focus().toggleItalic().run(), editor.isActive('italic'))}
             {fmt('Underline', () => editor.chain().focus().toggleUnderline().run(), editor.isActive('underline'))}

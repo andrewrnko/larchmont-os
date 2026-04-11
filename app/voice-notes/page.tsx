@@ -62,7 +62,7 @@ function AudioPlayer({ url }: { url: string }) {
           <div className="h-full bg-[var(--accent)] transition-all" style={{ width: `${progress}%` }} />
         </div>
         {duration > 0 && (
-          <div className="mt-0.5 text-[10px] text-[var(--text-tertiary)]">{formatDuration(Math.floor(duration))}</div>
+          <div className="mt-0.5 text-[11px] text-[var(--text-tertiary)]">{formatDuration(Math.floor(duration))}</div>
         )}
       </div>
     </div>

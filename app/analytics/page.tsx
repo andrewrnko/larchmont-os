@@ -38,7 +38,7 @@ function KpiCard({ label, value, sub, trend }: { label: string; value: string; s
     <div className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-5">
       <div className="mb-1 text-[12px] font-medium uppercase tracking-wider text-[var(--text-tertiary)]">{label}</div>
       <div className="flex items-end gap-2">
-        <span className="text-[28px] font-bold leading-none text-[var(--text-primary)]">{value}</span>
+        <span className="text-[16px] font-bold leading-none text-[var(--text-primary)]">{value}</span>
         {trend && (
           <span className={cn('mb-0.5 flex items-center gap-0.5 text-[12px]',
             trend === 'up' ? 'text-green-400' : trend === 'down' ? 'text-red-400' : 'text-[var(--text-tertiary)]')}>
@@ -226,7 +226,7 @@ export default function AnalyticsPage() {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-[24px] font-semibold tracking-tight text-[var(--text-primary)]">Performance</h1>
+            <h1 className="text-[16px] font-semibold tracking-tight text-[var(--text-primary)]">Performance</h1>
             <p className="mt-0.5 text-[14px] text-[var(--text-secondary)]">
               {range === '7d' ? 'Last 7 days' : range === '30d' ? 'Last 30 days' : range === '90d' ? 'Last 90 days' : 'All time'}
             </p>

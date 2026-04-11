@@ -11,7 +11,7 @@ export function PageHeader({ title, description, actions, className }: PageHeade
   return (
     <div suppressHydrationWarning className={cn('flex items-start justify-between gap-4 pb-6', className)}>
       <div>
-        <h1 className="text-[24px] font-semibold tracking-tight text-[var(--text-primary)]">
+        <h1 className="text-[16px] font-semibold tracking-tight text-[var(--text-primary)]">
           {title}
         </h1>
         {description && (
