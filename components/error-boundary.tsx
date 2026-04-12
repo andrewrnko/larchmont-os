@@ -24,12 +24,26 @@ export class ErrorBoundary extends Component<Props, State> {
       return this.props.fallback ?? (
         <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
           <p className="text-[var(--text-secondary)]">Something went wrong</p>
-          <button
-            onClick={() => this.setState({ hasError: false })}
-            className="px-4 py-2 rounded-lg bg-[var(--accent)] text-[var(--accent-fg)] text-sm hover:opacity-90 transition-opacity"
-          >
-            Try again
-          </button>
+          {this.state.error && (
+            <p className="text-[12px] max-w-md text-[var(--text-tertiary)] font-mono break-all">
+              {this.state.error.message}
+            </p>
+          )}
+          <div className="flex gap-3">
+            <button
+              onClick={() => this.setState({ hasError: false, error: undefined })}
+              className="px-4 py-2 rounded-lg bg-[var(--accent)] text-[var(--accent-fg)] text-sm hover:opacity-90 transition-opacity"
+            >
+              Try again
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg border text-sm transition-opacity hover:opacity-90"
+              style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+            >
+              Reload page
+            </button>
+          </div>
         </div>
       )
     }

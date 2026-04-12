@@ -16,6 +16,8 @@ import type {
   MindMapNode,
   StoryboardFrame,
 } from './types'
+// useThemeStore intentionally NOT imported here — mind map node colors
+// are resolved at render time by MindMapBlock, not at creation time.
 
 // ──────────────────────────────────────────────────────────────
 // Persistence adapter (swap this for an API later)
@@ -82,6 +84,12 @@ interface CanvasState {
   // Connector drag state (shared between BlockWrapper + Canvas)
   connectDrag: { fromId: string; startX: number; startY: number; cursorX: number; cursorY: number } | null
 
+  /** ID of the most recently created block — used by block components to
+   *  auto-focus their primary editable element on mount. Cleared after
+   *  first read so blocks loaded from localStorage don't auto-focus. */
+  lastCreatedBlockId: string | null
+  clearLastCreated: () => void
+
   // Hydration
   hydrate: () => void
 
@@ -140,6 +148,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   gridSize: 16,
   openPageBlockId: null,
   connectDrag: null,
+  lastCreatedBlockId: null,
+  clearLastCreated: () => set({ lastCreatedBlockId: null }),
 
   hydrate: () => {
     const boards = loadJSON<Board[]>(LS_BOARDS, [])
@@ -215,6 +225,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     mutateActive((b) => {
       b.blocks.push(block)
     })
+    set({ lastCreatedBlockId: block.id })
     return block.id
   },
 
@@ -381,7 +392,10 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
   const base = { id: uid(), x, y, z: Date.now(), locked: false }
   switch (kind) {
     case 'text':
-      return { ...base, kind: 'text', w: 340, h: 180, html: '<p>Start writing…</p>', bg: '#1c1c1a', autoHeight: true }
+      // Empty paragraph — no "Start writing…" placeholder text. Tiptap
+      // renders this as an empty editable region; the cursor simply
+      // blinks and the user starts typing.
+      return { ...base, kind: 'text', w: 340, h: 180, html: '<p></p>', bg: 'var(--bg2)', autoHeight: true }
     case 'sticky':
       return { ...base, kind: 'sticky', w: 220, h: 220, text: '', color: 'yellow' }
     case 'image':
@@ -396,9 +410,8 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
       return { ...base, kind: 'storyboard', w: 720, h: 260, frames }
     }
     case 'mindmap': {
-      // Root node color is a CSS var reference so it tracks the theme
-      // accent live — changing the accent in Settings propagates without
-      // any stored-color migration.
+      // Empty string = "use neutral dark default". resolveColor() in
+      // MindMapBlock maps '' → #141413 at render time.
       const root: MindMapNode = {
         id: uid(),
         parentId: null,
@@ -406,7 +419,7 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
         dx: 180,
         dy: 140,
         shape: 'pill',
-        color: 'var(--cs-accent)',
+        color: '',
       }
       return { ...base, kind: 'mindmap', w: 520, h: 360, nodes: [root] }
     }

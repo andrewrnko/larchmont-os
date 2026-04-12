@@ -4,7 +4,9 @@
 
 import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { MessageSquare } from 'lucide-react'
 import { useCanvasStore } from './store'
+import { useCommentsStore } from './comments-store'
 import type { BlockKind } from './types'
 
 export interface ContextMenuState {
@@ -30,6 +32,7 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
   const sendToBack = useCanvasStore((s) => s.sendToBack)
   const setSelection = useCanvasStore((s) => s.setSelection)
   const board = useCanvasStore((s) => s.boards.find((b) => b.id === s.activeBoardId))
+  const addPin = useCommentsStore((s) => s.addPin)
 
   useEffect(() => {
     if (!state) return
@@ -111,6 +114,18 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
               {item('Add Task List', () => addAt('tasks'))}
               {item('Add Transcript', () => addAt('transcript'))}
               {item('Add AI Assistant', () => addAt('assistant'))}
+              <button
+                className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] text-neutral-200 hover:bg-[color:var(--cs-accent)]/20"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (state && board) {
+                    addPin(board.id, state.worldX, state.worldY)
+                  }
+                  onClose()
+                }}
+              >
+                <MessageSquare size={14} /> Add Comment Pin
+              </button>
               <div className="my-1 h-px bg-[color:var(--bg4)]" />
               {item('Select All', () => {
                 setSelection(board?.blocks.map((b) => b.id) ?? [])

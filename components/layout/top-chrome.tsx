@@ -90,7 +90,7 @@ export function TopChrome() {
 
   return (
     <header
-      className="flex h-12 shrink-0 items-center justify-between border-b px-2.5"
+      className="relative flex h-12 shrink-0 items-center border-b px-2.5"
       style={{
         background: 'var(--bg1)',
         borderColor: 'var(--border)',
@@ -125,24 +125,32 @@ export function TopChrome() {
         </TopIconButton>
       </div>
 
-      {/* ── Center cluster ── */}
-      <div className="flex items-center gap-2.5 text-[14.5px]" style={{ color: 'var(--text1)' }}>
-        <span
-          className="flex h-[24px] w-[24px] items-center justify-center rounded-[6px]"
-          style={{
-            background: meta?.tint ?? 'var(--bg3)',
-            color: meta?.tintFg ?? 'var(--text2)',
-          }}
+      {/* ── Center cluster — absolutely positioned at true center so the
+           left/right clusters can't push it off-axis ── */}
+      <div
+        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+      >
+        <div
+          className="pointer-events-auto flex items-center gap-2.5 text-[14.5px]"
+          style={{ color: 'var(--text1)' }}
         >
-          <Icon size={14} strokeWidth={2.2} />
-        </span>
-        <span className="font-medium" style={{ color: 'var(--text0)' }}>
-          {title}
-        </span>
+          <span
+            className="flex h-[24px] w-[24px] items-center justify-center rounded-[6px]"
+            style={{
+              background: meta?.tint ?? 'var(--bg3)',
+              color: meta?.tintFg ?? 'var(--text2)',
+            }}
+          >
+            <Icon size={14} strokeWidth={2.2} />
+          </span>
+          <span className="font-medium" style={{ color: 'var(--text0)' }}>
+            {title}
+          </span>
+        </div>
       </div>
 
       {/* ── Right cluster ── */}
-      <div className="flex items-center gap-1">
+      <div className="ml-auto flex items-center gap-1">
         <TopIconButton title="More">
           <MoreHorizontal size={18} />
         </TopIconButton>

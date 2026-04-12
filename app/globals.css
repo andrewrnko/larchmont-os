@@ -225,6 +225,116 @@ body.cs-distraction-warn {
   }
 }
 
+/* ──────────────────────────────────────────────────────────────
+   Standardized Tiptap task-list checkboxes.
+   Every Creative Studio Tiptap editor that includes @tiptap/extension-task-list
+   renders <ul data-type="taskList"> → <li data-type="taskItem"> → <label> + <div>.
+   We hide the native checkbox input and render a 14×14 rounded-sm pseudo
+   element with the same spec as the rest of the Creative Studio checkboxes.
+   ────────────────────────────────────────────────────────────── */
+ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.25rem 0;
+}
+ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.125rem 0;
+}
+ul[data-type="taskList"] li > label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  /* Nudge the checkbox down to align with the first line of text.
+     The text's <p> has its margins zeroed below so both elements
+     start from the same baseline. */
+  margin-top: 3px;
+  user-select: none;
+  cursor: pointer;
+}
+/* Zero out paragraph margins inside task items — otherwise the <p>
+   margin pushes text below the checkbox, breaking vertical alignment. */
+ul[data-type="taskList"] li > div > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+ul[data-type="taskList"] li > label > input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+ul[data-type="taskList"] li > label > input[type="checkbox"]:hover {
+  border-color: var(--text2);
+}
+ul[data-type="taskList"] li > label > input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+ul[data-type="taskList"] li > label > input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border-right: 2px solid #0a0a09;
+  border-bottom: 2px solid #0a0a09;
+  transform: rotate(45deg);
+}
+ul[data-type="taskList"] li > div {
+  flex: 1;
+  min-width: 0;
+}
+ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: var(--text2);
+  text-decoration: line-through;
+}
+/* Sticky note uses dark text on a light paper background — invert the
+   checkbox border so it's visible against the paper. */
+.cs-sticky-editor ul[data-type="taskList"] li > label > input[type="checkbox"] {
+  border-color: rgba(0, 0, 0, 0.35);
+}
+.cs-sticky-editor ul[data-type="taskList"] li > label > input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.cs-sticky-editor ul[data-type="taskList"] li > label > input[type="checkbox"]:checked::after {
+  border-right-color: #0a0a09;
+  border-bottom-color: #0a0a09;
+}
+.cs-sticky-editor ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* ── Canvas & block polish ──────────────────────────────────── */
+/* Context menu items: smooth bg transition */
+[data-node-menu] button,
+[data-block-menu] button,
+[data-slash-menu] button {
+  transition: background-color 80ms ease;
+}
+
+/* Mind map node context menu shape/color buttons: min tap target */
+[data-node-menu] button {
+  min-height: 32px;
+  min-width: 32px;
+}
+
+/* Ensure canvas never shows browser scrollbars */
+.cs-anytype { overflow: hidden; }
+
 @layer utilities {
   .text-display { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
   .text-h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }

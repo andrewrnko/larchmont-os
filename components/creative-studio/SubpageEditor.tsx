@@ -13,7 +13,7 @@ import { useCanvasStore, uid, useActiveBoard } from './store'
 import type { PageBlock, SubPageBlock } from './types'
 import {
   ChevronLeft, Calendar, Palette, Link2, ArrowRight, GripVertical, Trash2, Copy, ArrowRightLeft,
-  Heading1, Heading2, Heading3, Type, List, ListOrdered, Square, CheckSquare, Minus, ImageIcon,
+  Heading1, Heading2, Heading3, Type, List, ListOrdered, Square, Minus, ImageIcon,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -323,15 +323,29 @@ export function SubpageEditor() {
     }
 
     if (item.type === 'divider') {
+      // Clicking a divider should NOT land the user in an unfocusable element.
+      // Move focus to the next text block, or insert a new paragraph and
+      // focus that. The <hr> inside is pointer-events-none so the click
+      // actually hits the row wrapper.
       return (
         <div
           key={item.id}
-          className={`group/block flex items-center gap-0 py-2 rounded ${isDragOver ? 'bg-[color:var(--cs-accent)]/10 border-t border-[color:var(--cs-accent)]/40' : ''}`}
+          className={`group/block flex cursor-text items-center gap-0 rounded py-2 ${isDragOver ? 'bg-[color:var(--cs-accent)]/10 border-t border-[color:var(--cs-accent)]/40' : ''}`}
           onContextMenu={blockContextMenu}
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('[data-drag-handle]')) return
+            const idx = pageBlock.content.findIndex((x) => x.id === item.id)
+            const next = pageBlock.content[idx + 1]
+            if (next && 'text' in next) {
+              refs.current[next.id]?.focus()
+            } else {
+              insertAfter(item.id, 'p')
+            }
+          }}
           {...dropProps}
         >
           {dragHandle}
-          <hr className="flex-1 border-[color:rgba(255,255,255,0.07)]" />
+          <hr className="pointer-events-none flex-1" style={{ borderColor: 'var(--border)' }} />
         </div>
       )
     }
@@ -364,11 +378,12 @@ export function SubpageEditor() {
         </div>
       )
     }
+    // Tightened tracking on headings to match the canvas title labels.
     const cls =
-      item.type === 'h1' ? 'text-[22px] font-semibold leading-[1.2]'
-      : item.type === 'h2' ? 'text-[19px] font-semibold leading-[1.2]'
-      : item.type === 'h3' ? 'text-[17px] font-semibold leading-[1.2]'
-      : 'text-[15px] leading-[1.5]'
+      item.type === 'h1' ? 'text-[22px] font-semibold leading-[1.2] tracking-[-0.018em]'
+      : item.type === 'h2' ? 'text-[19px] font-semibold leading-[1.2] tracking-[-0.012em]'
+      : item.type === 'h3' ? 'text-[17px] font-semibold leading-[1.2] tracking-[-0.008em]'
+      : 'text-[15px] leading-[1.55]'
     // Compute numbered list index
     const numberedIndex = item.type === 'numbered'
       ? (() => {
@@ -385,12 +400,17 @@ export function SubpageEditor() {
     return (
       <div
         key={item.id}
-        className={`group/block flex items-start gap-0 py-1 rounded ${isDragOver ? 'bg-[color:var(--cs-accent)]/10 border-t border-[color:var(--cs-accent)]/40' : ''}`}
+        className={`group/block flex cursor-text items-start gap-0 rounded py-1 ${isDragOver ? 'bg-[color:var(--cs-accent)]/10 border-t border-[color:var(--cs-accent)]/40' : ''}`}
         onContextMenu={blockContextMenu}
         onClick={(e) => {
-          // Clicking on the row padding (not a child element) should focus
-          // the textarea — lets users click anywhere on a line to land in it.
-          if (e.target === e.currentTarget) refs.current[item.id]?.focus()
+          // Permissive click-to-focus: unless the click lands on a genuinely
+          // interactive element (textarea, input, button, drag handle),
+          // focus the row's textarea. Fixes the "click between blocks and
+          // nothing happens" gap.
+          const tgt = e.target as HTMLElement
+          if (tgt.tagName === 'TEXTAREA' || tgt.tagName === 'INPUT' || tgt.tagName === 'BUTTON') return
+          if (tgt.closest('[data-drag-handle]')) return
+          refs.current[item.id]?.focus()
         }}
         {...dropProps}
       >
@@ -404,13 +424,21 @@ export function SubpageEditor() {
                 pageBlock.content.map((x) => (x.id === item.id ? ({ ...x, checked: !(item.checked ?? false) } as SubPageBlock) : x))
               )
             }
-            className="shrink-0 mt-[3px] mr-2 flex h-[18px] w-[18px] items-center justify-center rounded-[4px] transition-colors duration-150"
+            // Standardized checkbox: 14×14, rounded-sm, border token unchecked,
+            // accent-filled when checked. Matches every other Creative Studio
+            // checkbox (Tiptap task list, tasks block, daily repeatables).
+            className="shrink-0 mt-[3px] mr-2 flex h-[14px] w-[14px] items-center justify-center rounded-[3px] border transition-colors duration-150"
             style={{
-              color: item.checked ? 'var(--cs-accent)' : 'var(--text2)',
+              borderColor: item.checked ? 'var(--accent)' : 'var(--border-strong)',
+              background: item.checked ? 'var(--accent)' : 'transparent',
             }}
             aria-label={item.checked ? 'Mark as not done' : 'Mark as done'}
           >
-            {item.checked ? <CheckSquare size={18} strokeWidth={2.2} /> : <Square size={18} strokeWidth={2.2} />}
+            {item.checked && (
+              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#0a0a09" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 8 7 12 13 4" />
+              </svg>
+            )}
           </button>
         )}
         <textarea
@@ -446,15 +474,21 @@ export function SubpageEditor() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
         className="absolute inset-0 z-50 overflow-auto"
-        style={{ background: '#0a0a0a' }}
+        style={{ background: 'var(--bg0)' }}
       >
-        <div className="sticky top-0 z-10 border-b border-[color:rgba(255,255,255,0.07)] bg-black/70 px-6 py-3 backdrop-blur">
+        <div
+          className="sticky top-0 z-10 border-b px-6 py-3 backdrop-blur"
+          style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--bg0) 80%, transparent)' }}
+        >
           <button
             onClick={() => openPage(null)}
-            className="flex items-center gap-2 text-[15px] text-[#888780] hover:text-white"
+            className="flex items-center gap-2 text-[15px] transition-colors duration-150"
+            style={{ color: 'var(--text2)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text0)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text2)')}
           >
             <ChevronLeft size={12} /> Creative Studio / {board?.name} /{' '}
-            <span className="text-white">{pageBlock.title}</span>
+            <span style={{ color: 'var(--text0)' }}>{pageBlock.title}</span>
           </button>
         </div>
 
@@ -469,27 +503,34 @@ export function SubpageEditor() {
               {pageBlock.icon}
             </button>
             <input
-              className="flex-1 bg-transparent text-[24px] font-bold leading-[1.2] text-white outline-none"
+              className="flex-1 bg-transparent text-[28px] font-semibold leading-[1.15] outline-none"
+              style={{
+                color: 'var(--text0)',
+                letterSpacing: '-0.022em',
+              }}
               defaultValue={pageBlock.title}
               onBlur={(e) => updateBlock(pageBlock.id, { title: e.target.value })}
             />
           </div>
 
           {/* Properties bar */}
-          <div className="mb-6 flex flex-wrap items-center gap-4 text-[15px] text-[#888780]">
+          <div className="mb-6 flex flex-wrap items-center gap-4 text-[15px]" style={{ color: 'var(--text2)' }}>
             <div className="flex items-center gap-2">
               <Calendar size={12} />
               <span>Due</span>
               <input
                 type="date"
                 defaultValue={pageBlock.deadline ?? ''}
-                className="rounded bg-[#242422] px-2 py-1 text-white outline-none"
+                className="rounded px-2 py-1 outline-none"
+                style={{ background: 'var(--bg2)', color: 'var(--text0)' }}
                 onChange={(e) => updateBlock(pageBlock.id, { deadline: e.target.value })}
               />
             </div>
             <button
               onClick={() => setColorOpen((v) => !v)}
-              className="flex items-center gap-2 hover:text-white"
+              className="flex items-center gap-2 transition-colors duration-150"
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text0)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text2)')}
             >
               <Palette size={12} /> Color
             </button>
@@ -517,8 +558,8 @@ export function SubpageEditor() {
               {COLORS.map((c) => (
                 <button
                   key={c}
-                  className="h-8 w-8 rounded border border-[color:rgba(255,255,255,0.07)]"
-                  style={{ background: c }}
+                  className="h-8 w-8 rounded border"
+                  style={{ background: c, borderColor: 'var(--border)' }}
                   onClick={() => {
                     updateBlock(pageBlock.id, { color: c })
                     setColorOpen(false)
@@ -530,16 +571,20 @@ export function SubpageEditor() {
 
           {/* Connections list */}
           {connections.length > 0 && (
-            <div className="mb-6 rounded border border-[color:rgba(255,255,255,0.07)] bg-black/30 p-3">
+            <div
+              className="mb-6 rounded border p-3"
+              style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--bg2) 70%, transparent)' }}
+            >
               <div className="mb-2 font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Linked to</div>
               <div className="space-y-1">
                 {connections.map(({ connector, other }) => (
                   <button
                     key={connector.id}
                     onClick={() => centerOnBlock(other!.id)}
-                    className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[14px] text-[#c8c4bc] hover:bg-[color:var(--cs-accent)]/10"
+                    className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[14px] transition-colors duration-150 hover:bg-[color:var(--cs-accent)]/10"
+                    style={{ color: 'var(--text1)' }}
                   >
-                    <span className="font-mono text-[13px] uppercase text-[#888780]">{other!.kind}</span>
+                    <span className="font-mono text-[13px] uppercase" style={{ color: 'var(--text2)' }}>{other!.kind}</span>
                     <span className="flex-1 truncate">
                       {('title' in other! ? (other as { title?: string }).title : null) ||
                         ('text' in other! ? (other as { text?: string }).text : null) ||

@@ -22,7 +22,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Trash2, Square, CheckSquare } from 'lucide-react'
+import { GripVertical, Trash2 } from 'lucide-react'
 import { usePagesStore } from '@/lib/pages-store'
 import type { BlockType, PageBlock } from '@/lib/pages-store'
 import { PageHeader } from '@/components/shared/page-header'
@@ -377,11 +377,18 @@ function BlockRow({
             onClick={() =>
               updateBlock(pageId, block.id, { done: !done })
             }
-            className="mt-[2px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] transition-colors duration-150"
-            style={{ color: done ? 'var(--accent)' : 'var(--text2)' }}
+            className="mt-[3px] flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-[3px] border transition-colors duration-150"
+            style={{
+              borderColor: done ? 'var(--accent)' : 'var(--border-strong)',
+              background: done ? 'var(--accent)' : 'transparent',
+            }}
             aria-label={done ? 'Mark as not done' : 'Mark as done'}
           >
-            {done ? <CheckSquare size={18} strokeWidth={2.2} /> : <Square size={18} strokeWidth={2.2} />}
+            {done && (
+              <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#0a0a09" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 8 7 12 13 4" />
+              </svg>
+            )}
           </button>
           <input
             ref={setRef}

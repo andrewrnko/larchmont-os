@@ -66,13 +66,20 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
 
   return (
     <BlockWrapper block={block} kind="tasks" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] shadow-lg">
+      <div
+        className="flex h-full w-full flex-col overflow-hidden rounded-lg border shadow-lg"
+        style={{ background: 'var(--bg2)', borderColor: 'var(--border)' }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] px-4 py-3">
+        <div
+          className="flex items-center justify-between border-b px-4 py-3"
+          style={{ background: 'var(--bg2)', borderColor: 'var(--border)' }}
+        >
           <div className="flex items-center gap-2">
             <CheckSquare size={15} className="text-[color:var(--cs-accent)]" />
             <input
-              className="bg-transparent text-[15px] font-semibold text-white outline-none"
+              className="bg-transparent text-[15px] font-semibold outline-none"
+              style={{ color: 'var(--text0)' }}
               defaultValue={block.label}
               onBlur={(e) => updateBlock(block.id, { label: e.target.value })}
             />
@@ -98,13 +105,18 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               >
                 <button
                   onClick={() => toggleDone(item.id)}
-                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
-                    item.done
-                      ? 'border-[color:var(--cs-accent)] bg-[color:var(--cs-accent)] text-black'
-                      : 'border-[#555450]'
-                  }`}
+                  className="flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-[3px] border transition-colors duration-150"
+                  style={{
+                    borderColor: item.done ? 'var(--accent)' : 'var(--border-strong)',
+                    background: item.done ? 'var(--accent)' : 'transparent',
+                  }}
+                  aria-label={item.done ? 'Mark as not done' : 'Mark as done'}
                 >
-                  {item.done && <span className="text-[13px] leading-none">✓</span>}
+                  {item.done && (
+                    <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#0a0a09" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 8 7 12 13 4" />
+                    </svg>
+                  )}
                 </button>
                 {item.priority && (
                   <span

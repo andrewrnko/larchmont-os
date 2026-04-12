@@ -116,13 +116,17 @@ export function DailyRepeatables() {
                       >
                         <button
                           onClick={() => toggleCheck(item.id)}
-                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
-                            checked
-                              ? 'border-[color:var(--cs-accent)] bg-[color:var(--cs-accent)] text-black'
-                              : 'border-[#555450]'
-                          }`}
+                          className="flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-[3px] border transition-colors duration-150"
+                          style={{
+                            borderColor: checked ? 'var(--accent)' : 'var(--border-strong)',
+                            background: checked ? 'var(--accent)' : 'transparent',
+                          }}
                         >
-                          {checked && <span className="text-[13px] leading-none">✓</span>}
+                          {checked && (
+                            <svg viewBox="0 0 16 16" width="10" height="10" fill="none" stroke="#0a0a09" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 8 7 12 13 4" />
+                            </svg>
+                          )}
                         </button>
                         <span className={`flex-1 text-[15px] leading-[1.5] ${checked ? 'text-[#888780] line-through' : 'text-white'}`}>
                           {item.title}

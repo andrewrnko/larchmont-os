@@ -282,16 +282,18 @@ export function useLassoSelect(containerRef: React.RefObject<HTMLDivElement | nu
     const el = containerRef.current
     if (!el || !board) return
     let startX = 0, startY = 0, active = false
+    let lastBox: { x: number; y: number; w: number; h: number } | null = null
 
     const onDown = (e: PointerEvent) => {
-      // Only when clicking empty canvas (not a block or connector anchor)
-      if ((e.target as HTMLElement).closest('[data-block], [data-anchor]')) return
+      // Only when clicking empty canvas (not a block, connector anchor, or comment pin)
+      if ((e.target as HTMLElement).closest('[data-block], [data-anchor], [data-comment-pin]')) return
       if (e.button !== 0) return
       const rect = el.getBoundingClientRect()
       startX = e.clientX - rect.left
       startY = e.clientY - rect.top
       active = true
-      setBox({ x: startX, y: startY, w: 0, h: 0 })
+      lastBox = { x: startX, y: startY, w: 0, h: 0 }
+      setBox(lastBox)
       if (!e.shiftKey) setSelection([])
     }
     const onMove = (e: PointerEvent) => {
@@ -299,28 +301,29 @@ export function useLassoSelect(containerRef: React.RefObject<HTMLDivElement | nu
       const rect = el.getBoundingClientRect()
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
-      setBox({ x: Math.min(x, startX), y: Math.min(y, startY), w: Math.abs(x - startX), h: Math.abs(y - startY) })
+      lastBox = { x: Math.min(x, startX), y: Math.min(y, startY), w: Math.abs(x - startX), h: Math.abs(y - startY) }
+      setBox(lastBox)
     }
     const onUp = () => {
       if (!active) return
       active = false
       const cs = useCanvasStore.getState()
       const b = cs.boards.find((x) => x.id === cs.activeBoardId)
-      setBox((cur) => {
-        if (cur && b && (cur.w > 4 || cur.h > 4)) {
-          // Convert screen box to world space
-          const { x: vx, y: vy, scale } = b.viewport
-          const wx1 = (cur.x - vx) / scale
-          const wy1 = (cur.y - vy) / scale
-          const wx2 = (cur.x + cur.w - vx) / scale
-          const wy2 = (cur.y + cur.h - vy) / scale
-          const hit = b.blocks
-            .filter((bl) => bl.x < wx2 && bl.x + bl.w > wx1 && bl.y < wy2 && bl.y + bl.h > wy1)
-            .map((bl) => bl.id)
-          setSelection(hit)
-        }
-        return null
-      })
+      const cur = lastBox
+      if (cur && b && (cur.w > 4 || cur.h > 4)) {
+        // Convert screen box to world space
+        const { x: vx, y: vy, scale } = b.viewport
+        const wx1 = (cur.x - vx) / scale
+        const wy1 = (cur.y - vy) / scale
+        const wx2 = (cur.x + cur.w - vx) / scale
+        const wy2 = (cur.y + cur.h - vy) / scale
+        const hit = b.blocks
+          .filter((bl) => bl.x < wx2 && bl.x + bl.w > wx1 && bl.y < wy2 && bl.y + bl.h > wy1)
+          .map((bl) => bl.id)
+        setSelection(hit)
+      }
+      setBox(null)
+      lastBox = null
     }
     el.addEventListener('pointerdown', onDown)
     window.addEventListener('pointermove', onMove)

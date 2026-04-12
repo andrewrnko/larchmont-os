@@ -7,6 +7,8 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,9 +18,13 @@ import { BlockWrapper } from '../BlockWrapper'
 import { useTiptapSlashMenu } from '../TiptapSlashMenu'
 import { Palette } from 'lucide-react'
 
+// Palette is normalized so the default hex (stored on new blocks) matches
+// var(--bg2) — i.e. every default block card on the canvas starts with the
+// same neutral dark surface as PageBlockCard, TasksBlock, etc.
+const DEFAULT_TEXT_BG = 'var(--bg2)'
 const BG_PALETTE = [
-  '#1c1c1a', '#2a1f14', '#1b2a1f', '#1a1f2a',
-  '#2a1a1f', '#2a261a', '#241a2a', '#111110',
+  'var(--bg2)', '#2a1f14', '#1b2a1f', '#1a1f2a',
+  '#2a1a1f', '#2a261a', '#241a2a', '#0a0a09',
 ]
 
 interface Props {
@@ -28,13 +34,20 @@ interface Props {
 
 export function TextNoteBlock({ block, onContextMenu }: Props) {
   const updateBlock = useCanvasStore((s) => s.updateBlock)
+  const lastCreated = useCanvasStore((s) => s.lastCreatedBlockId)
+  const clearLastCreated = useCanvasStore((s) => s.clearLastCreated)
   const [showColors, setShowColors] = useState(false)
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(lastCreated === block.id)
   const [formatMenu, setFormatMenu] = useState<{ x: number; y: number } | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const editor = useEditor({
-    extensions: [StarterKit, Underline],
+    extensions: [
+      StarterKit,
+      Underline,
+      TaskList,
+      TaskItem.configure({ nested: false }),
+    ],
     content: block.html,
     editable: editing,
     immediatelyRender: false,
@@ -52,6 +65,15 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
     editor?.setEditable(editing)
     if (editing) editor?.commands.focus('end')
   }, [editing, editor])
+
+  // Auto-focus on fresh creation.
+  useEffect(() => {
+    if (lastCreated === block.id && editor) {
+      clearLastCreated()
+      setEditing(true)
+      setTimeout(() => editor.commands.focus('end'), 60)
+    }
+  }, [lastCreated, block.id, editor, clearLastCreated])
 
   useEffect(() => {
     if (editor && !editing && editor.getHTML() !== block.html) {
@@ -99,8 +121,15 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
   return (
     <BlockWrapper block={block} kind="text" onContextMenu={onContextMenu}>
       <div
-        className="relative flex h-full w-full flex-col overflow-hidden rounded-md border border-[color:rgba(255,255,255,0.07)] shadow-lg"
-        style={{ background: block.bg }}
+        className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border shadow-lg"
+        style={{
+          // Historical stored blocks used '#1c1c1a' — a shade lighter than
+          // every other block card. Normalize to var(--bg2) so every block
+          // card starts on the same neutral dark surface. Custom palette
+          // picks are still honored.
+          background: block.bg === '#1c1c1a' || !block.bg ? DEFAULT_TEXT_BG : block.bg,
+          borderColor: 'var(--border)',
+        }}
         onClick={() => { if (!editing) setEditing(true) }}
         onContextMenu={handleRightClick}
         onBlur={(e) => {

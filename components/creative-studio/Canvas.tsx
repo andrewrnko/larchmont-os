@@ -3,6 +3,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { useCanvasStore, useActiveBoard, uid } from './store'
 import { useCanvasViewport, useLassoSelect, useUndoRedo } from './hooks'
 import type { AnyBlock, BlockKind } from './types'
@@ -20,8 +21,11 @@ import { TasksBlockView } from './blocks/TasksBlock'
 import { ConnectorLines } from './Connectors'
 import { ContextMenu, type ContextMenuState } from './ContextMenu'
 import { ConnectorDropMenu, type DropMenuState } from './ConnectorDropMenu'
+import { CommentPinMarker, PinContextMenu, type PinViewport } from './CommentPin'
+import { useCommentsStore } from './comments-store'
+import type { Pin } from './comments-store'
 import type { ToolId } from './Toolbar'
-import { Grid3x3, Minus, Plus as PlusIcon } from 'lucide-react'
+import { Grid3x3, Minus, Plus as PlusIcon, Eye, EyeOff } from 'lucide-react'
 import { TimerWidget } from './Timer'
 
 // Compact, AI-ready summary of a block for context injection.
@@ -132,11 +136,27 @@ export function Canvas({ tool, setTool }: Props) {
   const updateConnectCursor = useCanvasStore((s) => s.updateConnectCursor)
   const endConnectDrag = useCanvasStore((s) => s.endConnectDrag)
 
+  // Comment pins
+  const commentPins = useCommentsStore((s) => s.pins)
+  const addPin = useCommentsStore((s) => s.addPin)
+  const commentsHydrated = useCommentsStore((s) => s.hydrated)
+  const hydrateComments = useCommentsStore((s) => s.hydrate)
+  const showResolved = useCommentsStore((s) => s.showResolved)
+  const setShowResolved = useCommentsStore((s) => s.setShowResolved)
+  const setActivePin = useCommentsStore((s) => s.setActivePin)
+  const activePinId = useCommentsStore((s) => s.activePinId)
+
+  // Hydrate comments store on mount
+  useEffect(() => {
+    if (!commentsHydrated) hydrateComments()
+  }, [commentsHydrated, hydrateComments])
+
   const lasso = useLassoSelect(containerRef)
   useUndoRedo()
 
   const [ctxMenu, setCtxMenu] = useState<ContextMenuState | null>(null)
   const [dropMenu, setDropMenu] = useState<DropMenuState | null>(null)
+  const [pinCtxMenu, setPinCtxMenu] = useState<{ pin: Pin; x: number; y: number } | null>(null)
 
   // ── Connector drag: pointermove + pointerup ──
   useEffect(() => {
@@ -263,17 +283,37 @@ export function Canvas({ tool, setTool }: Props) {
     return () => window.removeEventListener('paste', onPaste)
   }, [addBlockAt])
 
-  // Click to place block
+  // Click to place block or comment pin
   const handleCanvasClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('[data-block]')) return
+    if ((e.target as HTMLElement).closest('[data-block], [data-comment-pin]')) return
+
+    // Close active pin if clicking empty canvas (unless dropping a new pin)
+    if (tool !== 'comment' && activePinId) {
+      // Check if click is on a pin element — don't close if so
+      if (!(e.target as HTMLElement).closest('[data-comment-pin]')) {
+        setActivePin(null)
+      }
+    }
+
     if (tool === 'select' || tool === 'pan' || tool === 'connector') return
-    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page', 'transcript', 'assistant', 'tasks']
-    if (!placementKinds.includes(tool as BlockKind)) return
+
     const rect = containerRef.current!.getBoundingClientRect()
     const sx = e.clientX - rect.left
     const sy = e.clientY - rect.top
     const wx = (sx - viewport.x) / viewport.scale
     const wy = (sy - viewport.y) / viewport.scale
+
+    // Comment tool — drop a pin then switch back to select (single-shot)
+    if (tool === 'comment') {
+      if (board) {
+        addPin(board.id, wx, wy)
+        setTool('select')
+      }
+      return
+    }
+
+    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page', 'transcript', 'assistant', 'tasks']
+    if (!placementKinds.includes(tool as BlockKind)) return
     addBlockAt(tool as BlockKind, wx, wy)
     setTool('select')
   }
@@ -429,7 +469,7 @@ export function Canvas({ tool, setTool }: Props) {
         }}
         onContextMenu={handleContextMenu}
         style={{
-          cursor: connectDrag ? 'crosshair' : tool === 'pan' ? 'grab' : tool === 'connector' ? 'crosshair' : 'default',
+          cursor: connectDrag ? 'crosshair' : tool === 'pan' ? 'grab' : tool === 'connector' ? 'crosshair' : tool === 'comment' ? 'crosshair' : 'default',
           backgroundImage: showGrid
             ? 'radial-gradient(circle, color-mix(in srgb, var(--text3) 45%, transparent) 1px, transparent 1px)'
             : undefined,
@@ -447,6 +487,30 @@ export function Canvas({ tool, setTool }: Props) {
         >
           {board.blocks.map((block) => renderBlock(block, handleContextMenu))}
           <ConnectorLines blocks={board.blocks} connectors={board.connectors} />
+
+          {/* Comment pins (world space) */}
+          {(() => {
+            const pinVp: PinViewport = {
+              panX: viewport.x,
+              panY: viewport.y,
+              zoom: viewport.scale,
+              canvasRect: containerRef.current?.getBoundingClientRect() ?? null,
+            }
+            return commentPins
+              .filter((p) => p.boardId === board.id && (showResolved || !p.resolved))
+              .map((pin, i) => (
+                <div key={pin.id} data-comment-pin>
+                  <CommentPinMarker
+                    pin={pin}
+                    index={i}
+                    vp={pinVp}
+                    onPinContextMenu={(e) => {
+                      setPinCtxMenu({ pin, x: e.clientX, y: e.clientY })
+                    }}
+                  />
+                </div>
+              ))
+          })()}
 
           {/* Connector drag preview line (in world space) */}
           {connectDrag && (
@@ -508,10 +572,35 @@ export function Canvas({ tool, setTool }: Props) {
           <PlusIcon size={12} />
         </button>
         <button className="text-[13px] hover:text-white" onClick={zoomToFit}>FIT</button>
+        {/* Show/hide resolved pins toggle */}
+        {commentPins.some((p) => p.boardId === board.id && p.resolved) && (
+          <>
+            <div className="h-3 w-px bg-[rgba(255,255,255,0.07)]" />
+            <button
+              className="flex items-center gap-1 text-[13px]"
+              style={{ color: showResolved ? 'var(--cs-accent2)' : 'var(--text2)' }}
+              onClick={() => setShowResolved(!showResolved)}
+              title={showResolved ? 'Hide resolved' : 'Show resolved'}
+            >
+              {showResolved ? <Eye size={12} /> : <EyeOff size={12} />}
+            </button>
+          </>
+        )}
       </div>
 
       <TimerWidget />
       <ContextMenu state={ctxMenu} onClose={() => setCtxMenu(null)} onZoomToFit={zoomToFit} />
+      {/* Pin right-click context menu */}
+      <AnimatePresence>
+        {pinCtxMenu && (
+          <PinContextMenu
+            pin={pinCtxMenu.pin}
+            x={pinCtxMenu.x}
+            y={pinCtxMenu.y}
+            onClose={() => setPinCtxMenu(null)}
+          />
+        )}
+      </AnimatePresence>
       {(() => {
         // Recompute the drop menu's screen position on every render so it
         // tracks canvas pan/zoom — popup stays attached to the drop point

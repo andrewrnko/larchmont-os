@@ -5,11 +5,11 @@
 import { useEffect, useState } from 'react'
 import {
   MousePointer2, Hand, Type, StickyNote, ImageIcon, Film, GitBranch,
-  FileText, Link2, FileAudio, Bot, CheckSquare,
+  FileText, Link2, FileAudio, Bot, CheckSquare, MessageSquare,
 } from 'lucide-react'
 import type { BlockKind } from './types'
 
-export type ToolId = 'select' | 'pan' | BlockKind | 'connector'
+export type ToolId = 'select' | 'pan' | BlockKind | 'connector' | 'comment'
 
 interface Props {
   active: ToolId
@@ -26,7 +26,8 @@ const TOOLS: { id: ToolId; label: string; shortcut: string; desc: string; icon: 
   { id: 'mindmap',    label: 'Mind Map',        shortcut: 'M', desc: 'Visual brainstorm — click nodes to write notes', icon: GitBranch },
   { id: 'page',       label: 'Page',            shortcut: 'P', desc: 'Full document with headings, lists, media',      icon: FileText },
   { id: 'tasks',      label: 'Tasks',             shortcut: 'K', desc: 'Task list with checkboxes and focus timer',      icon: CheckSquare },
-  { id: 'connector',  label: 'Connector',       shortcut: 'C', desc: 'Draw lines between blocks (also hover edges)',   icon: Link2 },
+  { id: 'comment',    label: 'Comment',           shortcut: 'C', desc: 'Drop annotation pins on the canvas',              icon: MessageSquare },
+  { id: 'connector',  label: 'Connector',       shortcut: 'L', desc: 'Draw lines between blocks (also hover edges)',   icon: Link2 },
   { id: 'transcript', label: 'Transcript',      shortcut: 'R', desc: 'Paste audio transcripts for reference',          icon: FileAudio },
   { id: 'assistant',  label: 'AI Assistant',    shortcut: 'A', desc: 'Chat with AI about connected blocks',            icon: Bot },
 ]
@@ -41,8 +42,8 @@ export function Toolbar({ active, setActive }: Props) {
       if (e.metaKey || e.ctrlKey || e.altKey) return
       const map: Record<string, ToolId> = {
         v: 'select', h: 'pan', t: 'text', s: 'sticky', i: 'image',
-        f: 'storyboard', m: 'mindmap', p: 'page', c: 'connector',
-        r: 'transcript', a: 'assistant', k: 'tasks',
+        f: 'storyboard', m: 'mindmap', p: 'page', c: 'comment',
+        l: 'connector', r: 'transcript', a: 'assistant', k: 'tasks',
       }
       const id = map[e.key.toLowerCase()]
       if (id) setActive(id)

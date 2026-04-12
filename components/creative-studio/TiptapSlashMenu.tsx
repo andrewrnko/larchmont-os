@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Heading1, Heading2, Heading3, List, ListOrdered, Quote, Minus, Type,
+  Heading1, Heading2, Heading3, List, ListOrdered, Quote, Minus, Type, Square,
   type LucideIcon,
 } from 'lucide-react'
 import type { Editor } from '@tiptap/react'
@@ -60,6 +60,20 @@ const COMMANDS: TiptapSlashCommand[] = [
     action: (e) => e.chain().focus().toggleOrderedList().run(),
   },
   {
+    // Matches /checkbox, /check, /todo, /task via the fuzzy filter below.
+    label: 'To-do',
+    description: 'Checkbox · task list',
+    Icon: Square,
+    action: (e) => {
+      // toggleTaskList is provided by @tiptap/extension-task-list; safe to
+      // call via the `any` cast since it's registered as a command at runtime
+      // in blocks that include the TaskList extension.
+      ;(e.chain().focus() as unknown as { toggleTaskList: () => { run: () => void } })
+        .toggleTaskList()
+        .run()
+    },
+  },
+  {
     label: 'Quote',
     description: 'Block quote',
     Icon: Quote,
@@ -87,11 +101,28 @@ export function useTiptapSlashMenu(editor: Editor | null) {
 
   const close = useCallback(() => setMenu(null), [])
 
-  // Filtered commands based on current filter text
+  // Filtered commands based on current filter text. Also matches common
+  // aliases (e.g. "check" / "checkbox" / "task" all hit the To-do command)
+  // so users who type what they expect get the right result.
+  const ALIASES: Record<string, string[]> = {
+    'To-do': ['check', 'checkbox', 'task', 'todo', 'done'],
+    'Heading 1': ['h1', 'title'],
+    'Heading 2': ['h2'],
+    'Heading 3': ['h3'],
+    'Bullet list': ['ul', 'dash'],
+    'Numbered list': ['ol', 'num', '1.', 'ordered'],
+    'Divider': ['hr', 'rule', 'separator', 'break'],
+    'Normal text': ['p', 'paragraph', 'text'],
+    'Quote': ['blockquote', 'cite'],
+  }
   const filtered = menu
     ? COMMANDS.filter((c) => {
         const f = menu.filter.toLowerCase()
-        return c.label.toLowerCase().includes(f) || c.description.toLowerCase().includes(f)
+        if (!f) return true
+        if (c.label.toLowerCase().includes(f)) return true
+        if (c.description.toLowerCase().includes(f)) return true
+        const aliases = ALIASES[c.label] ?? []
+        return aliases.some((a) => a.startsWith(f) || f.startsWith(a))
       })
     : COMMANDS
 
@@ -100,9 +131,20 @@ export function useTiptapSlashMenu(editor: Editor | null) {
       if (!editor || !menu) return
       const from = menu.slashDocPos
       const to = from + 1 + menu.filter.length // "/" + filter chars
-      // Delete "/filter" then run command
-      editor.chain().focus().deleteRange({ from, to }).run()
+
+      // Step 1: delete the "/filter" text via a direct ProseMirror
+      // transaction — synchronous, no intermediate re-render.
+      const { tr } = editor.state
+      tr.delete(from, to)
+      editor.view.dispatch(tr)
+
+      // Step 2: apply the block-level transformation immediately.
+      // Because dispatch() was synchronous, the editor state already
+      // reflects the deletion — so the command operates on the now-empty
+      // paragraph and converts it in-place. No ghost blank line.
       cmd.action(editor)
+      editor.commands.focus()
+
       setMenu(null)
     },
     [editor, menu]

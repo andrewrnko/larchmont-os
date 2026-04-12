@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useCanvasStore } from '../store'
 import type { PageBlock } from '../types'
@@ -24,8 +24,22 @@ interface Props {
 export function PageBlockCard({ block, onContextMenu }: Props) {
   const updateBlock = useCanvasStore((s) => s.updateBlock)
   const openPage = useCanvasStore((s) => s.openPage)
+  const lastCreated = useCanvasStore((s) => s.lastCreatedBlockId)
+  const clearLastCreated = useCanvasStore((s) => s.clearLastCreated)
+  const titleRef = useRef<HTMLInputElement>(null)
   const [iconOpen, setIconOpen] = useState(false)
   const [colorOpen, setColorOpen] = useState(false)
+
+  // Auto-focus title on fresh creation.
+  useEffect(() => {
+    if (lastCreated === block.id && titleRef.current) {
+      clearLastCreated()
+      setTimeout(() => {
+        titleRef.current?.focus()
+        titleRef.current?.select()
+      }, 60)
+    }
+  }, [lastCreated, block.id, clearLastCreated])
 
   return (
     <BlockWrapper block={block} kind="page" onContextMenu={onContextMenu}>
@@ -48,7 +62,9 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
             {block.icon}
           </button>
           <input
-            className="flex-1 bg-transparent text-[15px] font-semibold text-white outline-none"
+            ref={titleRef}
+            className="flex-1 bg-transparent text-[15px] font-semibold outline-none"
+            style={{ color: '#f0ede8' }}
             defaultValue={block.title}
             onBlur={(e) => updateBlock(block.id, { title: e.target.value })}
             onPointerDown={(e) => e.stopPropagation()}
