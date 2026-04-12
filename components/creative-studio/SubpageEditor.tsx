@@ -11,20 +11,24 @@ import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCanvasStore, uid, useActiveBoard } from './store'
 import type { PageBlock, SubPageBlock } from './types'
-import { ChevronLeft, Calendar, Palette, Link2, ArrowRight, GripVertical, Trash2, Copy, ArrowRightLeft } from 'lucide-react'
+import {
+  ChevronLeft, Calendar, Palette, Link2, ArrowRight, GripVertical, Trash2, Copy, ArrowRightLeft,
+  Heading1, Heading2, Heading3, Type, List, ListOrdered, Square, CheckSquare, Minus, ImageIcon,
+  type LucideIcon,
+} from 'lucide-react'
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
-const BLOCK_TYPES: { type: SubPageBlock['type']; label: string; icon: string; description: string }[] = [
-  { type: 'h1', label: 'Heading 1', icon: 'H1', description: 'Large heading' },
-  { type: 'h2', label: 'Heading 2', icon: 'H2', description: 'Medium heading' },
-  { type: 'h3', label: 'Heading 3', icon: 'H3', description: 'Small heading' },
-  { type: 'p', label: 'Paragraph', icon: '¶', description: 'Plain text' },
-  { type: 'bullet', label: 'Bullet list', icon: '•', description: 'Unordered list' },
-  { type: 'numbered', label: 'Numbered list', icon: '#', description: 'Ordered list' },
-  { type: 'todo', label: 'To-do', icon: '☐', description: 'Checkbox item' },
-  { type: 'divider', label: 'Divider', icon: '—', description: 'Horizontal rule' },
-  { type: 'image', label: 'Image', icon: '🖼', description: 'Image from URL' },
+const BLOCK_TYPES: { type: SubPageBlock['type']; label: string; Icon: LucideIcon; description: string }[] = [
+  { type: 'h1',       label: 'Heading 1',     Icon: Heading1,    description: 'Large heading' },
+  { type: 'h2',       label: 'Heading 2',     Icon: Heading2,    description: 'Medium heading' },
+  { type: 'h3',       label: 'Heading 3',     Icon: Heading3,    description: 'Small heading' },
+  { type: 'p',        label: 'Paragraph',     Icon: Type,        description: 'Plain text' },
+  { type: 'bullet',   label: 'Bullet list',   Icon: List,        description: 'Unordered list' },
+  { type: 'numbered', label: 'Numbered list', Icon: ListOrdered, description: 'Ordered list' },
+  { type: 'todo',     label: 'To-do',         Icon: Square,      description: 'Checkbox item' },
+  { type: 'divider',  label: 'Divider',       Icon: Minus,       description: 'Horizontal rule' },
+  { type: 'image',    label: 'Image',         Icon: ImageIcon,   description: 'Image from URL' },
 ]
 
 const COLORS = ['#0a0a0a', '#1a1a1a', '#1b2a1f', '#1a1f2a', '#2a1a1f', '#2a261a', '#241a2a', '#3a1a0a']
@@ -47,6 +51,9 @@ export function SubpageEditor() {
   const [colorOpen, setColorOpen] = useState(false)
   const [dragId, setDragId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
+  // Track focused block so only its placeholder shows — no more stacked
+  // "Type / for commands…" strings on every empty line (Notion-style).
+  const [focusedBlockId, setFocusedBlockId] = useState<string | null>(null)
   const refs = useRef<Record<string, HTMLTextAreaElement | null>>({})
   const focusNextRef = useRef<string | null>(null)
 
@@ -239,7 +246,17 @@ export function SubpageEditor() {
 
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      insertAfter(item.id, item.type === 'bullet' || item.type === 'todo' || item.type === 'numbered' ? item.type : 'p')
+      // Notion-style list exit: pressing Enter on an EMPTY list item
+      // (bullet/todo/numbered) converts it to a plain paragraph instead
+      // of adding another empty list item.
+      const val = e.currentTarget.value
+      const isListItem = item.type === 'bullet' || item.type === 'todo' || item.type === 'numbered'
+      if (isListItem && val === '') {
+        changeType(item.id, 'p')
+        return
+      }
+      // Otherwise, insert a new line of the same type (or 'p' if current isn't a list)
+      insertAfter(item.id, isListItem ? item.type : 'p')
     }
 
     if (e.key === 'Backspace' && pageBlock.content.length > 1) {
@@ -285,7 +302,7 @@ export function SubpageEditor() {
           setBlockMenu({ blockId: item.id, x: rect.left, y: rect.bottom + 4, showTurnInto: false })
         }}
       >
-        <GripVertical size={14} className="text-neutral-600 hover:text-neutral-400" />
+        <GripVertical size={14} className="text-[#555450] hover:text-[#c8c4bc]" />
       </div>
     )
 
@@ -309,12 +326,12 @@ export function SubpageEditor() {
       return (
         <div
           key={item.id}
-          className={`group/block flex items-center gap-0 py-2 rounded ${isDragOver ? 'bg-amber-500/10 border-t border-amber-500/40' : ''}`}
+          className={`group/block flex items-center gap-0 py-2 rounded ${isDragOver ? 'bg-[color:var(--cs-accent)]/10 border-t border-[color:var(--cs-accent)]/40' : ''}`}
           onContextMenu={blockContextMenu}
           {...dropProps}
         >
           {dragHandle}
-          <hr className="flex-1 border-[#2a2a2a]" />
+          <hr className="flex-1 border-[color:rgba(255,255,255,0.07)]" />
         </div>
       )
     }
@@ -322,7 +339,7 @@ export function SubpageEditor() {
       return (
         <div
           key={item.id}
-          className={`group/block flex items-start gap-0 py-1 rounded ${isDragOver ? 'bg-amber-500/10 border-t border-amber-500/40' : ''}`}
+          className={`group/block flex items-start gap-0 py-1 rounded ${isDragOver ? 'bg-[color:var(--cs-accent)]/10 border-t border-[color:var(--cs-accent)]/40' : ''}`}
           onContextMenu={blockContextMenu}
           {...dropProps}
         >
@@ -333,7 +350,7 @@ export function SubpageEditor() {
               <img src={item.src} alt="" className="max-h-96 rounded" />
             ) : (
               <input
-                className="w-full rounded bg-[#1a1a1a] px-3 py-2 text-[15px] text-white outline-none placeholder:text-neutral-600"
+                className="w-full rounded bg-[#242422] px-3 py-2 text-[15px] text-white outline-none placeholder:text-[#555450]"
                 placeholder="Paste image URL and press Enter…"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -368,13 +385,18 @@ export function SubpageEditor() {
     return (
       <div
         key={item.id}
-        className={`group/block flex items-start gap-0 py-1 rounded ${isDragOver ? 'bg-amber-500/10 border-t border-amber-500/40' : ''}`}
+        className={`group/block flex items-start gap-0 py-1 rounded ${isDragOver ? 'bg-[color:var(--cs-accent)]/10 border-t border-[color:var(--cs-accent)]/40' : ''}`}
         onContextMenu={blockContextMenu}
+        onClick={(e) => {
+          // Clicking on the row padding (not a child element) should focus
+          // the textarea — lets users click anywhere on a line to land in it.
+          if (e.target === e.currentTarget) refs.current[item.id]?.focus()
+        }}
         {...dropProps}
       >
         {dragHandle}
-        {item.type === 'bullet' && <span className="shrink-0 text-[15px] leading-[1.5] text-neutral-400 mr-1.5">•</span>}
-        {item.type === 'numbered' && <span className="shrink-0 min-w-[1.4em] text-right font-mono text-[15px] leading-[1.5] text-neutral-400 mr-1.5">{numberedIndex}.</span>}
+        {item.type === 'bullet' && <span className="shrink-0 text-[15px] leading-[1.5] mr-2" style={{ color: 'var(--text1)' }}>•</span>}
+        {item.type === 'numbered' && <span className="shrink-0 min-w-[1.4em] text-right font-mono text-[15px] leading-[1.5] mr-2" style={{ color: 'var(--text1)' }}>{numberedIndex}.</span>}
         {item.type === 'todo' && (
           <button
             onClick={() =>
@@ -382,11 +404,13 @@ export function SubpageEditor() {
                 pageBlock.content.map((x) => (x.id === item.id ? ({ ...x, checked: !(item.checked ?? false) } as SubPageBlock) : x))
               )
             }
-            className={`shrink-0 mt-[4px] mr-1.5 flex h-4 w-4 items-center justify-center rounded-sm border ${
-              item.checked ? 'border-amber-500 bg-amber-500 text-black' : 'border-neutral-600'
-            }`}
+            className="shrink-0 mt-[3px] mr-2 flex h-[18px] w-[18px] items-center justify-center rounded-[4px] transition-colors duration-150"
+            style={{
+              color: item.checked ? 'var(--cs-accent)' : 'var(--text2)',
+            }}
+            aria-label={item.checked ? 'Mark as not done' : 'Mark as done'}
           >
-            {item.checked && <span className="text-[13px] leading-none">✓</span>}
+            {item.checked ? <CheckSquare size={18} strokeWidth={2.2} /> : <Square size={18} strokeWidth={2.2} />}
           </button>
         )}
         <textarea
@@ -396,13 +420,16 @@ export function SubpageEditor() {
           }}
           defaultValue={item.text}
           rows={1}
-          placeholder="Type '/' for commands…"
-          className={`flex-1 resize-none overflow-hidden bg-transparent text-white placeholder:text-neutral-600 focus:outline-none ${cls} ${
-            item.type === 'todo' && item.checked ? 'text-neutral-500 line-through' : ''
+          placeholder={focusedBlockId === item.id ? "Type '/' for commands…" : ''}
+          className={`flex-1 resize-none overflow-hidden bg-transparent placeholder:text-[color:var(--text3)] focus:outline-none ${cls} ${
+            item.type === 'todo' && item.checked ? 'line-through' : ''
           }`}
+          style={{ color: item.type === 'todo' && item.checked ? 'var(--text2)' : 'var(--text0)' }}
           onInput={(e) => autoResize(e.currentTarget)}
+          onFocus={() => setFocusedBlockId(item.id)}
           onBlur={(e) => {
             if (slashMenu?.blockId === item.id) return
+            setFocusedBlockId((prev) => (prev === item.id ? null : prev))
             setContent(pageBlock.content.map((x) => (x.id === item.id ? ({ ...x, text: e.target.value } as SubPageBlock) : x)))
           }}
           onKeyDown={(e) => handleKey(e, item)}
@@ -421,10 +448,10 @@ export function SubpageEditor() {
         className="absolute inset-0 z-50 overflow-auto"
         style={{ background: '#0a0a0a' }}
       >
-        <div className="sticky top-0 z-10 border-b border-[#2a2a2a] bg-black/70 px-6 py-3 backdrop-blur">
+        <div className="sticky top-0 z-10 border-b border-[color:rgba(255,255,255,0.07)] bg-black/70 px-6 py-3 backdrop-blur">
           <button
             onClick={() => openPage(null)}
-            className="flex items-center gap-2 text-[15px] text-neutral-500 hover:text-white"
+            className="flex items-center gap-2 text-[15px] text-[#888780] hover:text-white"
           >
             <ChevronLeft size={12} /> Creative Studio / {board?.name} /{' '}
             <span className="text-white">{pageBlock.title}</span>
@@ -449,14 +476,14 @@ export function SubpageEditor() {
           </div>
 
           {/* Properties bar */}
-          <div className="mb-6 flex flex-wrap items-center gap-4 text-[15px] text-neutral-500">
+          <div className="mb-6 flex flex-wrap items-center gap-4 text-[15px] text-[#888780]">
             <div className="flex items-center gap-2">
               <Calendar size={12} />
               <span>Due</span>
               <input
                 type="date"
                 defaultValue={pageBlock.deadline ?? ''}
-                className="rounded bg-[#1a1a1a] px-2 py-1 text-white outline-none"
+                className="rounded bg-[#242422] px-2 py-1 text-white outline-none"
                 onChange={(e) => updateBlock(pageBlock.id, { deadline: e.target.value })}
               />
             </div>
@@ -490,7 +517,7 @@ export function SubpageEditor() {
               {COLORS.map((c) => (
                 <button
                   key={c}
-                  className="h-8 w-8 rounded border border-[#2a2a2a]"
+                  className="h-8 w-8 rounded border border-[color:rgba(255,255,255,0.07)]"
                   style={{ background: c }}
                   onClick={() => {
                     updateBlock(pageBlock.id, { color: c })
@@ -503,40 +530,44 @@ export function SubpageEditor() {
 
           {/* Connections list */}
           {connections.length > 0 && (
-            <div className="mb-6 rounded border border-[#2a2a2a] bg-black/30 p-3">
-              <div className="mb-2 font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Linked to</div>
+            <div className="mb-6 rounded border border-[color:rgba(255,255,255,0.07)] bg-black/30 p-3">
+              <div className="mb-2 font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Linked to</div>
               <div className="space-y-1">
                 {connections.map(({ connector, other }) => (
                   <button
                     key={connector.id}
                     onClick={() => centerOnBlock(other!.id)}
-                    className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[14px] text-neutral-300 hover:bg-amber-500/10"
+                    className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-[14px] text-[#c8c4bc] hover:bg-[color:var(--cs-accent)]/10"
                   >
-                    <span className="font-mono text-[13px] uppercase text-neutral-500">{other!.kind}</span>
+                    <span className="font-mono text-[13px] uppercase text-[#888780]">{other!.kind}</span>
                     <span className="flex-1 truncate">
                       {('title' in other! ? (other as { title?: string }).title : null) ||
                         ('text' in other! ? (other as { text?: string }).text : null) ||
                         '(untitled)'}
                     </span>
-                    <ArrowRight size={10} className="text-amber-500" />
+                    <ArrowRight size={10} className="text-[color:var(--cs-accent)]" />
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Content blocks */}
-          <div>
+          {/* Content blocks — click anywhere below the content column to add
+              a new line. Fills remaining viewport so even a nearly-empty page
+              has a huge clickable target. */}
+          <div
+            className="min-h-[calc(100vh-240px)]"
+            onClick={(e) => {
+              if (e.target !== e.currentTarget) return
+              const last = pageBlock.content[pageBlock.content.length - 1]
+              if (last && 'text' in last && last.text === '') {
+                refs.current[last.id]?.focus()
+              } else if (last) {
+                insertAfter(last.id, 'p')
+              }
+            }}
+          >
             {pageBlock.content.map(renderItem)}
-            <button
-              onClick={() => {
-                const lastItem = pageBlock.content[pageBlock.content.length - 1]
-                insertAfter(lastItem?.id ?? '', 'p')
-              }}
-              className="mt-2 w-full rounded py-2 text-center text-[15px] text-neutral-600 hover:bg-[#1a1a1a] hover:text-neutral-400"
-            >
-              + Add a line
-            </button>
           </div>
         </div>
 
@@ -546,37 +577,51 @@ export function SubpageEditor() {
           return (
             <div
               data-slash-menu
-              className="fixed z-[60] w-56 overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141414] py-1 shadow-2xl"
+              className="fixed z-[60] w-60 overflow-hidden rounded-md border py-1 shadow-2xl"
               style={{
                 left: Math.min(slashMenu.x, window.innerWidth - 240),
                 top: Math.min(slashMenu.y, window.innerHeight - 300),
+                background: 'var(--bg2)',
+                borderColor: 'var(--border)',
               }}
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <div className="px-3 py-1 text-[13px] uppercase tracking-[0.06em] text-neutral-600">
-                Turn into {slashMenu.filter && <span className="text-amber-500">· {slashMenu.filter}</span>}
+              <div className="px-3 py-1 text-[11.5px] font-medium uppercase tracking-[0.08em]" style={{ color: 'var(--text3)' }}>
+                Turn into {slashMenu.filter && <span style={{ color: 'var(--cs-accent)' }}>· {slashMenu.filter}</span>}
               </div>
               {filtered.length === 0 && (
-                <div className="px-3 py-2 text-[15px] text-neutral-500">No match — press Esc</div>
+                <div className="px-3 py-2 text-[13px]" style={{ color: 'var(--text2)' }}>No match — press Esc</div>
               )}
-              {filtered.map((t, i) => (
-                <button
-                  key={t.type}
-                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] ${
-                    i === slashMenu.selected ? 'bg-amber-500/20 text-amber-300' : 'text-neutral-200 hover:bg-[#1a1a1a]'
-                  }`}
-                  onMouseEnter={() => setSlashMenu((m) => m ? { ...m, selected: i } : m)}
-                  onMouseDown={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    applySlashCommand(t.type, slashMenu.blockId)
-                  }}
-                >
-                  <span className="w-5 text-center text-[15px] leading-none">{t.icon}</span>
-                  <span className="flex-1">{t.label}</span>
-                  <span className="text-[13px] text-neutral-600">{t.description}</span>
-                </button>
-              ))}
+              {filtered.map((t, i) => {
+                const Icon = t.Icon
+                const active = i === slashMenu.selected
+                return (
+                  <button
+                    key={t.type}
+                    className={`flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-[13.5px] transition-colors duration-100 ${
+                      active ? 'bg-[color:var(--cs-accent)]/20 text-[color:var(--cs-accent2)]' : 'text-[color:var(--text1)] hover:bg-[color:var(--bg3)]'
+                    }`}
+                    onMouseEnter={() => setSlashMenu((m) => m ? { ...m, selected: i } : m)}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      applySlashCommand(t.type, slashMenu.blockId)
+                    }}
+                  >
+                    <span
+                      className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[4px]"
+                      style={{
+                        background: active ? 'color-mix(in srgb, var(--cs-accent) 25%, transparent)' : 'var(--bg3)',
+                        color: active ? 'var(--cs-accent)' : 'var(--text1)',
+                      }}
+                    >
+                      <Icon size={14} strokeWidth={2} />
+                    </span>
+                    <span className="flex-1 truncate">{t.label}</span>
+                    <span className="text-[11.5px] truncate" style={{ color: 'var(--text3)' }}>{t.description}</span>
+                  </button>
+                )
+              })}
             </div>
           )
         })()}
@@ -588,69 +633,95 @@ export function SubpageEditor() {
           return (
             <div
               data-block-menu
-              className="fixed z-[60] w-48 overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141414] py-1 shadow-2xl"
-              style={{ left: blockMenu.x, top: blockMenu.y }}
+              className="fixed z-[60] w-52 overflow-hidden rounded-md border py-1 shadow-2xl"
+              style={{
+                left: blockMenu.x,
+                top: blockMenu.y,
+                background: 'var(--bg2)',
+                borderColor: 'var(--border)',
+              }}
               onMouseDown={(e) => e.stopPropagation()}
             >
               {!blockMenu.showTurnInto ? (
                 <>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] text-neutral-200 hover:bg-[#1a1a1a]"
+                    className="flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-[13.5px] transition-colors duration-100"
+                    style={{ color: 'var(--text1)' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg3)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setBlockMenu((m) => m ? { ...m, showTurnInto: true } : m) }}
                   >
-                    <ArrowRightLeft size={12} className="text-neutral-500" />
+                    <ArrowRightLeft size={14} style={{ color: 'var(--text2)' }} />
                     <span className="flex-1">Turn into</span>
-                    <span className="text-[13px] text-neutral-600">›</span>
+                    <span className="text-[13px]" style={{ color: 'var(--text3)' }}>›</span>
                   </button>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] text-neutral-200 hover:bg-[#1a1a1a]"
+                    className="flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-[13.5px] transition-colors duration-100"
+                    style={{ color: 'var(--text1)' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg3)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     onMouseDown={(e) => {
                       e.preventDefault(); e.stopPropagation()
                       duplicateItem(blockMenu.blockId)
                       setBlockMenu(null)
                     }}
                   >
-                    <Copy size={12} className="text-neutral-500" />
+                    <Copy size={14} style={{ color: 'var(--text2)' }} />
                     Duplicate
                   </button>
-                  <div className="my-1 h-px bg-[#2a2a2a]" />
+                  <div className="my-1 h-px" style={{ background: 'var(--border)' }} />
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] text-red-400 hover:bg-red-500/10"
+                    className="flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-[13.5px] text-red-400 hover:bg-red-500/10"
                     onMouseDown={(e) => {
                       e.preventDefault(); e.stopPropagation()
                       removeItem(blockMenu.blockId)
                       setBlockMenu(null)
                     }}
                   >
-                    <Trash2 size={12} />
+                    <Trash2 size={14} />
                     Delete
                   </button>
                 </>
               ) : (
                 <>
                   <button
-                    className="flex w-full items-center gap-2 px-3 py-1 text-left text-[15px] text-neutral-500 hover:bg-[#1a1a1a]"
+                    className="flex w-full items-center gap-2 px-3 py-1 text-left text-[13px] transition-colors duration-100"
+                    style={{ color: 'var(--text2)' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg3)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setBlockMenu((m) => m ? { ...m, showTurnInto: false } : m) }}
                   >
                     ‹ Back
                   </button>
-                  <div className="my-1 h-px bg-[#2a2a2a]" />
-                  {BLOCK_TYPES.map((t) => (
-                    <button
-                      key={t.type}
-                      className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] ${
-                        menuBlock.type === t.type ? 'bg-amber-500/20 text-amber-300' : 'text-neutral-200 hover:bg-[#1a1a1a]'
-                      }`}
-                      onMouseDown={(e) => {
-                        e.preventDefault(); e.stopPropagation()
-                        applySlashCommand(t.type, blockMenu.blockId)
-                        setBlockMenu(null)
-                      }}
-                    >
-                      <span className="w-5 text-center text-[15px] leading-none">{t.icon}</span>
-                      {t.label}
-                    </button>
-                  ))}
+                  <div className="my-1 h-px" style={{ background: 'var(--border)' }} />
+                  {BLOCK_TYPES.map((t) => {
+                    const Icon = t.Icon
+                    const active = menuBlock.type === t.type
+                    return (
+                      <button
+                        key={t.type}
+                        className={`flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-[13.5px] transition-colors duration-100 ${
+                          active ? 'bg-[color:var(--cs-accent)]/20 text-[color:var(--cs-accent2)]' : 'text-[color:var(--text1)] hover:bg-[color:var(--bg3)]'
+                        }`}
+                        onMouseDown={(e) => {
+                          e.preventDefault(); e.stopPropagation()
+                          applySlashCommand(t.type, blockMenu.blockId)
+                          setBlockMenu(null)
+                        }}
+                      >
+                        <span
+                          className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[4px]"
+                          style={{
+                            background: active ? 'color-mix(in srgb, var(--cs-accent) 25%, transparent)' : 'var(--bg3)',
+                            color: active ? 'var(--cs-accent)' : 'var(--text1)',
+                          }}
+                        >
+                          <Icon size={14} strokeWidth={2} />
+                        </span>
+                        {t.label}
+                      </button>
+                    )
+                  })}
                 </>
               )}
             </div>

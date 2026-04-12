@@ -5,6 +5,7 @@ import { Save, RotateCcw, Check, Settings } from 'lucide-react'
 import { db } from '@/lib/db'
 import { useToastStore } from '@/lib/store'
 import { PageHeader } from '@/components/shared/page-header'
+import { AppearanceSection } from '@/components/settings/appearance-section'
 import { cn } from '@/lib/utils'
 
 // Default labels — these are the fallback values when nothing is saved
@@ -186,6 +187,9 @@ export default function SettingsPage() {
         </div>
       ) : (
         <div className="max-w-2xl space-y-8">
+          {/* ── Appearance ── */}
+          <AppearanceSection />
+
           {LABEL_GROUPS.map((group) => (
             <div key={group.title} className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
               <div className="border-b border-[var(--border)] px-5 py-4">

@@ -1,276 +1,388 @@
+// Larchmont OS sidebar — icon-only rail with portal-mounted hover tooltips.
+//
+// Styled like the Creative Studio toolbar: each row is a single icon tile
+// (40×40, centered in the 68px rail), and its label surfaces as a floating
+// tooltip on hover. The tooltip is portalled to document.body so it's not
+// clipped by the sidebar's overflow-hidden.
+//
+// Driven by useUIStore.sidebarMode:
+//   - 'full' / 'rail'  → render the 68px rail
+//   - 'hidden'         → animate width to 0
+
 'use client'
 
-import type { ElementType } from 'react'
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  LayoutDashboard, Inbox, FolderKanban, FileEdit,
-  Megaphone, ImageIcon, Library, Palette, CalendarDays, Film,
-  Archive, Settings, Zap, ChevronLeft, ChevronRight, Bot, Mic,
-  Moon, BarChart2, TrendingUp, Sparkles, LogOut,
-} from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Search, Trash2, LogOut } from 'lucide-react'
 import { logout } from '@/components/auth-gate'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
-import { ThemeToggle } from './theme-toggle'
-import { QuickCapture } from '../shared/quick-capture'
+import { OBJECT_ROUTES, ROUTE_META } from './route-meta'
 
-const NAV_ITEMS: { href: string; label: string; icon: ElementType; badge?: boolean; briefing?: boolean; debrief?: boolean; weeklyReview?: boolean }[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/briefing', label: 'Assistant', icon: Bot },
-  { href: '/debrief', label: 'End of Day Debrief', icon: Moon, debrief: true },
-  { href: '/weekly-review', label: 'Weekly Review', icon: TrendingUp, weeklyReview: true },
-  { href: '/analytics', label: 'Analytics', icon: BarChart2 },
-  { href: '/inbox', label: 'Inbox', icon: Inbox, badge: true },
-  { href: '/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/briefs', label: 'Creative Briefs', icon: FileEdit },
-  { href: '/campaigns', label: 'Campaigns', icon: Megaphone },
-  { href: '/assets', label: 'Assets', icon: ImageIcon },
-  { href: '/resources', label: 'Resource Library', icon: Library },
-  { href: '/brand', label: 'Brand Identity', icon: Palette },
-  { href: '/events', label: 'Events & Shoots', icon: CalendarDays },
-  { href: '/content', label: 'Content Pipeline', icon: Film },
-  { href: '/voice-notes', label: 'Voice Notes', icon: Mic },
-  { href: '/creative-studio', label: 'Creative Studio', icon: Sparkles },
-]
+const SIDEBAR_WIDTH = 68
+const TILE_SIZE = 40
 
-const BOTTOM_NAV = [
-  { href: '/archive', label: 'Archive', icon: Archive },
-  { href: '/settings', label: 'Settings', icon: Settings },
-]
+// ─────────────────────────────────────────────────────────────────────────────
+// Portal-mounted hover tooltip. Fixed positioning using the anchor row's
+// bounding rect so it escapes the sidebar's overflow-hidden clipping.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface TooltipPortalProps {
+  label: string
+  hint?: string
+  anchorRect: DOMRect
+}
+
+function TooltipPortal({ label, hint, anchorRect }: TooltipPortalProps) {
+  const [mounted, setMounted] = useState(false)
+  // Standard SSR-safe portal mount check — document is only available on
+  // the client, so we defer portal creation until after hydration.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setMounted(true), [])
+  if (!mounted) return null
+
+  return createPortal(
+    <div
+      className="pointer-events-none fixed z-[1000] whitespace-nowrap"
+      style={{
+        left: anchorRect.right + 10,
+        top: anchorRect.top + anchorRect.height / 2,
+        transform: 'translateY(-50%)',
+      }}
+    >
+      <div
+        className="rounded-md border px-3 py-2 shadow-xl"
+        style={{
+          background: 'var(--bg2)',
+          borderColor: 'var(--border)',
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-[14px] font-medium" style={{ color: 'var(--text0)' }}>
+            {label}
+          </span>
+          {hint && (
+            <span
+              className="rounded px-1.5 py-0.5 font-mono text-[11px]"
+              style={{ background: 'var(--bg4)', color: 'var(--text1)' }}
+            >
+              {hint}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tile — the 40×40 clickable element. Centered in its parent via flex.
+// All rows (avatar, search, routes, bin, logout) share this exact footprint
+// so every center lines up on the same x axis.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface TileProps {
+  label: string
+  hint?: string
+  href?: string
+  onClick?: () => void
+  isActive?: boolean
+  count?: number
+  danger?: boolean
+  /** Optional explicit background (for route tint colors). */
+  background?: string
+  /** Optional explicit foreground color. */
+  color?: string
+  children: React.ReactNode
+}
+
+function Tile({
+  label,
+  hint,
+  href,
+  onClick,
+  isActive,
+  count,
+  danger,
+  background,
+  color,
+  children,
+}: TileProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null)
+
+  const onEnter = () => {
+    if (wrapperRef.current) {
+      setAnchorRect(wrapperRef.current.getBoundingClientRect())
+    }
+  }
+  const onLeave = () => setAnchorRect(null)
+
+  const tileClasses = cn(
+    'group relative flex items-center justify-center rounded-[10px]',
+    'transition-all duration-150 ease-out',
+    'hover:scale-[1.04]',
+    isActive && !background && 'text-[color:var(--text0)]'
+  )
+
+  const tileStyle: React.CSSProperties = {
+    width: TILE_SIZE,
+    height: TILE_SIZE,
+    background: isActive && !background ? 'var(--bg3)' : background ?? 'var(--bg3)',
+    color: color ?? 'var(--text1)',
+    boxShadow: isActive ? 'inset 0 0 0 1.5px var(--accent)' : undefined,
+  }
+
+  const content = (
+    <>
+      {children}
+      {count !== undefined && count > 0 && (
+        <span
+          className="absolute -right-1 -top-1 flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-semibold leading-none"
+          style={{ background: 'var(--accent)', color: '#0a0a09' }}
+        >
+          {count}
+        </span>
+      )}
+    </>
+  )
+
+  return (
+    <div
+      ref={wrapperRef}
+      className="flex w-full justify-center"
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+    >
+      {href ? (
+        <Link
+          href={href}
+          className={tileClasses}
+          style={tileStyle}
+          aria-current={isActive ? 'page' : undefined}
+          aria-label={label}
+        >
+          {content}
+        </Link>
+      ) : (
+        <button
+          onClick={onClick}
+          className={tileClasses}
+          style={tileStyle}
+          aria-label={label}
+          onMouseEnter={
+            danger
+              ? (e) => {
+                  e.currentTarget.style.background = 'rgba(224,80,80,0.12)'
+                  e.currentTarget.style.color = '#e05050'
+                }
+              : undefined
+          }
+          onMouseLeave={
+            danger
+              ? (e) => {
+                  e.currentTarget.style.background = 'var(--bg3)'
+                  e.currentTarget.style.color = 'var(--text1)'
+                }
+              : undefined
+          }
+        >
+          {content}
+        </button>
+      )}
+      {anchorRect && <TooltipPortal label={label} hint={hint} anchorRect={anchorRect} />}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RouteTile — thin wrapper that reads icon/tint from ROUTE_META
+// ─────────────────────────────────────────────────────────────────────────────
+
+function RouteTile({
+  href,
+  isActive,
+  count,
+}: {
+  href: string
+  isActive: boolean
+  count?: number
+}) {
+  const meta = ROUTE_META[href]
+  if (!meta) return null
+  const Icon = meta.icon
+  return (
+    <Tile
+      href={href}
+      isActive={isActive}
+      label={meta.title}
+      count={count}
+      background={meta.tint}
+      color={meta.tintFg}
+    >
+      <Icon size={18} strokeWidth={2.2} />
+    </Tile>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WorkspaceAvatar — the L tile. Same 40×40 footprint so it aligns perfectly
+// with every row below it.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function WorkspaceAvatar() {
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null)
+
+  return (
+    <div
+      ref={wrapperRef}
+      className="flex w-full justify-center"
+      onMouseEnter={() => {
+        if (wrapperRef.current) {
+          setAnchorRect(wrapperRef.current.getBoundingClientRect())
+        }
+      }}
+      onMouseLeave={() => setAnchorRect(null)}
+    >
+      <div
+        className="flex items-center justify-center rounded-[10px] text-[15px] font-semibold transition-transform duration-150 ease-out hover:scale-[1.04]"
+        style={{
+          width: TILE_SIZE,
+          height: TILE_SIZE,
+          background:
+            'linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%)',
+          color: '#0a0a09',
+        }}
+      >
+        L
+      </div>
+      {anchorRect && (
+        <TooltipPortal label="Larchmont OS" hint="Personal Space" anchorRect={anchorRect} />
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sidebar root
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { sidebarCollapsed, setSidebarCollapsed, setCommandPaletteOpen } = useUIStore()
+  const sidebarMode = useUIStore((s) => s.sidebarMode)
+  const setCommandPaletteOpen = useUIStore((s) => s.setCommandPaletteOpen)
+
   const [mounted, setMounted] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
+    // SSR-safe hydration marker — standard Next.js pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
-    // Fetch real unread count from Supabase
     const fetchCount = async () => {
       const { count } = await supabase
-        .from('inbox_items').select('id', { count: 'exact', head: true }).eq('status', 'New')
+        .from('inbox_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'New')
       setUnreadCount(count ?? 0)
     }
     fetchCount()
-    // Re-fetch whenever window gains focus (inbox updates from other tabs/actions)
     const onFocus = () => fetchCount()
     window.addEventListener('focus', onFocus)
-    // Also poll every 30s
     const interval = setInterval(fetchCount, 30000)
-    return () => { window.removeEventListener('focus', onFocus); clearInterval(interval) }
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      clearInterval(interval)
+    }
   }, [])
-  const hour = mounted ? new Date().getHours() : 9
-  // Debrief badge: after 4pm
-  const shouldShowDebriefBadge = mounted && hour >= 16
-  // Weekly review badge: Monday (day 1)
-  const shouldShowWeeklyBadge = mounted && new Date().getDay() === 1
 
-  const collapsed = sidebarCollapsed
+  const isActiveRoute = useMemo(
+    () => (href: string) => pathname === href || pathname.startsWith(href + '/'),
+    [pathname]
+  )
+
+  const countForRoute = (href: string): number | undefined => {
+    if (href === '/inbox' && mounted) return unreadCount
+    return undefined
+  }
+
+  // Visible unless explicitly hidden. Both 'full' and 'rail' render as the
+  // rail since the distinction no longer matters visually.
+  const width = sidebarMode === 'hidden' ? 0 : SIDEBAR_WIDTH
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 48 : 240 }}
-      transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className={cn(
-        'relative flex h-screen flex-shrink-0 flex-col overflow-hidden',
-        'border-r border-[var(--border)] bg-[var(--surface)]',
-        'transition-colors duration-150',
-      )}
+      initial={false}
+      animate={{ width }}
+      transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="relative flex h-full shrink-0 flex-col overflow-hidden border-r"
+      style={{
+        background: 'var(--bg1)',
+        borderColor: 'var(--border)',
+      }}
       aria-label="Main navigation"
     >
-      {/* ── Header ── */}
-      <div className={cn(
-        'flex h-14 items-center border-b border-[var(--border)] px-3',
-        collapsed ? 'justify-center' : 'justify-between'
-      )}>
-        {!collapsed && (
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[6px] bg-[var(--accent)]">
-              <span className="text-[11px] font-bold text-[var(--accent-fg)]">L</span>
-            </div>
-            <span className="truncate text-[13px] font-semibold text-[var(--text-primary)]">
-              Larchmont HQ
-            </span>
-          </div>
-        )}
-        {collapsed && (
-          <div className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-[var(--accent)]">
-            <span className="text-[11px] font-bold text-[var(--accent-fg)]">L</span>
-          </div>
-        )}
-        {!collapsed && (
-          <button
-            onClick={() => setSidebarCollapsed(true)}
-            className="rounded-[6px] p-1 text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-secondary)] transition-colors"
-            aria-label="Collapse sidebar"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-
-      {/* ── Scrollable nav ── */}
-      <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden py-3">
-        {/* Theme toggle */}
-        <div className={cn('px-2 pb-2', collapsed && 'px-1.5')}>
-          <ThemeToggle collapsed={collapsed} />
+      <div className="flex h-full w-[68px] shrink-0 flex-col">
+        {/* Workspace avatar — no text, tooltip on hover */}
+        <div
+          className="flex h-[56px] shrink-0 items-center justify-center border-b"
+          style={{ borderColor: 'var(--border)' }}
+        >
+          <WorkspaceAvatar />
         </div>
 
-        {/* Cmd+K hint */}
-        {!collapsed && (
-          <button
+        {/* Search — same Tile footprint as routes */}
+        <div className="pt-2">
+          <Tile
+            label="Search"
+            hint="⌘K"
             onClick={() => setCommandPaletteOpen(true)}
-            className={cn(
-              'mx-2 mb-3 flex items-center gap-2 rounded-[6px] border border-[var(--border)]',
-              'px-2.5 py-1.5 text-[12px] text-[var(--text-tertiary)]',
-              'hover:border-[var(--border-strong)] hover:text-[var(--text-secondary)] transition-all duration-150'
-            )}
           >
-            <span className="flex-1 text-left">Search...</span>
-            <kbd className="rounded bg-[var(--surface-2)] px-1 font-mono text-[10px]">⌘K</kbd>
-          </button>
-        )}
+            <Search size={18} strokeWidth={2.2} />
+          </Tile>
+        </div>
 
-        <div className={cn('mx-2 mb-2 border-t border-[var(--border)]', collapsed && 'mx-1.5')} />
+        <div className="mx-3 my-2 h-px" style={{ background: 'var(--border)' }} />
 
-        {/* Main nav */}
-        <nav className="flex flex-col gap-0.5 px-2" aria-label="Primary navigation">
-          {NAV_ITEMS.map((item, i) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-            const count = item.badge ? unreadCount : 0
-
-            return (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, x: -4 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03, duration: 0.15 }}
-              >
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'group flex items-center gap-2.5 rounded-[6px] px-2 py-1.5 text-[13px] font-medium',
-                    'transition-all duration-150 cursor-pointer',
-                    collapsed && 'justify-center px-0 py-2',
-                    isActive
-                      ? 'border-l-[3px] border-l-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)] pl-1.5'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]',
-                    isActive && collapsed && 'border-l-0 pl-0'
-                  )}
-                  aria-current={isActive ? 'page' : undefined}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <Icon className={cn(
-                    'flex-shrink-0',
-                    collapsed ? 'h-5 w-5' : 'h-4 w-4',
-                    isActive ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]'
-                  )} />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {count > 0 && (
-                        <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--destructive)] px-1 text-[10px] font-medium text-white">
-                          {count}
-                        </span>
-                      )}
-                      {(item as { debrief?: boolean }).debrief && shouldShowDebriefBadge && (
-                        <span className="relative flex h-2 w-2">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-400" />
-                        </span>
-                      )}
-                      {(item as { weeklyReview?: boolean }).weeklyReview && shouldShowWeeklyBadge && (
-                        <span className="relative flex h-2 w-2">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-400" />
-                        </span>
-                      )}
-                    </>
-                  )}
-                  {collapsed && count > 0 && (
-                    <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-[var(--destructive)]" />
-                  )}
-                </Link>
-              </motion.div>
-            )
-          })}
-        </nav>
-
-        <div className={cn('mx-2 my-2 border-t border-[var(--border)]', collapsed && 'mx-1.5')} />
-
-        {/* Bottom nav */}
-        <nav className="flex flex-col gap-0.5 px-2" aria-label="Secondary navigation">
-          {BOTTOM_NAV.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'group flex items-center gap-2.5 rounded-[6px] px-2 py-1.5 text-[13px]',
-                  'transition-all duration-150',
-                  collapsed && 'justify-center px-0 py-2',
-                  isActive
-                    ? 'bg-[var(--accent-muted)] text-[var(--accent)]'
-                    : 'text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-secondary)]'
-                )}
-                title={collapsed ? item.label : undefined}
-              >
-                <Icon className="h-4 w-4 flex-shrink-0" />
-                {!collapsed && <span>{item.label}</span>}
-              </Link>
-            )
-          })}
-          {process.env.NEXT_PUBLIC_APP_PASSWORD && (
-            <button
-              onClick={logout}
-              className={cn(
-                'group flex items-center gap-2.5 rounded-[6px] px-2 py-1.5 text-[13px]',
-                'transition-all duration-150',
-                collapsed && 'justify-center px-0 py-2',
-                'text-[var(--text-tertiary)] hover:bg-red-500/10 hover:text-red-400'
-              )}
-              title={collapsed ? 'Logout' : undefined}
-            >
-              <LogOut className="h-4 w-4 flex-shrink-0" />
-              {!collapsed && <span>Logout</span>}
-            </button>
-          )}
-        </nav>
-      </div>
-
-      {/* ── Quick Capture pinned bottom ── */}
-      <div className={cn('border-t border-[var(--border)] p-2', collapsed && 'p-1.5')}>
-        {collapsed ? (
-          <button
-            onClick={() => useUIStore.getState().setQuickCaptureOpen(true)}
-            className="flex w-full items-center justify-center rounded-[6px] bg-[var(--accent)] py-2 text-[var(--accent-fg)] hover:opacity-90 transition-opacity"
-            aria-label="Quick capture"
-          >
-            <Zap className="h-4 w-4" />
-          </button>
-        ) : (
-          <QuickCapture />
-        )}
-      </div>
-
-      {/* ── Expand button (collapsed state) ── */}
-      {collapsed && (
-        <button
-          onClick={() => setSidebarCollapsed(false)}
-          className="absolute -right-3 top-16 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-tertiary)] shadow-[var(--shadow-card)] hover:text-[var(--text-secondary)] transition-colors"
-          aria-label="Expand sidebar"
+        {/* Routes — flat list, icon-only tiles, tooltips on hover.
+            scrollbar-gutter: stable prevents scrollbar flicker that otherwise
+            causes sibling rows to jitter while scrolling. */}
+        <nav
+          className="flex flex-1 flex-col gap-1.5 overflow-y-auto py-0.5"
+          style={{ scrollbarGutter: 'stable' }}
+          aria-label="Primary navigation"
         >
-          <ChevronRight className="h-3.5 w-3.5" />
-        </button>
-      )}
+          {OBJECT_ROUTES.map((href) => (
+            <RouteTile
+              key={href}
+              href={href}
+              isActive={isActiveRoute(href)}
+              count={countForRoute(href)}
+            />
+          ))}
+        </nav>
+
+        {/* Footer — Bin + optional Logout */}
+        <div
+          className="flex shrink-0 flex-col gap-1.5 border-t py-2"
+          style={{ borderColor: 'var(--border)' }}
+        >
+          <Tile href="/archive" isActive={isActiveRoute('/archive')} label="Bin">
+            <Trash2 size={17} />
+          </Tile>
+          {process.env.NEXT_PUBLIC_APP_PASSWORD && (
+            <Tile label="Logout" onClick={logout} danger>
+              <LogOut size={17} />
+            </Tile>
+          )}
+        </div>
+      </div>
     </motion.aside>
   )
 }

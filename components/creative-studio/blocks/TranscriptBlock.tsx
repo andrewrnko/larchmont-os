@@ -22,10 +22,10 @@ export function TranscriptBlockView({ block, onContextMenu }: Props) {
 
   return (
     <BlockWrapper block={block} kind="transcript" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#0e0e0d] shadow-lg">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] shadow-lg">
         {/* Header */}
-        <div className="flex items-center gap-2 border-b border-[#2a2a2a] bg-[#141412] px-4 py-3">
-          <FileAudio size={15} className="text-amber-500" />
+        <div className="flex items-center gap-2 border-b border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] px-4 py-3">
+          <FileAudio size={15} className="text-[color:var(--cs-accent)]" />
           <input
             className="flex-1 bg-transparent text-[15px] font-semibold text-white outline-none"
             defaultValue={block.title}
@@ -35,9 +35,9 @@ export function TranscriptBlockView({ block, onContextMenu }: Props) {
         </div>
 
         {/* Source */}
-        <div className="border-b border-[#1a1a1a] px-4 py-1.5">
+        <div className="border-b border-[#242422] px-4 py-1.5">
           <input
-            className="w-full bg-transparent text-[15px] text-neutral-500 outline-none placeholder:text-neutral-600"
+            className="w-full bg-transparent text-[15px] text-[#888780] outline-none placeholder:text-[#555450]"
             defaultValue={block.source ?? ''}
             placeholder="Source: e.g. Client call, Podcast ep 12…"
             onBlur={(e) => updateBlock(block.id, { source: e.target.value })}
@@ -47,7 +47,7 @@ export function TranscriptBlockView({ block, onContextMenu }: Props) {
         {/* Transcript body */}
         <textarea
           ref={taRef}
-          className="flex-1 resize-none bg-transparent p-4 text-[15px] leading-[1.5] text-neutral-300 outline-none placeholder:text-neutral-600"
+          className="flex-1 resize-none bg-transparent p-4 text-[15px] leading-[1.5] text-[#c8c4bc] outline-none placeholder:text-[#555450]"
           defaultValue={block.transcript}
           placeholder="Paste your transcript here… (type / for commands)"
           onBlur={(e) => updateBlock(block.id, { transcript: e.target.value })}

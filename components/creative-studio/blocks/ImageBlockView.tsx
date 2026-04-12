@@ -41,7 +41,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
       ratio={block.naturalRatio}
     >
       <div
-        className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] shadow-lg"
+        className="relative flex h-full w-full flex-col overflow-hidden rounded-lg border border-[color:rgba(255,255,255,0.07)] bg-[#242422] shadow-lg"
         onDrop={(e) => {
           e.preventDefault()
           const file = e.dataTransfer.files[0]
@@ -95,7 +95,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
           ) : (
             <button
               data-no-drag
-              className="flex h-full w-full items-center justify-center text-[15px] text-neutral-500 hover:text-neutral-300"
+              className="flex h-full w-full items-center justify-center text-[15px] text-[#888780] hover:text-[#c8c4bc]"
               onClick={(e) => {
                 e.stopPropagation()
                 fileRef.current?.click()
@@ -118,7 +118,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
 
         <div
           data-no-drag
-          className="border-t border-[#2a2a2a] bg-[#111] px-3 py-1.5 text-[13px] text-neutral-400"
+          className="border-t border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] px-3 py-1.5 text-[13px] text-[#c8c4bc]"
           onDoubleClick={() => setEditCaption(true)}
         >
           {editCaption ? (
@@ -135,7 +135,7 @@ export function ImageBlockView({ block, onContextMenu }: Props) {
               }}
             />
           ) : (
-            block.caption || <span className="text-neutral-600">Double-click to add caption</span>
+            block.caption || <span className="text-[#555450]">Double-click to add caption</span>
           )}
         </div>
       </div>

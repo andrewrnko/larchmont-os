@@ -127,7 +127,7 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
               toBlockId: taskBlockId,
               style: 'curved',
               arrow: 'one',
-              color: '#e8a045',
+              color: 'var(--cs-accent)',
               weight: 2,
             })
           }
@@ -162,16 +162,19 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
 
   return (
     <BlockWrapper block={block} kind="assistant" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-amber-800/40 bg-[#0a0a0a] shadow-[0_0_24px_rgba(245,158,11,0.08)]">
+      <div
+        className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[color:var(--cs-accent)]/30 bg-[#111110]"
+        style={{ boxShadow: '0 0 24px color-mix(in srgb, var(--cs-accent) 8%, transparent)' }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#111] px-4 py-3">
+        <div className="flex items-center justify-between border-b border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] px-4 py-3">
           <div className="flex items-center gap-2">
-            <Bot size={15} className="text-amber-500" />
-            <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">AI Assistant</span>
+            <Bot size={15} className="text-[color:var(--cs-accent)]" />
+            <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">AI Assistant</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[13px] text-neutral-500">{connectedCount} node{connectedCount !== 1 ? 's' : ''}</span>
-            <button onClick={clearChat} className="text-neutral-600 hover:text-red-400" title="Clear chat">
+            <span className="text-[13px] text-[#888780]">{connectedCount} node{connectedCount !== 1 ? 's' : ''}</span>
+            <button onClick={clearChat} className="text-[#555450] hover:text-red-400" title="Clear chat">
               <Trash2 size={14} />
             </button>
           </div>
@@ -181,11 +184,11 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
         <div ref={scrollRef} data-scrollable className="flex-1 overflow-auto p-3 space-y-2">
           {block.messages.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center text-center p-4">
-              <Bot size={32} className="mb-3 text-amber-500/40" />
-              <p className="text-[15px] leading-[1.5] text-neutral-500">
+              <Bot size={32} className="mb-3 text-[color:var(--cs-accent)]/40" />
+              <p className="text-[15px] leading-[1.5] text-[#888780]">
                 Connect blocks to me, then ask questions about them.
               </p>
-              <p className="mt-1 text-[14px] leading-[1.5] text-neutral-600">
+              <p className="mt-1 text-[14px] leading-[1.5] text-[#555450]">
                 I can read sticky notes, text, transcripts, pages, mind maps, and storyboards.
               </p>
             </div>
@@ -195,12 +198,12 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
               key={i}
               className={`rounded-lg px-4 py-3 text-[15px] leading-[1.5] overflow-hidden ${
                 msg.role === 'user'
-                  ? 'ml-6 bg-amber-600/15 text-amber-100'
-                  : 'mr-6 bg-[#1a1a1a] text-neutral-300'
+                  ? 'ml-6 bg-[color:var(--cs-accent)]/15 text-[#f0ede8]'
+                  : 'mr-6 bg-[#242422] text-[#c8c4bc]'
               }`}
             >
               {msg.role === 'assistant' ? (
-                <div className="prose prose-invert prose-sm max-w-none break-words [&_a]:text-amber-400 [&_a]:underline [&_code]:text-amber-300 [&_strong]:text-white [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5">
+                <div className="prose prose-invert prose-sm max-w-none break-words [&_a]:text-[color:var(--cs-accent2)] [&_a]:underline [&_code]:text-[color:var(--cs-accent2)] [&_strong]:text-white [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5">
                   <Markdown>{msg.content}</Markdown>
                 </div>
               ) : (
@@ -209,17 +212,17 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
             </div>
           ))}
           {loading && (
-            <div className="mr-6 flex items-center gap-2 rounded-md bg-[#1a1a1a] px-3 py-2 text-[15px] text-neutral-500">
+            <div className="mr-6 flex items-center gap-2 rounded-md bg-[#242422] px-3 py-2 text-[15px] text-[#888780]">
               <Loader2 size={12} className="animate-spin" /> Thinking…
             </div>
           )}
         </div>
 
         {/* Input */}
-        <div className="border-t border-[#2a2a2a] p-3">
+        <div className="border-t border-[color:rgba(255,255,255,0.07)] p-3">
           <div className="flex gap-2">
             <input
-              className="flex-1 rounded-md bg-[#141414] px-3 py-2 text-[15px] leading-[1.5] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded-md bg-[#1c1c1a] px-3 py-2 text-[15px] leading-[1.5] text-white outline-none placeholder:text-[#555450]"
               placeholder="Ask about connected blocks…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -228,7 +231,7 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
             <button
               onClick={send}
               disabled={loading || !input.trim()}
-              className="rounded-md bg-amber-600 p-2 text-black hover:bg-amber-500 disabled:opacity-30"
+              className="rounded-md bg-[color:var(--cs-accent)] p-2 text-black hover:bg-[color:var(--cs-accent2)] disabled:opacity-30"
             >
               <Send size={16} />
             </button>

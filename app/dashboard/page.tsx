@@ -5,9 +5,8 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CheckSquare2, FolderKanban, Film, CalendarDays,
-  Check, AlertCircle, Sun, Sparkles
+  Check, AlertCircle, Sparkles
 } from 'lucide-react'
-import { useBriefingStore } from '@/lib/store'
 import { db, Task, Project, ContentItem, AppEvent, Campaign, InboxItem, PerformanceMetric } from '@/lib/db'
 import { StatCard } from '@/components/shared/stat-card'
 import { StatusBadge } from '@/components/shared/status-badge'
@@ -57,11 +56,6 @@ export default function DashboardPage() {
 
   const [completingTask, setCompletingTask] = useState<string | null>(null)
   const [activeStage, setActiveStage] = useState<string | null>(null)
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-  const { hasTodaysMorningBriefing, hasTodaysAfternoonBriefing } = useBriefingStore()
-  const currentHour = mounted ? new Date().getHours() : 9
-  const showBriefingBanner = mounted && !hasTodaysMorningBriefing() && !hasTodaysAfternoonBriefing()
 
   useEffect(() => {
     const since7 = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)
@@ -133,37 +127,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-full p-6">
-      {/* ── AI Briefing Banner ── */}
-      <AnimatePresence>
-        {showBriefingBanner && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-            transition={{ duration: 0.2 }}
-            className="mb-4"
-          >
-            <div className="flex items-center justify-between rounded-[8px] border-l-[3px] border-l-[var(--accent)] border border-[var(--accent)]/20 bg-[var(--accent-muted)] px-4 py-3">
-              <div className="flex items-center gap-3">
-                <Sun className="h-4 w-4 flex-shrink-0 text-[var(--accent)]" />
-                <span className="text-[13px] text-[var(--text-primary)]">
-                  {currentHour < 12 ? 'Good morning' : 'Good afternoon'}, Drew. Your AI briefing is ready.
-                </span>
-              </div>
-              <Link
-                href="/briefing"
-                className="flex items-center gap-1 text-[13px] font-medium text-[var(--accent)] hover:underline whitespace-nowrap"
-              >
-                Start Briefing →
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <PageHeader
-        title="Dashboard"
-        description={`Good morning — ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`}
-      />
+      <PageHeader title="Dashboard" />
 
       {/* ── Row 1: Stat Cards ── */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

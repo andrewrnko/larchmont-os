@@ -146,10 +146,12 @@ function TaskCard({ task, projects, onDelete, onTimerStart, onTimerStop }: TaskC
 
   return (
     <div className={cn(
-      'group rounded-[8px] border bg-[var(--surface)] p-3',
-      'hover:border-[var(--border-strong)] transition-all',
+      'group relative rounded-[6px] border px-3 py-2.5',
+      'transition-colors duration-100',
       isActive ? 'border-blue-500/50' : 'border-[var(--border)]',
-    )}>
+      'hover:border-[color:var(--border2)] hover:bg-[color:var(--bg3)]'
+    )}
+    style={{ background: 'var(--bg2)' }}>
       <div className="mb-2 flex items-start gap-2">
         <PriorityPip priority={task.priority} />
         <span className="flex-1 text-[12px] font-medium leading-snug text-[var(--text-primary)]">
@@ -453,17 +455,31 @@ export default function TasksPage() {
                   onTimerStop={() => {}}
                 />
               )}
-              renderColumnHeader={(column, count) => (
-                <div className="mb-3 flex items-center gap-2">
-                  <span className={cn('h-2 w-2 rounded-full',
-                    column === 'In Progress' ? 'bg-blue-400' :
-                    column === 'Blocked' ? 'bg-orange-400' :
-                    column === 'Done' ? 'bg-green-400' : 'bg-[var(--text-tertiary)]'
-                  )} />
-                  <span className="text-[13px] font-medium text-[var(--text-primary)]">{column}</span>
-                  <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[11px] text-[var(--text-tertiary)]">{count}</span>
-                </div>
-              )}
+              renderColumnHeader={(column, count) => {
+                // Anytype-style compact column header: colored square badge with
+                // a short label, full column name, and a muted count.
+                const badge =
+                  column === 'Not Started' ? { label: 'P3', bg: 'rgba(74,156,245,0.2)',  fg: '#4a9cf5', bd: 'rgba(74,156,245,0.3)'  } :
+                  column === 'In Progress' ? { label: 'P1', bg: 'rgba(212,162,52,0.2)',  fg: '#d4a234', bd: 'rgba(212,162,52,0.3)'  } :
+                  column === 'Blocked'     ? { label: 'P0', bg: 'rgba(232,93,58,0.2)',   fg: '#e85d3a', bd: 'rgba(232,93,58,0.3)'   } :
+                                             { label: 'P2', bg: 'rgba(82,169,106,0.2)',  fg: '#52a96a', bd: 'rgba(82,169,106,0.3)'  }
+                return (
+                  <div className="mb-2 flex h-7 items-center gap-2">
+                    <span
+                      className="flex h-6 w-6 items-center justify-center rounded-[4px] border text-[11px] font-semibold"
+                      style={{ background: badge.bg, color: badge.fg, borderColor: badge.bd }}
+                    >
+                      {badge.label}
+                    </span>
+                    <span className="text-[13px] font-medium" style={{ color: 'var(--text0)' }}>
+                      {column}
+                    </span>
+                    <span className="text-[11px]" style={{ color: 'var(--text3)' }}>
+                      {count}
+                    </span>
+                  </div>
+                )
+              }}
               renderColumnFooter={(column) => (
                 addingInColumn === column ? (
                   <AddTaskForm
@@ -476,10 +492,11 @@ export default function TasksPage() {
                   <button
                     onPointerDown={(e) => e.stopPropagation()}
                     onClick={() => setAddingInColumn(column)}
-                    className="flex w-full items-center gap-1.5 rounded-[6px] px-2 py-1.5 text-[12px] text-[var(--text-tertiary)] hover:bg-[var(--surface-2)] hover:text-[var(--text-secondary)] transition-colors"
+                    className="flex w-full items-center justify-center gap-1.5 rounded-[6px] border border-dashed px-2 py-1.5 text-[12px] transition-colors duration-100 hover:bg-[color:var(--bg3)] hover:text-[color:var(--text1)]"
+                    style={{ borderColor: 'var(--border)', color: 'var(--text3)' }}
                   >
-                    <Plus className="h-3.5 w-3.5" />
-                    Add task
+                    <Plus className="h-3 w-3" />
+                    Add
                   </button>
                 )
               )}

@@ -396,6 +396,9 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
       return { ...base, kind: 'storyboard', w: 720, h: 260, frames }
     }
     case 'mindmap': {
+      // Root node color is a CSS var reference so it tracks the theme
+      // accent live — changing the accent in Settings propagates without
+      // any stored-color migration.
       const root: MindMapNode = {
         id: uid(),
         parentId: null,
@@ -403,7 +406,7 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
         dx: 180,
         dy: 140,
         shape: 'pill',
-        color: '#e8a045',
+        color: 'var(--cs-accent)',
       }
       return { ...base, kind: 'mindmap', w: 520, h: 360, nodes: [root] }
     }
@@ -415,7 +418,10 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
         h: 140,
         title: 'Untitled Page',
         icon: '📄',
-        color: '#1a1a1a',
+        // Leave color undefined so the PageBlockCard picks the theme
+        // default (var(--bg2)) at render time — keeps every Untitled Page
+        // visually aligned with the rest of the system.
+        color: undefined,
         content: [{ id: uid(), type: 'p', text: '' }],
       }
     case 'tasks':

@@ -47,7 +47,7 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
 
   return (
     <BlockWrapper block={block} kind="embed" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#111] shadow-lg">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] shadow-lg">
         {block.url ? (
           <>
             {/* Content */}
@@ -58,10 +58,10 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={block.favicon} alt="" className="h-4 w-4 rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                   )}
-                  <span className="text-[13px] text-neutral-500 truncate">{hostname}</span>
+                  <span className="text-[13px] text-[#888780] truncate">{hostname}</span>
                 </div>
                 {loading ? (
-                  <div className="flex items-center gap-2 text-[15px] text-neutral-500">
+                  <div className="flex items-center gap-2 text-[15px] text-[#888780]">
                     <Loader2 size={12} className="animate-spin" /> Loading preview…
                   </div>
                 ) : (
@@ -70,7 +70,7 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
                       {block.title || hostname}
                     </div>
                     {block.description && (
-                      <div className="mt-1 text-[15px] text-neutral-500 line-clamp-3 leading-relaxed">
+                      <div className="mt-1 text-[15px] text-[#888780] line-clamp-3 leading-relaxed">
                         {block.description}
                       </div>
                     )}
@@ -81,7 +81,7 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
                 href={block.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 flex items-center gap-1 self-start rounded bg-amber-600/20 px-2 py-1 text-[14px] text-amber-400 hover:bg-amber-600/40"
+                className="mt-2 flex items-center gap-1 self-start rounded bg-[color:var(--cs-accent)]/20 px-2 py-1 text-[14px] text-[color:var(--cs-accent2)] hover:bg-[color:var(--cs-accent)]/40"
                 onPointerDown={(e) => e.stopPropagation()}
               >
                 <ExternalLink size={9} /> Open link
@@ -89,7 +89,7 @@ export function EmbedBlockView({ block, onContextMenu }: Props) {
             </div>
           </>
         ) : (
-          <div className="flex h-full items-center justify-center p-4 text-[15px] text-neutral-500">
+          <div className="flex h-full items-center justify-center p-4 text-[15px] text-[#888780]">
             Paste a URL to see a preview
           </div>
         )}

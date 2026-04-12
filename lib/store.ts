@@ -15,25 +15,59 @@ import type {
 // ────────────────────────────────────────────────────────────
 // UI State
 // ────────────────────────────────────────────────────────────
+export type SidebarMode = 'full' | 'rail' | 'hidden'
+
 interface UIState {
+  /** Tri-state sidebar: full (260px) → rail (52px icons) → hidden (0). */
+  sidebarMode: SidebarMode
+  /** Legacy boolean kept for backwards compatibility with older callers. */
   sidebarCollapsed: boolean
   rightPanelOpen: boolean
   rightPanelContent: React.ReactNode | null
   commandPaletteOpen: boolean
   quickCaptureOpen: boolean
+  setSidebarMode: (m: SidebarMode) => void
+  cycleSidebarMode: () => void
   setSidebarCollapsed: (v: boolean) => void
   setRightPanelOpen: (v: boolean, content?: React.ReactNode) => void
   setCommandPaletteOpen: (v: boolean) => void
   setQuickCaptureOpen: (v: boolean) => void
 }
 
+// Persisted across reloads via localStorage so the layout never "flashes"
+// between refreshes.
+const SIDEBAR_MODE_KEY = 'larchmont:sidebar-mode'
+const readInitialSidebarMode = (): SidebarMode => {
+  if (typeof window === 'undefined') return 'full'
+  const v = window.localStorage.getItem(SIDEBAR_MODE_KEY)
+  return v === 'rail' || v === 'hidden' || v === 'full' ? v : 'full'
+}
+
 export const useUIStore = create<UIState>((set) => ({
-  sidebarCollapsed: false,
+  sidebarMode: readInitialSidebarMode(),
+  sidebarCollapsed: readInitialSidebarMode() !== 'full',
   rightPanelOpen: false,
   rightPanelContent: null,
   commandPaletteOpen: false,
   quickCaptureOpen: false,
-  setSidebarCollapsed: (v) => set({ sidebarCollapsed: v }),
+  setSidebarMode: (m) => {
+    if (typeof window !== 'undefined') window.localStorage.setItem(SIDEBAR_MODE_KEY, m)
+    set({ sidebarMode: m, sidebarCollapsed: m !== 'full' })
+  },
+  cycleSidebarMode: () =>
+    set((s) => {
+      // Single-click toggles between full and fully hidden — no intermediate
+      // rail state. The rail mode still exists as a direct-set target for
+      // legacy callers but is never reachable via the toggle button.
+      const next: SidebarMode = s.sidebarMode === 'full' ? 'hidden' : 'full'
+      if (typeof window !== 'undefined') window.localStorage.setItem(SIDEBAR_MODE_KEY, next)
+      return { sidebarMode: next, sidebarCollapsed: next !== 'full' }
+    }),
+  setSidebarCollapsed: (v) => {
+    const mode: SidebarMode = v ? 'rail' : 'full'
+    if (typeof window !== 'undefined') window.localStorage.setItem(SIDEBAR_MODE_KEY, mode)
+    set({ sidebarMode: mode, sidebarCollapsed: v })
+  },
   setRightPanelOpen: (v, content) =>
     set({ rightPanelOpen: v, rightPanelContent: content ?? null }),
   setCommandPaletteOpen: (v) => set({ commandPaletteOpen: v }),

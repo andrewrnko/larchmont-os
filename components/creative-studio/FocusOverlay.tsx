@@ -43,32 +43,36 @@ export function FocusOverlay() {
             initial={{ y: -60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -60, opacity: 0 }}
-            className="fixed left-1/2 top-4 z-[95] flex -translate-x-1/2 items-center gap-4 rounded-lg border border-amber-600 bg-[#140d03] px-5 py-3 shadow-[0_0_40px_rgba(245,158,11,0.35)]"
+            className="fixed left-1/2 top-4 z-[95] flex -translate-x-1/2 items-center gap-4 rounded-lg border border-[color:var(--cs-accent)] px-5 py-3"
+            style={{
+              background: 'color-mix(in srgb, var(--cs-accent) 14%, var(--cs-bg0))',
+              boxShadow: '0 0 40px color-mix(in srgb, var(--cs-accent) 35%, transparent)',
+            }}
           >
             <div>
-              <div className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Focus · P1</div>
+              <div className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Focus · P1</div>
               <div className="text-[15px] font-semibold text-white">{task.title}</div>
             </div>
-            <div className="font-mono text-2xl tabular-nums text-amber-400">
+            <div className="font-mono text-2xl tabular-nums text-[color:var(--cs-accent2)]">
               {fmt(Date.now() - focus.startedAt)}
             </div>
             <div className="flex gap-1">
               <button
                 onClick={() => stopFocus(true)}
-                className="flex items-center gap-1 rounded bg-amber-500 px-3 py-1.5 text-[15px] font-medium text-black hover:bg-amber-400"
+                className="flex items-center gap-1 rounded bg-[color:var(--cs-accent)] px-3 py-1.5 text-[15px] font-medium text-black hover:bg-[color:var(--cs-accent2)]"
               >
                 <Check size={12} /> Done
               </button>
               <button
                 onClick={() => stopFocus(false)}
-                className="rounded bg-[#2a2a2a] p-1.5 text-neutral-300 hover:bg-[#3a3a3a]"
+                className="rounded bg-[#2d2d2a] p-1.5 text-[#c8c4bc] hover:bg-[color:rgba(255,255,255,0.12)]"
                 title="Pause"
               >
                 <Pause size={12} />
               </button>
               <button
                 onClick={() => stopFocus(false)}
-                className="rounded bg-[#2a2a2a] p-1.5 text-neutral-300 hover:bg-red-900"
+                className="rounded bg-[#2d2d2a] p-1.5 text-[#c8c4bc] hover:bg-red-900"
                 title="Abandon"
               >
                 <X size={12} />

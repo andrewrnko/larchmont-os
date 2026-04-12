@@ -51,7 +51,14 @@ export function TimerWidget() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-md border border-[#2a2a2a] bg-[#141414]/95 px-2.5 py-1.5 text-[13px] text-neutral-400 backdrop-blur hover:text-white"
+        className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[13px] backdrop-blur transition-colors duration-150"
+        style={{
+          background: 'color-mix(in srgb, var(--bg2) 95%, transparent)',
+          borderColor: 'var(--border)',
+          color: 'var(--text1)',
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text0)')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text1)')}
         title="Timer"
       >
         <TimerIcon size={13} />
@@ -60,20 +67,43 @@ export function TimerWidget() {
   }
 
   return (
-    <div className="absolute bottom-3 left-3 z-20 flex items-center gap-2 rounded-md border border-[#2a2a2a] bg-[#141414]/95 px-3 py-2 text-neutral-300 shadow-lg backdrop-blur">
-      <TimerIcon size={13} className="text-amber-500" />
-      <span className="font-mono text-[32px] tabular-nums text-white">{fmt(elapsed)}</span>
+    <div
+      className="absolute bottom-3 left-3 z-20 flex items-center gap-2 rounded-md border px-3 py-2 shadow-lg backdrop-blur"
+      style={{
+        background: 'color-mix(in srgb, var(--bg2) 95%, transparent)',
+        borderColor: 'var(--border)',
+        color: 'var(--text1)',
+      }}
+    >
+      <TimerIcon size={13} className="text-[color:var(--cs-accent)]" />
+      <span className="font-mono text-[32px] tabular-nums" style={{ color: 'var(--text0)' }}>
+        {fmt(elapsed)}
+      </span>
       <button
         onClick={toggle}
-        className={`rounded p-1 ${running ? 'bg-amber-600/20 text-amber-400' : 'bg-green-600/20 text-green-400'} hover:opacity-80`}
+        className={`rounded p-1 ${running ? 'bg-[color:var(--cs-accent)]/20 text-[color:var(--cs-accent2)]' : 'bg-green-600/20 text-green-400'} hover:opacity-80`}
         title={running ? 'Pause' : 'Start'}
       >
         {running ? <Pause size={12} /> : <Play size={12} />}
       </button>
-      <button onClick={reset} className="rounded bg-neutral-800 p-1 text-neutral-400 hover:text-white" title="Reset">
+      <button
+        onClick={reset}
+        className="rounded p-1 transition-colors duration-150"
+        style={{ background: 'var(--bg3)', color: 'var(--text1)' }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text0)')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text1)')}
+        title="Reset"
+      >
         <RotateCcw size={12} />
       </button>
-      <button onClick={() => setOpen(false)} className="text-neutral-600 hover:text-white" title="Close">
+      <button
+        onClick={() => setOpen(false)}
+        className="transition-colors duration-150"
+        style={{ color: 'var(--text3)' }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text0)')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text3)')}
+        title="Close"
+      >
         <X size={12} />
       </button>
     </div>

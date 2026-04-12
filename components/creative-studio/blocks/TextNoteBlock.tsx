@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useCanvasStore } from '../store'
 import type { TextBlock } from '../types'
 import { BlockWrapper } from '../BlockWrapper'
+import { useTiptapSlashMenu } from '../TiptapSlashMenu'
 import { Palette } from 'lucide-react'
 
 const BG_PALETTE = [
@@ -43,6 +44,9 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
       saveTimer.current = setTimeout(() => updateBlock(block.id, { html }), 300)
     },
   })
+
+  // Slash command menu — intercepts "/" at line start, shows Tiptap-aware menu
+  const { menu: slashMenuElement } = useTiptapSlashMenu(editor)
 
   useEffect(() => {
     editor?.setEditable(editing)
@@ -79,7 +83,7 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
     <button
       key={label}
       className={`w-full px-3 py-1.5 text-left text-[14px] ${
-        active ? 'bg-amber-500/20 text-amber-300' : 'text-neutral-200 hover:bg-[#1e1e1e]'
+        active ? 'bg-[color:var(--cs-accent)]/20 text-[color:var(--cs-accent2)]' : 'text-[#c8c4bc] hover:bg-[#242422]'
       }`}
       onMouseDown={(e) => {
         e.preventDefault()
@@ -95,7 +99,7 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
   return (
     <BlockWrapper block={block} kind="text" onContextMenu={onContextMenu}>
       <div
-        className="relative flex h-full w-full flex-col overflow-hidden rounded-md border border-[#2a2a2a] shadow-lg"
+        className="relative flex h-full w-full flex-col overflow-hidden rounded-md border border-[color:rgba(255,255,255,0.07)] shadow-lg"
         style={{ background: block.bg }}
         onClick={() => { if (!editing) setEditing(true) }}
         onContextMenu={handleRightClick}
@@ -142,11 +146,13 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
           {editor && (
             <EditorContent
               editor={editor}
-              className="max-w-none focus:outline-none [&_*]:outline-none [&_h1]:text-[22px] [&_h1]:font-semibold [&_h1]:leading-[1.2] [&_h1]:mb-2 [&_h2]:text-[19px] [&_h2]:font-semibold [&_h2]:leading-[1.2] [&_h2]:mb-1.5 [&_h3]:text-[17px] [&_h3]:font-semibold [&_h3]:leading-[1.2] [&_h3]:mb-1 [&_p]:my-1 [&_p]:leading-[1.5] [&_ul]:my-1 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:my-1 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:my-0.5 [&_li]:pl-1 [&_hr]:my-3 [&_hr]:border-[#2a2a2a] [&_blockquote]:border-l-2 [&_blockquote]:border-neutral-600 [&_blockquote]:pl-3 [&_blockquote]:text-neutral-400"
+              className="max-w-none focus:outline-none [&_*]:outline-none [&_h1]:text-[22px] [&_h1]:font-semibold [&_h1]:leading-[1.2] [&_h1]:mb-2 [&_h2]:text-[19px] [&_h2]:font-semibold [&_h2]:leading-[1.2] [&_h2]:mb-1.5 [&_h3]:text-[17px] [&_h3]:font-semibold [&_h3]:leading-[1.2] [&_h3]:mb-1 [&_p]:my-1 [&_p]:leading-[1.5] [&_ul]:my-1 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:my-1 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:my-0.5 [&_li]:pl-1 [&_hr]:my-3 [&_hr]:border-[color:rgba(255,255,255,0.07)] [&_blockquote]:border-l-2 [&_blockquote]:border-[#555450] [&_blockquote]:pl-3 [&_blockquote]:text-[#c8c4bc]"
             />
           )}
         </div>
       </div>
+
+      {slashMenuElement}
 
       {/* Right-click format menu — portaled to body */}
       {formatMenu && editor && typeof window !== 'undefined' && createPortal(
@@ -155,23 +161,23 @@ export function TextNoteBlock({ block, onContextMenu }: Props) {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed z-[9999] w-44 overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141414] py-1 shadow-2xl"
+            className="fixed z-[9999] w-44 overflow-hidden rounded-md border border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] py-1 shadow-2xl"
             style={{
               left: Math.min(formatMenu.x, window.innerWidth - 190),
               top: Math.min(formatMenu.y, window.innerHeight - 340),
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-3 py-1 text-[13px] font-medium uppercase tracking-[0.06em] text-neutral-600">Format</div>
+            <div className="px-3 py-1 text-[13px] font-medium uppercase tracking-[0.06em] text-[#555450]">Format</div>
             {fmt('Bold', () => editor.chain().focus().toggleBold().run(), editor.isActive('bold'))}
             {fmt('Italic', () => editor.chain().focus().toggleItalic().run(), editor.isActive('italic'))}
             {fmt('Underline', () => editor.chain().focus().toggleUnderline().run(), editor.isActive('underline'))}
-            <div className="my-1 h-px bg-[#2a2a2a]" />
+            <div className="my-1 h-px bg-[#2d2d2a]" />
             {fmt('Heading 1', () => editor.chain().focus().toggleHeading({ level: 1 }).run(), editor.isActive('heading', { level: 1 }))}
             {fmt('Heading 2', () => editor.chain().focus().toggleHeading({ level: 2 }).run(), editor.isActive('heading', { level: 2 }))}
             {fmt('Heading 3', () => editor.chain().focus().toggleHeading({ level: 3 }).run(), editor.isActive('heading', { level: 3 }))}
             {fmt('Normal text', () => editor.chain().focus().setParagraph().run())}
-            <div className="my-1 h-px bg-[#2a2a2a]" />
+            <div className="my-1 h-px bg-[#2d2d2a]" />
             {fmt('• Bullet list', () => editor.chain().focus().toggleBulletList().run(), editor.isActive('bulletList'))}
             {fmt('1. Numbered list', () => editor.chain().focus().toggleOrderedList().run(), editor.isActive('orderedList'))}
             {fmt('— Horizontal rule', () => editor.chain().focus().setHorizontalRule().run())}

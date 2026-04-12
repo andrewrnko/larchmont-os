@@ -30,7 +30,8 @@ export function DailyRepeatables() {
   const toggleCheck = useRepeatableStore((s) => s.toggleCheck)
   const isChecked = useRepeatableStore((s) => s.isChecked)
 
-  const [collapsed, setCollapsed] = useState(false)
+  // Default to collapsed — the expanded panel takes a lot of vertical space.
+  const [collapsed, setCollapsed] = useState(true)
   const [logOpen, setLogOpen] = useState(false)
   const [addingSlot, setAddingSlot] = useState<TimeSlot | null>(null)
   const [newTitle, setNewTitle] = useState('')
@@ -47,16 +48,16 @@ export function DailyRepeatables() {
 
   if (collapsed) {
     return (
-      <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#0d0d0d] px-4 py-1">
+      <div className="flex items-center justify-between border-b border-[color:var(--border)] bg-[color:var(--bg1)] px-4 py-1">
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Daily Repeatables</span>
+          <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Daily Repeatables</span>
           {total > 0 && (
-            <span className="font-mono text-[13px] text-neutral-500">
+            <span className="font-mono text-[13px] text-[#888780]">
               {todayChecked}/{total} · {pct}%
             </span>
           )}
         </div>
-        <button onClick={() => setCollapsed(false)} className="text-neutral-500 hover:text-white">
+        <button onClick={() => setCollapsed(false)} className="text-[#888780] hover:text-white">
           <ChevronDown size={14} />
         </button>
       </div>
@@ -65,23 +66,23 @@ export function DailyRepeatables() {
 
   return (
     <>
-      <div className="border-b border-[#2a2a2a] bg-[#0d0d0d] p-3">
+      <div className="border-b border-[color:var(--border)] bg-[color:var(--bg1)] p-3">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Daily Repeatables</span>
+            <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Daily Repeatables</span>
             {total > 0 && (
               <div className="flex items-center gap-2">
-                <div className="h-1.5 w-20 rounded-full bg-[#2a2a2a]">
+                <div className="h-1.5 w-20 rounded-full bg-[rgba(255,255,255,0.07)]">
                   <div
-                    className="h-full rounded-full bg-amber-500 transition-all"
+                    className="h-full rounded-full bg-[color:var(--cs-accent)] transition-all"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <span className="font-mono text-[13px] text-neutral-500">{pct}%</span>
+                <span className="font-mono text-[13px] text-[#888780]">{pct}%</span>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2 text-[15px] text-neutral-500">
+          <div className="flex items-center gap-2 text-[15px] text-[#888780]">
             <button onClick={() => setLogOpen(true)} className="flex items-center gap-1 hover:text-white">
               <Archive size={10} /> History
             </button>
@@ -97,11 +98,11 @@ export function DailyRepeatables() {
               .filter((i) => i.timeSlot === key)
               .sort((a, b) => a.order - b.order)
             return (
-              <div key={key} className="rounded-lg border border-[#2a2a2a] bg-[#111]">
-                <div className="flex items-center gap-2 border-b border-[#2a2a2a] px-3 py-1.5">
-                  <Icon size={12} className="text-amber-500" />
-                  <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-neutral-400">{label}</span>
-                  <span className="ml-auto font-mono text-[13px] text-neutral-600">{slotItems.filter((i) => isChecked(i.id)).length}/{slotItems.length}</span>
+              <div key={key} className="rounded-lg border border-[color:var(--border)] bg-[color:var(--bg2)]">
+                <div className="flex items-center gap-2 border-b border-[color:rgba(255,255,255,0.07)] px-3 py-1.5">
+                  <Icon size={12} className="text-[color:var(--cs-accent)]" />
+                  <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[#c8c4bc]">{label}</span>
+                  <span className="ml-auto font-mono text-[13px] text-[#555450]">{slotItems.filter((i) => isChecked(i.id)).length}/{slotItems.length}</span>
                 </div>
                 <div className="space-y-0.5 p-2">
                   {slotItems.map((item) => {
@@ -110,24 +111,24 @@ export function DailyRepeatables() {
                       <div
                         key={item.id}
                         className={`group flex items-center gap-2 rounded px-2 py-1.5 ${
-                          checked ? 'opacity-50' : 'hover:bg-[#1a1a1a]'
+                          checked ? 'opacity-50' : 'hover:bg-[#242422]'
                         }`}
                       >
                         <button
                           onClick={() => toggleCheck(item.id)}
                           className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
                             checked
-                              ? 'border-amber-500 bg-amber-500 text-black'
-                              : 'border-neutral-600'
+                              ? 'border-[color:var(--cs-accent)] bg-[color:var(--cs-accent)] text-black'
+                              : 'border-[#555450]'
                           }`}
                         >
                           {checked && <span className="text-[13px] leading-none">✓</span>}
                         </button>
-                        <span className={`flex-1 text-[15px] leading-[1.5] ${checked ? 'text-neutral-500 line-through' : 'text-white'}`}>
+                        <span className={`flex-1 text-[15px] leading-[1.5] ${checked ? 'text-[#888780] line-through' : 'text-white'}`}>
                           {item.title}
                         </span>
                         {item.category && (
-                          <span className="rounded bg-[#1a1a1a] px-1.5 py-0.5 text-[14px] text-neutral-500">
+                          <span className="rounded bg-[#242422] px-1.5 py-0.5 text-[14px] text-[#888780]">
                             {item.category}
                           </span>
                         )}
@@ -138,7 +139,7 @@ export function DailyRepeatables() {
                         )}
                         <button
                           onClick={() => removeItem(item.id)}
-                          className="text-neutral-700 opacity-0 group-hover:opacity-100 hover:text-red-400"
+                          className="text-[#555450] opacity-0 group-hover:opacity-100 hover:text-red-400"
                         >
                           <Trash2 size={10} />
                         </button>
@@ -149,7 +150,7 @@ export function DailyRepeatables() {
                     <div className="flex flex-col gap-1 pt-1">
                       <input
                         autoFocus
-                        className="w-full rounded bg-[#1a1a1a] px-2 py-1 text-[15px] text-white outline-none"
+                        className="w-full rounded bg-[#242422] px-2 py-1 text-[15px] text-white outline-none"
                         placeholder="Task name…"
                         value={newTitle}
                         onChange={(e) => setNewTitle(e.target.value)}
@@ -168,7 +169,7 @@ export function DailyRepeatables() {
                           <button
                             key={c}
                             className={`rounded px-1.5 py-0.5 text-[14px] ${
-                              newCat === c ? 'bg-amber-500/20 text-amber-400' : 'bg-[#1a1a1a] text-neutral-500 hover:text-white'
+                              newCat === c ? 'bg-[color:var(--cs-accent)]/20 text-[color:var(--cs-accent2)]' : 'bg-[#242422] text-[#888780] hover:text-white'
                             }`}
                             onClick={() => setNewCat(newCat === c ? '' : c)}
                           >
@@ -180,7 +181,7 @@ export function DailyRepeatables() {
                   ) : (
                     <button
                       onClick={() => { setAddingSlot(key); setNewTitle(''); setNewCat('') }}
-                      className="flex w-full items-center gap-1 rounded px-2 py-1 text-[15px] text-neutral-600 hover:text-neutral-300"
+                      className="flex w-full items-center gap-1 rounded px-2 py-1 text-[15px] text-[#555450] hover:text-neutral-300"
                     >
                       <Plus size={10} /> Add
                     </button>
@@ -200,21 +201,21 @@ export function DailyRepeatables() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.2 }}
-            className="fixed right-0 top-0 z-[60] h-full w-80 border-l border-[#2a2a2a] bg-[#0a0a0a] p-4 shadow-2xl"
+            className="fixed right-0 top-0 z-[60] h-full w-80 border-l border-[color:var(--border)] bg-[color:var(--bg0)] p-4 shadow-2xl"
           >
             <div className="mb-3 flex items-center justify-between">
-              <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">History</span>
-              <button onClick={() => setLogOpen(false)} className="text-neutral-500 hover:text-white">
+              <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">History</span>
+              <button onClick={() => setLogOpen(false)} className="text-[#888780] hover:text-white">
                 <X size={14} />
               </button>
             </div>
-            {log.length === 0 && <div className="text-[15px] text-neutral-600">No history yet. Complete a full day to see data.</div>}
+            {log.length === 0 && <div className="text-[15px] text-[#555450]">No history yet. Complete a full day to see data.</div>}
             {log.slice(0, 30).map((entry) => (
-              <div key={entry.date} className="mb-3 rounded border border-[#2a2a2a] bg-[#111] p-2">
+              <div key={entry.date} className="mb-3 rounded border border-[color:var(--border)] bg-[color:var(--bg2)] p-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[13px] text-neutral-500">{entry.date}</span>
+                  <span className="font-mono text-[13px] text-[#888780]">{entry.date}</span>
                   <span className={`font-mono text-[13px] ${
-                    entry.completedItems === entry.totalItems ? 'text-green-400' : 'text-neutral-500'
+                    entry.completedItems === entry.totalItems ? 'text-green-400' : 'text-[#888780]'
                   }`}>
                     {entry.completedItems}/{entry.totalItems}
                     {entry.totalItems > 0 && ` · ${Math.round((entry.completedItems / entry.totalItems) * 100)}%`}

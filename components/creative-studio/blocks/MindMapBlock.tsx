@@ -20,7 +20,20 @@ import type { MindMapBlock, MindMapNode } from '../types'
 import { BlockWrapper } from '../BlockWrapper'
 import { Plus, X } from 'lucide-react'
 
-const COLORS = ['#e8a045', '#ef4444', '#3b82f6', '#10b981', '#a855f7', '#f5d97a']
+const COLORS = ['#e85d3a', '#ef4444', '#3b82f6', '#10b981', '#a855f7', '#f5d97a']
+
+// Resolve a stored color to a CSS value. The historical default '#e85d3a'
+// (which was the hardcoded orange accent) is treated as a sentinel for
+// "follow the theme accent" — so changing the accent in Settings propagates
+// to every node that never had its color explicitly overridden. Case- and
+// whitespace-insensitive to catch every stored variant.
+const THEME_SENTINELS = new Set(['#e85d3a', '#e85d3b', 'var(--cs-accent)', 'var(--accent)'])
+const resolveColor = (c: string | undefined | null): string => {
+  if (!c) return 'var(--cs-accent)'
+  const normalized = c.trim().toLowerCase()
+  if (THEME_SENTINELS.has(normalized)) return 'var(--cs-accent)'
+  return c
+}
 
 interface Props {
   block: MindMapBlock
@@ -38,14 +51,16 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
   } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const modalTextareaRef = useRef<HTMLTextAreaElement>(null)
+  // Declared before useSlashMenu so the callback doesn't hit a temporal
+  // dead zone when referencing setNodes.
+  const setNodes = (fn: (n: MindMapNode[]) => MindMapNode[]) => {
+    updateBlock(block.id, { nodes: fn(block.nodes) })
+  }
+
   const { handleKeyDown: slashKeyDown, menu: slashMenu } = useSlashMenu(
     modalTextareaRef,
     (val) => { if (modalId) setNodes((ns) => ns.map((x) => (x.id === modalId ? { ...x, notes: val } : x))) }
   )
-
-  const setNodes = (fn: (n: MindMapNode[]) => MindMapNode[]) => {
-    updateBlock(block.id, { nodes: fn(block.nodes) })
-  }
 
   const isHiddenByCollapse = (node: MindMapNode): boolean => {
     let cur = node
@@ -151,7 +166,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
           dx: drop.x,
           dy: drop.y,
           shape: 'pill',
-          color: parent?.color ?? '#e8a045',
+          color: parent?.color ?? '#e85d3a',
           notes: '',
         }
         setNodes((ns) => [...ns, child])
@@ -164,9 +179,11 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
     window.addEventListener('pointerup', onUp)
   }
 
-  // Portal target for modal — must escape the CSS transform containing block
+  // Portal target for modal — must escape the CSS transform containing block.
+  // Standard SSR-safe "set on mount" pattern.
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPortalTarget(document.body)
   }, [])
 
@@ -185,10 +202,14 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
     <BlockWrapper block={block} kind="mindmap" onContextMenu={onContextMenu}>
       <div
         ref={containerRef}
-        className="relative h-full w-full rounded-md border border-[#2a2a2a] bg-[#101010] shadow-lg"
-        style={{ overflow: 'visible' }}
+        className="relative h-full w-full rounded-md border shadow-lg"
+        style={{
+          overflow: 'visible',
+          background: 'var(--bg1)',
+          borderColor: 'var(--border)',
+        }}
       >
-        <div className="absolute left-3 top-2 z-10 font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Mind Map</div>
+        <div className="absolute left-3 top-2 z-10 font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Mind Map</div>
 
         {/* Edges (SVG) */}
         <svg className="pointer-events-none absolute inset-0 h-full w-full" style={{ overflow: 'visible' }}>
@@ -199,7 +220,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
             const x1 = p.dx, y1 = p.dy, x2 = n.dx, y2 = n.dy
             const mx = (x1 + x2) / 2
             const d = `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`
-            return <path key={n.id} d={d} stroke={n.color} strokeWidth={2} fill="none" />
+            return <path key={n.id} d={d} stroke={resolveColor(n.color)} strokeWidth={2} fill="none" />
           })}
           {connectDrag && (() => {
             const from = block.nodes.find((n) => n.id === connectDrag.fromId)
@@ -208,7 +229,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
             const x2 = connectDrag.cursor.x, y2 = connectDrag.cursor.y
             const mx = (x1 + x2) / 2
             const d = `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`
-            return <path d={d} stroke="#e8a045" strokeWidth={2} strokeDasharray="6 4" fill="none" />
+            return <path d={d} stroke="var(--cs-accent)" strokeWidth={2} strokeDasharray="6 4" fill="none" />
           })()}
         </svg>
 
@@ -236,7 +257,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
               style={{
                 left: n.dx,
                 top: n.dy,
-                background: n.color,
+                background: resolveColor(n.color),
                 borderColor: 'rgba(0,0,0,0.35)',
                 minWidth: 90,
                 zIndex: 10,
@@ -261,9 +282,10 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                 <span className="whitespace-nowrap">{n.label}</span>
               )}
 
-              {/* Drag-to-connect "+" — always visible, larger */}
+              {/* Drag-to-connect "+" — border matches canvas bg for a "knock-out" ring */}
               <div
-                className="absolute -right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 cursor-crosshair items-center justify-center rounded-full border-2 border-white bg-amber-500 text-black shadow-lg opacity-0 transition-opacity group-hover/node:opacity-100"
+                className="absolute -right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 cursor-crosshair items-center justify-center rounded-full border-2 bg-[color:var(--cs-accent)] text-black shadow-lg opacity-0 transition-opacity group-hover/node:opacity-100"
+                style={{ borderColor: 'var(--bg0)' }}
                 onPointerDown={(e) => startConnectDrag(e, n.id)}
                 title="Drag to connect or add child"
               >
@@ -273,7 +295,12 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
               {/* Collapse/expand */}
               {hasChildren && (
                 <button
-                  className="absolute -bottom-4 left-1/2 h-6 w-6 -translate-x-1/2 rounded-full bg-black/80 text-[14px] text-white shadow border border-neutral-600"
+                  className="absolute -bottom-4 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border text-[14px] shadow"
+                  style={{
+                    background: 'var(--bg0)',
+                    color: 'var(--text0)',
+                    borderColor: 'var(--border2)',
+                  }}
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation()
@@ -287,15 +314,23 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
               {/* Right-click context menu */}
               {menuId === n.id && (
                 <div
-                  className="absolute left-full top-0 z-30 ml-2 flex flex-col gap-1 rounded-md bg-[#141414] p-2 text-white shadow-2xl border border-[#2a2a2a]"
+                  className="absolute left-full top-0 z-30 ml-2 flex flex-col gap-1 rounded-md border p-2 shadow-2xl"
+                  style={{
+                    background: 'var(--bg2)',
+                    borderColor: 'var(--border)',
+                    color: 'var(--text0)',
+                  }}
                   onPointerDown={(e) => e.stopPropagation()}
                 >
-                  <div className="mb-1 text-[14px] font-mono uppercase tracking-[0.06em] text-neutral-500">Shape</div>
+                  <div className="mb-1 text-[14px] font-mono uppercase tracking-[0.06em]" style={{ color: 'var(--text2)' }}>Shape</div>
                   <div className="flex gap-1">
                     {(['circle', 'square', 'pill'] as const).map((s) => (
                       <button
                         key={s}
-                        className="rounded bg-[#1a1a1a] px-2 py-1 text-[14px] hover:bg-[#222]"
+                        className="rounded px-2 py-1 text-[14px] transition-colors duration-150"
+                        style={{ background: 'var(--bg3)', color: 'var(--text0)' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg4)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg3)')}
                         onClick={() => {
                           setNodes((ns) => ns.map((x) => (x.id === n.id ? { ...x, shape: s } : x)))
                           setMenuId(null)
@@ -305,13 +340,13 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                       </button>
                     ))}
                   </div>
-                  <div className="mt-1 mb-1 text-[14px] font-mono uppercase tracking-[0.06em] text-neutral-500">Color</div>
+                  <div className="mb-1 mt-1 text-[14px] font-mono uppercase tracking-[0.06em]" style={{ color: 'var(--text2)' }}>Color</div>
                   <div className="flex gap-1">
                     {COLORS.map((c) => (
                       <button
                         key={c}
-                        className="h-5 w-5 rounded border border-white/20"
-                        style={{ background: c }}
+                        className="h-5 w-5 rounded border"
+                        style={{ background: c, borderColor: 'var(--border2)' }}
                         onClick={() => {
                           setNodes((ns) => ns.map((x) => (x.id === n.id ? { ...x, color: c } : x)))
                           setMenuId(null)
@@ -362,16 +397,24 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                   initial={{ scale: 0.95, y: 20 }}
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0.95, y: 20 }}
-                  className="flex h-[80vh] w-[min(800px,92vw)] flex-col overflow-hidden rounded-lg border border-amber-700/60 bg-[#0a0a0a] shadow-[0_0_80px_rgba(245,158,11,0.2)]"
+                  className="flex h-[80vh] w-[min(800px,92vw)] flex-col overflow-hidden rounded-lg border"
+                  style={{
+                    background: 'var(--bg0)',
+                    // Subtle accent-tinted border so it matches the system
+                    // theme color instead of looking gray or white.
+                    borderColor: 'color-mix(in srgb, var(--cs-accent) 40%, transparent)',
+                    boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px color-mix(in srgb, var(--cs-accent) 12%, transparent)',
+                  }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Header */}
-                  <div className="flex items-center justify-between border-b border-[#2a2a2a] px-6 py-4">
+                  <div className="flex items-center justify-between border-b px-6 py-4" style={{ borderColor: 'var(--border)' }}>
                     <div className="flex-1">
-                      <div className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Mind Map Node</div>
+                      <div className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Mind Map Node</div>
                       <input
                         autoFocus
-                        className="mt-1 w-full bg-transparent text-[24px] font-bold leading-[1.2] text-white outline-none"
+                        className="mt-1 w-full bg-transparent text-[24px] font-bold leading-[1.2] outline-none"
+                        style={{ color: 'var(--text0)' }}
                         defaultValue={modalNode.label}
                         placeholder="Node title…"
                         onBlur={(e) =>
@@ -379,16 +422,22 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                         }
                       />
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="ml-4 flex items-center gap-2">
                       {COLORS.map((c) => (
                         <button
                           key={c}
-                          className="h-5 w-5 rounded-full border border-white/10"
-                          style={{ background: c }}
+                          className="h-5 w-5 rounded-full border"
+                          style={{ background: c, borderColor: 'var(--border2)' }}
                           onClick={() => setNodes((ns) => ns.map((x) => (x.id === modalNode.id ? { ...x, color: c } : x)))}
                         />
                       ))}
-                      <button onClick={() => setModalId(null)} className="ml-3 text-neutral-500 hover:text-white">
+                      <button
+                        onClick={() => setModalId(null)}
+                        className="ml-3 transition-colors duration-150"
+                        style={{ color: 'var(--text2)' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text0)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text2)')}
+                      >
                         <X size={18} />
                       </button>
                     </div>
@@ -400,7 +449,8 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                     key={modalNode.id}
                     defaultValue={modalNode.notes ?? ''}
                     placeholder="Type / for commands… Write ideas, sub-notes, action items…"
-                    className="flex-1 resize-none bg-transparent p-6 text-[15px] leading-[1.5] text-white outline-none placeholder:text-neutral-600"
+                    className="flex-1 resize-none bg-transparent p-6 text-[15px] leading-[1.5] outline-none placeholder:text-[color:var(--text3)]"
+                    style={{ color: 'var(--text0)' }}
                     onBlur={(e) =>
                       setNodes((ns) => ns.map((x) => (x.id === modalNode.id ? { ...x, notes: e.target.value } : x)))
                     }

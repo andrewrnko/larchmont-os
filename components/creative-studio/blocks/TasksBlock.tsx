@@ -11,9 +11,9 @@ import { BlockWrapper } from '../BlockWrapper'
 import { Plus, Play, Trash2, CheckSquare } from 'lucide-react'
 
 const PRIORITY_COLORS: Record<number, string> = {
-  1: 'text-amber-500 bg-amber-500/15',
+  1: 'text-[color:var(--cs-accent)] bg-[color:var(--cs-accent)]/15',
   2: 'text-blue-400 bg-blue-400/15',
-  3: 'text-neutral-400 bg-neutral-500/15',
+  3: 'text-[#c8c4bc] bg-neutral-500/15',
 }
 
 interface Props {
@@ -66,11 +66,11 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
 
   return (
     <BlockWrapper block={block} kind="tasks" onContextMenu={onContextMenu}>
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[#2a2a2a] bg-[#0e0e0d] shadow-lg">
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] shadow-lg">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#141412] px-4 py-3">
+        <div className="flex items-center justify-between border-b border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] px-4 py-3">
           <div className="flex items-center gap-2">
-            <CheckSquare size={15} className="text-amber-500" />
+            <CheckSquare size={15} className="text-[color:var(--cs-accent)]" />
             <input
               className="bg-transparent text-[15px] font-semibold text-white outline-none"
               defaultValue={block.label}
@@ -78,7 +78,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
             />
           </div>
           {totalCount > 0 && (
-            <span className="font-mono text-[13px] text-neutral-500">
+            <span className="font-mono text-[13px] text-[#888780]">
               {doneCount}/{totalCount}
             </span>
           )}
@@ -92,7 +92,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               <div
                 key={item.id}
                 className={`group flex items-center gap-3 rounded-md px-3 py-2 ${
-                  item.done ? 'opacity-40' : 'hover:bg-[#1a1a1a]'
+                  item.done ? 'opacity-40' : 'hover:bg-[#242422]'
                 }`}
                 style={{ minHeight: 36 }}
               >
@@ -100,8 +100,8 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                   onClick={() => toggleDone(item.id)}
                   className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
                     item.done
-                      ? 'border-amber-500 bg-amber-500 text-black'
-                      : 'border-neutral-600'
+                      ? 'border-[color:var(--cs-accent)] bg-[color:var(--cs-accent)] text-black'
+                      : 'border-[#555450]'
                   }`}
                 >
                   {item.done && <span className="text-[13px] leading-none">✓</span>}
@@ -117,7 +117,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                 )}
                 <span
                   className={`flex-1 text-[15px] leading-[1.5] ${
-                    item.done ? 'text-neutral-500 line-through' : 'text-white'
+                    item.done ? 'text-[#888780] line-through' : 'text-white'
                   }`}
                 >
                   {item.title}
@@ -125,7 +125,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                 {!item.done && (
                   <button
                     onClick={() => handleFocus(item)}
-                    className="rounded bg-amber-500/20 p-1.5 text-amber-400 opacity-0 group-hover:opacity-100 hover:bg-amber-500/40"
+                    className="rounded bg-[color:var(--cs-accent)]/20 p-1.5 text-[color:var(--cs-accent2)] opacity-0 group-hover:opacity-100 hover:bg-[color:var(--cs-accent2)]/40"
                     title="Start Focus"
                   >
                     <Play size={11} />
@@ -133,7 +133,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                 )}
                 <button
                   onClick={() => removeTask(item.id)}
-                  className="text-neutral-700 opacity-0 group-hover:opacity-100 hover:text-red-400"
+                  className="text-[#555450] opacity-0 group-hover:opacity-100 hover:text-red-400"
                 >
                   <Trash2 size={12} />
                 </button>
@@ -142,7 +142,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
         </div>
 
         {/* Add task input */}
-        <div className="border-t border-[#2a2a2a] p-3">
+        <div className="border-t border-[color:rgba(255,255,255,0.07)] p-3">
           <div className="flex gap-1.5">
             <div className="flex gap-0.5">
               {([1, 2, 3] as const).map((p) => (
@@ -151,7 +151,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
                   className={`rounded px-2.5 py-1 font-mono text-[15px] font-bold ${
                     newPriority === p
                       ? PRIORITY_COLORS[p]
-                      : 'text-neutral-600 hover:text-neutral-400'
+                      : 'text-[#555450] hover:text-[#c8c4bc]'
                   }`}
                   onClick={() => setNewPriority(p)}
                 >
@@ -160,7 +160,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
               ))}
             </div>
             <input
-              className="flex-1 rounded bg-[#141414] px-3 py-1.5 text-[15px] leading-[1.5] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded bg-[#1c1c1a] px-3 py-1.5 text-[15px] leading-[1.5] text-white outline-none placeholder:text-[#555450]"
               placeholder="Add task…"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
@@ -171,7 +171,7 @@ export function TasksBlockView({ block, onContextMenu }: Props) {
             <button
               onClick={addTask}
               disabled={!newTitle.trim()}
-              className="rounded bg-amber-600 p-1.5 text-black disabled:opacity-30 hover:bg-amber-500"
+              className="rounded bg-[color:var(--cs-accent)] p-1.5 text-black disabled:opacity-30 hover:bg-[color:var(--cs-accent2)]"
             >
               <Plus size={14} />
             </button>

@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Search, FolderKanban, CheckSquare, FileEdit, ImageIcon, Library, X } from 'lucide-react'
+import { Search, FolderKanban, CheckSquare, FileEdit, ImageIcon, Library, X, Compass } from 'lucide-react'
 import { useUIStore, useProjectStore, useTaskStore, useBriefStore, useAssetStore, useResourceStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
+import { OBJECT_ROUTES, ROUTE_META } from '@/components/layout/route-meta'
 
 interface SearchResult {
   id: string
@@ -44,12 +45,26 @@ export function CommandPalette() {
   useEffect(() => {
     if (commandPaletteOpen) {
       setTimeout(() => inputRef.current?.focus(), 50)
+      // Reset on open — canonical "prop-driven local state reset" pattern.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery('')
       setSelected(0)
     }
   }, [commandPaletteOpen])
 
   const allResults: SearchResult[] = [
+    // Routes first — these are always available even when domain stores are empty
+    ...OBJECT_ROUTES.map((href) => {
+      const meta = ROUTE_META[href]
+      return {
+        id: `route:${href}`,
+        label: meta?.title ?? href.replace('/', ''),
+        description: href,
+        icon: meta?.icon ?? Compass,
+        href,
+        group: 'Navigate',
+      }
+    }),
     ...projects.map((p) => ({
       id: p.id, label: p.name, description: `${p.entity} · ${p.category}`,
       icon: FolderKanban, href: `/projects/${p.id}`, group: 'Projects',
@@ -77,7 +92,10 @@ export function CommandPalette() {
         r.label.toLowerCase().includes(query.toLowerCase()) ||
         r.description?.toLowerCase().includes(query.toLowerCase())
       )
-    : allResults.slice(0, 10)
+    : // Empty query: show all nav routes + first 5 of each domain type
+      allResults.filter((r) => r.group === 'Navigate').concat(
+        allResults.filter((r) => r.group !== 'Navigate').slice(0, 10)
+      )
 
   // Group results
   const groups = filtered.reduce<Record<string, SearchResult[]>>((acc, r) => {

@@ -19,9 +19,68 @@ import { EmbedBlockView } from './blocks/EmbedBlock'
 import { TasksBlockView } from './blocks/TasksBlock'
 import { ConnectorLines } from './Connectors'
 import { ContextMenu, type ContextMenuState } from './ContextMenu'
+import { ConnectorDropMenu, type DropMenuState } from './ConnectorDropMenu'
 import type { ToolId } from './Toolbar'
 import { Grid3x3, Minus, Plus as PlusIcon } from 'lucide-react'
 import { TimerWidget } from './Timer'
+
+// Compact, AI-ready summary of a block for context injection.
+function summarizeBlock(block: AnyBlock | undefined): string {
+  if (!block) return ''
+  const stripHtml = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  switch (block.kind) {
+    case 'text':
+      return `[Text note] ${stripHtml(block.html).slice(0, 400)}`
+    case 'sticky':
+      return `[Sticky · ${block.color}] ${block.text.slice(0, 300)}`
+    case 'page': {
+      const body = block.content
+        .map((c) => ('text' in c ? c.text : ''))
+        .filter(Boolean)
+        .slice(0, 12)
+        .join(' • ')
+      return `[Page · ${block.title || 'Untitled'}] ${body.slice(0, 500)}`
+    }
+    case 'tasks': {
+      const items = block.taskItems
+        .slice(0, 10)
+        .map((t) => `${t.done ? '✓' : '○'} ${t.title}`)
+        .join(' · ')
+      return `[Tasks · ${block.label}] ${items}`
+    }
+    case 'transcript':
+      return `[Transcript · ${block.title || 'Untitled'}] ${block.transcript.slice(0, 500)}`
+    case 'storyboard': {
+      const frames = block.frames
+        .slice(0, 6)
+        .map((f) => `Frame ${f.order}: ${f.notes || f.label}`)
+        .join(' · ')
+      return `[Storyboard] ${frames}`
+    }
+    case 'mindmap': {
+      const root = block.nodes.find((n) => n.parentId === null)?.label ?? 'Untitled'
+      const branches = block.nodes
+        .filter((n) => n.parentId !== null)
+        .slice(0, 8)
+        .map((n) => n.label)
+        .join(', ')
+      return `[Mind map · ${root}] branches: ${branches}`
+    }
+    case 'image':
+      return `[Image${block.caption ? ` · ${block.caption}` : ''}]`
+    case 'embed':
+      return `[Embed${block.url ? ` · ${block.url}` : ''}${block.title ? ` · ${block.title}` : ''}]`
+    case 'assistant': {
+      const recent = block.messages
+        .slice(-3)
+        .map((m) => `${m.role}: ${m.content.slice(0, 120)}`)
+        .join(' | ')
+      return `[AI chat] ${recent}`
+    }
+    default:
+      return `[${block.kind}]`
+  }
+}
 
 interface Props {
   tool: ToolId
@@ -77,6 +136,7 @@ export function Canvas({ tool, setTool }: Props) {
   useUndoRedo()
 
   const [ctxMenu, setCtxMenu] = useState<ContextMenuState | null>(null)
+  const [dropMenu, setDropMenu] = useState<DropMenuState | null>(null)
 
   // ── Connector drag: pointermove + pointerup ──
   useEffect(() => {
@@ -105,8 +165,18 @@ export function Canvas({ tool, setTool }: Props) {
           toBlockId: hit.id,
           style: 'curved',
           arrow: 'one',
-          color: '#e8a045',
+          color: 'var(--cs-accent)',
           weight: 2,
+        })
+      } else {
+        // Released on empty canvas — open the drop menu so the user can
+        // instantly create a new block and connect it to the source.
+        setDropMenu({
+          clientX: e.clientX,
+          clientY: e.clientY,
+          worldX: w.x,
+          worldY: w.y,
+          fromBlockId: d.fromId,
         })
       }
     }
@@ -225,10 +295,125 @@ export function Canvas({ tool, setTool }: Props) {
     })
   }
 
+  // ── Drop-menu handlers ──
+  // Creates a block of the picked kind at the drop point and connects it.
+  const handleCreateBlockFromDrop = (kind: BlockKind, wx: number, wy: number, fromBlockId: string) => {
+    const id = addBlockAt(kind, wx, wy)
+    if (!id) return
+    addConnector({
+      id: uid(),
+      fromBlockId,
+      toBlockId: id,
+      style: 'curved',
+      arrow: 'one',
+      color: 'var(--cs-accent)',
+      weight: 2,
+    })
+    // Select the new block so the user can immediately edit it
+    useCanvasStore.setState({ selection: [id] })
+  }
+
+  // Calls the server AI endpoint to populate a page block at the drop point,
+  // then connects it to the source block. Context injected: the source
+  // block's summary + up to 8 other blocks on the board for reference.
+  const handleCreatePageFromAI = async (
+    prompt: string,
+    wx: number,
+    wy: number,
+    fromBlockId: string
+  ) => {
+    const state = useCanvasStore.getState()
+    const activeBoard = state.boards.find((b) => b.id === state.activeBoardId)
+    if (!activeBoard) throw new Error('No active board')
+
+    const sourceBlock = activeBoard.blocks.find((b) => b.id === fromBlockId)
+    const sourceContext = summarizeBlock(sourceBlock)
+
+    // Same-board neighbors (up to 8)
+    const otherContext = activeBoard.blocks
+      .filter((b) => b.id !== fromBlockId)
+      .slice(0, 8)
+      .map(summarizeBlock)
+      .filter(Boolean)
+      .join('\n')
+
+    // Cross-board context: summarize up to 2 highest-signal blocks from each
+    // OTHER board (title, icon, top ~2 summaries). Capped at 6 boards so the
+    // prompt stays bounded.
+    const otherBoards = state.boards.filter((b) => b.id !== activeBoard.id).slice(0, 6)
+    const workspaceContext = otherBoards
+      .map((b) => {
+        const summaries = b.blocks
+          .slice(0, 3)
+          .map(summarizeBlock)
+          .filter(Boolean)
+          .join(' | ')
+        return `— Board "${b.icon} ${b.name}" (${b.blocks.length} blocks): ${summaries}`
+      })
+      .filter(Boolean)
+      .join('\n')
+
+    const res = await fetch('/api/creative-studio/generate-page', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        sourceContext,
+        boardContext: otherContext,
+        workspaceContext,
+        boardName: activeBoard.name,
+      }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Unknown error' }))
+      throw new Error(err.error || `Request failed (${res.status})`)
+    }
+    const data = (await res.json()) as {
+      title: string
+      icon: string
+      blocks: Array<{ type: string; text: string; checked?: boolean }>
+    }
+
+    // Create the page block in place
+    const newId = addBlockAt('page', wx, wy)
+    if (!newId) throw new Error('Failed to create page block')
+
+    // Convert AI blocks into SubPageBlock shape with fresh ids
+    const content = data.blocks.map((b) => ({
+      id: uid(),
+      type: b.type as 'h1' | 'h2' | 'h3' | 'p' | 'bullet' | 'numbered' | 'todo' | 'divider',
+      text: b.text,
+      ...(b.type === 'todo' ? { checked: b.checked ?? false } : {}),
+    }))
+
+    useCanvasStore.getState().updateBlock(newId, {
+      title: data.title || 'Untitled',
+      // Always use the document icon for AI-generated pages (user preference).
+      icon: '📄',
+      content,
+    } as Partial<AnyBlock>)
+
+    // Connect source → new page
+    addConnector({
+      id: uid(),
+      fromBlockId,
+      toBlockId: newId,
+      style: 'curved',
+      arrow: 'one',
+      color: 'var(--cs-accent)',
+      weight: 2,
+    })
+
+    useCanvasStore.setState({ selection: [newId] })
+  }
+
   if (!board) return null
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#0a0a0a]">
+    <div
+      className="relative h-full w-full overflow-hidden"
+      style={{ background: 'var(--bg0)' }}
+    >
       <div
         ref={containerRef}
         className="absolute inset-0 outline-none"
@@ -246,7 +431,7 @@ export function Canvas({ tool, setTool }: Props) {
         style={{
           cursor: connectDrag ? 'crosshair' : tool === 'pan' ? 'grab' : tool === 'connector' ? 'crosshair' : 'default',
           backgroundImage: showGrid
-            ? 'radial-gradient(circle, #222 1px, transparent 1px)'
+            ? 'radial-gradient(circle, color-mix(in srgb, var(--text3) 45%, transparent) 1px, transparent 1px)'
             : undefined,
           backgroundSize: showGrid ? `${24 * viewport.scale}px ${24 * viewport.scale}px` : undefined,
           backgroundPosition: showGrid ? `${viewport.x}px ${viewport.y}px` : undefined,
@@ -271,13 +456,13 @@ export function Canvas({ tool, setTool }: Props) {
             >
               <path
                 d={`M ${connectDrag.startX} ${connectDrag.startY} C ${(connectDrag.startX + connectDrag.cursorX) / 2} ${connectDrag.startY}, ${(connectDrag.startX + connectDrag.cursorX) / 2} ${connectDrag.cursorY}, ${connectDrag.cursorX} ${connectDrag.cursorY}`}
-                stroke="#e8a045"
+                stroke="var(--cs-accent)"
                 strokeWidth={2.5}
                 strokeDasharray="8 5"
                 fill="none"
               />
               {/* Cursor dot */}
-              <circle cx={connectDrag.cursorX} cy={connectDrag.cursorY} r={6} fill="#e8a045" opacity={0.8} />
+              <circle cx={connectDrag.cursorX} cy={connectDrag.cursorY} r={6} fill="var(--cs-accent)" opacity={0.8} />
             </svg>
           )}
         </div>
@@ -285,29 +470,36 @@ export function Canvas({ tool, setTool }: Props) {
         {/* Lasso overlay (screen space) */}
         {lasso && (
           <div
-            className="pointer-events-none absolute border border-amber-500/70 bg-amber-500/10"
+            className="pointer-events-none absolute border border-[color:var(--cs-accent)]/70 bg-[color:var(--cs-accent)]/10"
             style={{ left: lasso.x, top: lasso.y, width: lasso.w, height: lasso.h }}
           />
         )}
       </div>
 
       {/* Zoom + grid controls */}
-      <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 rounded-md border border-[#2a2a2a] bg-[#141414]/95 px-2 py-1 text-[13px] text-neutral-400 backdrop-blur">
+      <div
+        className="absolute bottom-3 right-3 z-20 flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-[13px] backdrop-blur"
+        style={{
+          background: 'color-mix(in srgb, var(--bg2) 95%, transparent)',
+          borderColor: 'var(--border)',
+          color: 'var(--text1)',
+        }}
+      >
         <button
-          className={`rounded px-1 ${showGrid ? 'text-amber-400' : ''}`}
+          className={`rounded px-1 ${showGrid ? 'text-[color:var(--cs-accent2)]' : ''}`}
           onClick={() => setShowGrid(!showGrid)}
           title="Toggle grid"
         >
           <Grid3x3 size={12} />
         </button>
         <button
-          className={`rounded px-1 text-[13px] ${snapToGrid ? 'text-amber-400' : ''}`}
+          className={`rounded px-1 text-[13px] ${snapToGrid ? 'text-[color:var(--cs-accent2)]' : ''}`}
           onClick={() => setSnapToGrid(!snapToGrid)}
           title="Snap to grid"
         >
           SNAP
         </button>
-        <div className="h-3 w-px bg-[#2a2a2a]" />
+        <div className="h-3 w-px bg-[rgba(255,255,255,0.07)]" />
         <button onClick={() => setViewport({ ...viewport, scale: Math.max(0.1, viewport.scale - 0.1) })}>
           <Minus size={12} />
         </button>
@@ -320,9 +512,24 @@ export function Canvas({ tool, setTool }: Props) {
 
       <TimerWidget />
       <ContextMenu state={ctxMenu} onClose={() => setCtxMenu(null)} onZoomToFit={zoomToFit} />
-
-
-
+      {(() => {
+        // Recompute the drop menu's screen position on every render so it
+        // tracks canvas pan/zoom — popup stays attached to the drop point
+        // on the canvas instead of "locking" to the viewport.
+        if (!dropMenu) return null
+        const rect = containerRef.current?.getBoundingClientRect()
+        if (!rect) return null
+        const clientX = rect.left + viewport.x + dropMenu.worldX * viewport.scale
+        const clientY = rect.top + viewport.y + dropMenu.worldY * viewport.scale
+        return (
+          <ConnectorDropMenu
+            state={{ ...dropMenu, clientX, clientY }}
+            onClose={() => setDropMenu(null)}
+            onCreateBlock={handleCreateBlockFromDrop}
+            onCreatePageFromAI={handleCreatePageFromAI}
+          />
+        )
+      })()}
     </div>
   )
 }

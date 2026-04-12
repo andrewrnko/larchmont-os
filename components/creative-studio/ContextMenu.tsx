@@ -51,7 +51,7 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
 
   const item = (label: string, fn: () => void, danger?: boolean) => (
     <button
-      className={`w-full px-3 py-1.5 text-left text-[15px] hover:bg-amber-500/20 ${danger ? 'text-red-400' : 'text-neutral-200'}`}
+      className={`w-full px-3 py-1.5 text-left text-[15px] hover:bg-[color:var(--cs-accent)]/20 ${danger ? 'text-red-400' : 'text-neutral-200'}`}
       onClick={(e) => {
         e.stopPropagation()
         fn()
@@ -69,7 +69,7 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.1 }}
-          className="fixed z-[100] w-52 overflow-hidden rounded-md border border-[#2a2a2a] bg-[#141414] py-1 shadow-2xl"
+          className="fixed z-[100] w-52 overflow-hidden rounded-md border border-[color:var(--border)] bg-[color:var(--bg2)] py-1 shadow-2xl"
           style={{
             left: Math.min(state.x, window.innerWidth - 220),
             top: Math.min(state.y, window.innerHeight - 320),
@@ -94,7 +94,7 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
                 sendToBack(state.blockId!)
                 onClose()
               })}
-              <div className="my-1 h-px bg-[#2a2a2a]" />
+              <div className="my-1 h-px bg-[color:var(--bg4)]" />
               {item('Delete', () => {
                 removeBlocks([state.blockId!])
                 onClose()
@@ -111,7 +111,7 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
               {item('Add Task List', () => addAt('tasks'))}
               {item('Add Transcript', () => addAt('transcript'))}
               {item('Add AI Assistant', () => addAt('assistant'))}
-              <div className="my-1 h-px bg-[#2a2a2a]" />
+              <div className="my-1 h-px bg-[color:var(--bg4)]" />
               {item('Select All', () => {
                 setSelection(board?.blocks.map((b) => b.id) ?? [])
                 onClose()

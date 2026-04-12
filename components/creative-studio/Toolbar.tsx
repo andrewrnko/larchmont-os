@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 import {
   MousePointer2, Hand, Type, StickyNote, ImageIcon, Film, GitBranch,
-  FileText, Link2, Clock, Globe, SquareDashed, FileAudio, Bot, CheckSquare,
+  FileText, Link2, FileAudio, Bot, CheckSquare,
 } from 'lucide-react'
 import type { BlockKind } from './types'
 
@@ -29,9 +29,6 @@ const TOOLS: { id: ToolId; label: string; shortcut: string; desc: string; icon: 
   { id: 'connector',  label: 'Connector',       shortcut: 'C', desc: 'Draw lines between blocks (also hover edges)',   icon: Link2 },
   { id: 'transcript', label: 'Transcript',      shortcut: 'R', desc: 'Paste audio transcripts for reference',          icon: FileAudio },
   { id: 'assistant',  label: 'AI Assistant',    shortcut: 'A', desc: 'Chat with AI about connected blocks',            icon: Bot },
-  { id: 'timeline',   label: 'Timeline',        shortcut: '',  desc: 'Coming soon',                                    icon: Clock, stub: true },
-  { id: 'embed',      label: 'Embed',           shortcut: '',  desc: 'Coming soon',                                    icon: Globe, stub: true },
-  { id: 'section',    label: 'Section',          shortcut: '',  desc: 'Coming soon',                                    icon: SquareDashed, stub: true },
 ]
 
 export function Toolbar({ active, setActive }: Props) {
@@ -55,7 +52,13 @@ export function Toolbar({ active, setActive }: Props) {
   }, [setActive])
 
   return (
-    <div className="absolute left-3 top-1/2 z-30 -translate-y-1/2 flex flex-col gap-1 rounded-lg border border-[#2a2a2a] bg-[#141414]/95 p-1 shadow-2xl backdrop-blur">
+    <div
+      className="absolute left-3 top-1/2 z-30 -translate-y-1/2 flex flex-col gap-1.5 rounded-xl border p-1.5 shadow-2xl backdrop-blur"
+      style={{
+        background: 'color-mix(in srgb, var(--bg2) 95%, transparent)',
+        borderColor: 'var(--border)',
+      }}
+    >
       {TOOLS.map((t) => {
         const Icon = t.icon
         const isActive = active === t.id && !t.stub
@@ -67,25 +70,54 @@ export function Toolbar({ active, setActive }: Props) {
               onClick={() => !t.stub && setActive(t.id)}
               onMouseEnter={() => setHoverId(t.id)}
               onMouseLeave={() => setHoverId(null)}
-              className={`flex h-9 w-9 items-center justify-center rounded transition-colors ${
-                isActive ? 'bg-amber-500 text-black' : 'text-neutral-400 hover:bg-[#222] hover:text-white'
+              className={`flex h-11 w-11 items-center justify-center rounded-lg transition-all duration-150 ease-out ${
+                isActive ? 'scale-[1.02]' : 'hover:scale-[1.04]'
               } ${t.stub ? 'opacity-30' : ''}`}
+              style={{
+                background: isActive ? 'var(--cs-accent)' : 'transparent',
+                color: isActive ? '#0a0a09' : 'var(--text1)',
+              }}
+              onMouseOver={(e) => {
+                if (!isActive && !t.stub) {
+                  e.currentTarget.style.background = 'var(--bg3)'
+                  e.currentTarget.style.color = 'var(--text0)'
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isActive && !t.stub) {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--text1)'
+                }
+              }}
             >
-              <Icon size={16} />
+              <Icon size={20} strokeWidth={2} />
             </button>
             {/* Rich tooltip */}
             {isHovered && !t.stub && (
               <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap">
-                <div className="rounded-md border border-[#2a2a2a] bg-[#111] px-3 py-2 shadow-xl">
+                <div
+                  className="rounded-md border px-3 py-2 shadow-xl"
+                  style={{
+                    background: 'var(--bg2)',
+                    borderColor: 'var(--border)',
+                  }}
+                >
                   <div className="flex items-center gap-2">
-                    <span className="text-[15px] font-medium text-white">{t.label}</span>
+                    <span className="text-[15px] font-medium" style={{ color: 'var(--text0)' }}>
+                      {t.label}
+                    </span>
                     {t.shortcut && (
-                      <span className="rounded bg-[#2a2a2a] px-1.5 py-0.5 font-mono text-[13px] text-neutral-400">
+                      <span
+                        className="rounded px-1.5 py-0.5 font-mono text-[13px]"
+                        style={{ background: 'var(--bg4)', color: 'var(--text1)' }}
+                      >
                         {t.shortcut}
                       </span>
                     )}
                   </div>
-                  <div className="mt-0.5 text-[13px] text-neutral-500">{t.desc}</div>
+                  <div className="mt-0.5 text-[13px]" style={{ color: 'var(--text2)' }}>
+                    {t.desc}
+                  </div>
                 </div>
               </div>
             )}

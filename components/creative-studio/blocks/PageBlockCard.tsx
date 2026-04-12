@@ -30,8 +30,11 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
   return (
     <BlockWrapper block={block} kind="page" onContextMenu={onContextMenu}>
       <div
-        className="relative flex h-full w-full flex-col justify-between rounded-lg border border-[#2a2a2a] p-4 shadow-lg"
-        style={{ background: block.color ?? '#1a1a1a' }}
+        className="relative flex h-full w-full flex-col justify-between rounded-lg border p-4 shadow-lg"
+        style={{
+          background: block.color ?? 'var(--bg2)',
+          borderColor: 'var(--border)',
+        }}
       >
         <div className="flex items-start gap-2">
           <button
@@ -53,7 +56,7 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
         </div>
 
         {block.deadline && (
-          <div className="mt-1 flex items-center gap-1 text-[13px] text-amber-400">
+          <div className="mt-1 flex items-center gap-1 text-[13px] text-[color:var(--cs-accent2)]">
             <Calendar size={10} /> Due {block.deadline}
           </div>
         )}
@@ -65,7 +68,7 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
                 e.stopPropagation()
                 setColorOpen((v) => !v)
               }}
-              className="rounded bg-black/40 p-1 text-neutral-400 hover:text-white"
+              className="rounded bg-black/40 p-1 text-[#c8c4bc] hover:text-white"
               title="Change color"
             >
               <Palette size={10} />
@@ -76,7 +79,7 @@ export function PageBlockCard({ block, onContextMenu }: Props) {
               e.stopPropagation()
               openPage(block.id)
             }}
-            className="flex items-center gap-1 rounded bg-amber-600/20 px-2 py-1 text-[14px] text-amber-400 hover:bg-amber-600/40"
+            className="flex items-center gap-1 rounded bg-[color:var(--cs-accent)]/20 px-2 py-1 text-[14px] text-[color:var(--cs-accent2)] hover:bg-[color:var(--cs-accent)]/40"
           >
             Open <ArrowRight size={10} />
           </button>

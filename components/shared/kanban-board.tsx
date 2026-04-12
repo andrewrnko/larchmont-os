@@ -118,21 +118,22 @@ function KanbanColumn<T extends KanbanItem>({
         </div>
       )}
 
-      {/* Drop zone — covers full column including empty space */}
+      {/* Drop zone — covers full column including empty space.
+          Anytype-style: flat panel (bg2), thin border, 6px radius. */}
       <div
         ref={setNodeRef}
         className={cn(
-          'flex-1 rounded-[8px] border-2 p-2 transition-colors duration-150',
+          'flex-1 rounded-[6px] border p-2 transition-colors duration-100',
           isOver
-            ? 'border-[var(--accent)]/60 bg-[var(--accent-muted)]'
-            : `${borderClass} bg-[var(--surface-2)]/50`
+            ? 'border-[color:var(--accent)]/50 bg-[color:var(--accent-muted)]'
+            : `${borderClass} bg-[color:var(--bg2)]`
         )}
       >
         <SortableContext
           items={items.map((i) => i.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {items.map((item) => (
               <SortableWrapper key={item.id} id={item.id} isActiveItem={false}>
                 {renderCard(item)}

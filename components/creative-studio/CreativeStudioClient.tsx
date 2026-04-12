@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { useCanvasStore, usePlannerStore } from './store'
 import { Canvas } from './Canvas'
 import { Toolbar, type ToolId } from './Toolbar'
-import { BoardSidebar } from './BoardSidebar'
+import { BoardPopover } from './BoardPopover'
 import { DayHyperplanner } from './DayHyperplanner'
 import { DailyRepeatables } from './DailyRepeatables'
 import { FocusOverlay } from './FocusOverlay'
@@ -21,7 +21,6 @@ export function CreativeStudioClient() {
   const createBoard = useCanvasStore((s) => s.createBoard)
 
   const [tool, setTool] = useState<ToolId>('select')
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     hydrate()
@@ -30,7 +29,8 @@ export function CreativeStudioClient() {
 
   if (!hydrated || !plannerHydrated) {
     return (
-      <div className="flex h-full w-full items-center justify-center text-[15px] text-neutral-500">
+      <div className="cs-anytype flex h-full w-full items-center justify-center text-[13px]"
+           style={{ color: 'var(--cs-text2)' }}>
         Loading Creative Studio…
       </div>
     )
@@ -38,15 +38,26 @@ export function CreativeStudioClient() {
 
   if (boards.length === 0) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <div className="rounded-lg border border-[#2a2a2a] bg-[#141414] p-8 text-center">
-          <div className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Creative Studio</div>
-          <h2 className="mt-2 text-[15px] font-semibold text-white">Nothing here yet</h2>
+      <div className="cs-anytype flex h-full w-full items-center justify-center">
+        <div className="rounded-[6px] border p-10 text-center"
+             style={{ borderColor: 'var(--cs-border)', background: 'var(--cs-bg2)' }}>
+          <div className="text-[10.5px] font-medium uppercase tracking-[0.08em]"
+               style={{ color: 'var(--cs-text3)' }}>Creative Studio</div>
+          <h2 className="mt-3 text-[20px] font-normal"
+              style={{ color: 'var(--cs-text0)' }}>Nothing here yet</h2>
+          <p className="mt-1 text-[13px]" style={{ color: 'var(--cs-text2)' }}>
+            Create your first board to get started.
+          </p>
           <button
             onClick={() => createBoard('My First Board', '🎬')}
-            className="mt-4 rounded bg-amber-500 px-4 py-2 text-[15px] font-medium text-black hover:bg-amber-400"
+            className="mt-5 rounded-[4px] border px-3 py-1.5 text-[13px] transition-colors duration-100 hover:bg-[color:var(--cs-bg4)]"
+            style={{
+              borderColor: 'var(--cs-border2)',
+              background: 'var(--cs-bg3)',
+              color: 'var(--cs-text1)',
+            }}
           >
-            Create your first board →
+            New board →
           </button>
         </div>
       </div>
@@ -54,13 +65,13 @@ export function CreativeStudioClient() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-[#0a0a0a]">
+    <div className="cs-anytype flex h-full w-full flex-col overflow-hidden">
       <DayHyperplanner />
       <DailyRepeatables />
       <div className="relative flex flex-1 overflow-hidden">
-        <BoardSidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
         <div className="relative flex-1">
           <Canvas tool={tool} setTool={setTool} />
+          <BoardPopover />
           <Toolbar active={tool} setActive={setTool} />
           <SubpageEditor />
         </div>

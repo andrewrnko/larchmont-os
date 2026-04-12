@@ -64,10 +64,10 @@ export function ConnectorLines({ blocks, connectors }: Props) {
     >
       <defs>
         <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M0,0 L10,5 L0,10 Z" fill="#e8a045" />
+          <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent)" />
         </marker>
         <marker id="arrowhead-selected" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-          <path d="M0,0 L10,5 L0,10 Z" fill="#f59e0b" />
+          <path d="M0,0 L10,5 L0,10 Z" fill="var(--cs-accent2)" />
         </marker>
       </defs>
       {connectors.map((c) => {
@@ -83,12 +83,12 @@ export function ConnectorLines({ blocks, connectors }: Props) {
           <g key={c.id} data-connector={c.id} className="pointer-events-auto">
             {/* Selection glow (behind the main line) */}
             {isSelected && (
-              <path d={d} stroke="#f59e0b" strokeWidth={8} fill="none" opacity={0.3} />
+              <path d={d} stroke="var(--cs-accent2)" strokeWidth={8} fill="none" opacity={0.3} />
             )}
             {/* Main visible line */}
             <path
               d={d}
-              stroke={isSelected ? '#f59e0b' : c.color}
+              stroke={isSelected ? 'var(--cs-accent2)' : c.color}
               strokeWidth={isSelected ? 3 : c.weight}
               fill="none"
               markerEnd={c.arrow !== 'none' ? (isSelected ? 'url(#arrowhead-selected)' : 'url(#arrowhead)') : undefined}

@@ -61,7 +61,7 @@ export function DayHyperplanner() {
       <button
         onClick={() => toggleDone(task.id)}
         className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ${
-          task.done ? 'border-amber-500 bg-amber-500 text-black' : 'border-neutral-600'
+          task.done ? 'border-[color:var(--cs-accent)] bg-[color:var(--cs-accent)] text-black' : 'border-[#555450]'
         }`}
       >
         {task.done && <Check size={11} />}
@@ -87,7 +87,7 @@ export function DayHyperplanner() {
         <button
           onClick={() => startFocus(task.id, task.estimateMin ?? 25)}
           className={`flex items-center gap-1 rounded px-2 py-1 text-[15px] font-medium hover:opacity-80 ${
-            isP1 ? 'bg-amber-500 text-black' : 'bg-amber-500/20 text-amber-400'
+            isP1 ? 'bg-[color:var(--cs-accent)] text-black' : 'bg-[color:var(--cs-accent)]/20 text-[color:var(--cs-accent2)]'
           }`}
           title="Start Focus"
         >
@@ -104,17 +104,27 @@ export function DayHyperplanner() {
       <div
         className={`relative rounded-lg border ${
           isP1
-            ? 'border-amber-600 bg-gradient-to-br from-[#2a1a0a] to-[#1a1208] shadow-[0_0_32px_rgba(245,158,11,0.18)]'
-            : 'border-[#2a2a2a] bg-[#141414]'
+            ? 'border-[color:var(--cs-accent)]'
+            : 'border-[color:var(--border)] bg-[color:var(--bg2)]'
         } ${isP1 ? 'p-4' : 'p-2.5'}`}
+        style={
+          isP1
+            ? {
+                background:
+                  'linear-gradient(to bottom right, color-mix(in srgb, var(--cs-accent) 14%, var(--cs-bg0)), color-mix(in srgb, var(--cs-accent) 6%, var(--cs-bg0)))',
+                boxShadow:
+                  '0 0 32px color-mix(in srgb, var(--cs-accent) 18%, transparent)',
+              }
+            : undefined
+        }
       >
         <div
           className={`mb-2 flex items-center justify-between font-mono font-medium ${
-            isP1 ? 'text-[13px] text-amber-500' : 'text-[13px] text-neutral-500'
+            isP1 ? 'text-[13px] text-[color:var(--cs-accent)]' : 'text-[13px] text-[#888780]'
           } uppercase tracking-[0.06em]`}
         >
           <span>P{rank}</span>
-          <span className="text-neutral-600">
+          <span className="text-[#555450]">
             {items.length}/{MAX_PER_RANK}
           </span>
         </div>
@@ -128,9 +138,9 @@ export function DayHyperplanner() {
 
   if (collapsed) {
     return (
-      <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#0d0d0d] px-4 py-1">
-        <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Day Hyperplanner</span>
-        <button onClick={() => setCollapsed(false)} className="text-neutral-500 hover:text-white">
+      <div className="flex items-center justify-between border-b border-[color:var(--border)] bg-[color:var(--bg1)] px-4 py-1">
+        <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Day Hyperplanner</span>
+        <button onClick={() => setCollapsed(false)} className="text-[#888780] hover:text-white">
           <ChevronDown size={14} />
         </button>
       </div>
@@ -139,10 +149,10 @@ export function DayHyperplanner() {
 
   return (
     <>
-      <div className="border-b border-[#2a2a2a] bg-[#0d0d0d] p-3">
+      <div className="border-b border-[color:var(--border)] bg-[color:var(--bg1)] p-3">
         <div className="mb-2 flex items-center justify-between">
-          <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Day Hyperplanner</span>
-          <div className="flex items-center gap-2 text-[15px] text-neutral-500">
+          <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Day Hyperplanner</span>
+          <div className="flex items-center gap-2 text-[15px] text-[#888780]">
             <button onClick={() => setLogOpen(true)} className="flex items-center gap-1 hover:text-white">
               <Archive size={10} /> Yesterday
             </button>
@@ -164,9 +174,10 @@ export function DayHyperplanner() {
         </div>
         {firstP1Open && (
           <div className="mt-2 flex items-center gap-2">
-            <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-neutral-500">Currently drifting to</span>
+            <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[#888780]">Currently drifting to</span>
             <input
-              className="flex-1 rounded bg-[#141414] px-2 py-1 text-[16px] text-white outline-none placeholder:text-neutral-600"
+              className="flex-1 rounded px-2 py-1 text-[16px] outline-none placeholder:text-[color:var(--text3)]"
+            style={{ background: 'var(--bg2)', color: 'var(--text0)' }}
               placeholder="what are you actually doing right now?"
               value={drifting}
               onChange={(e) => setDrifting(e.target.value)}
@@ -183,22 +194,22 @@ export function DayHyperplanner() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.2 }}
-            className="fixed right-0 top-0 z-[60] h-full w-80 border-l border-[#2a2a2a] bg-[#0a0a0a] p-4 shadow-2xl"
+            className="fixed right-0 top-0 z-[60] h-full w-80 border-l border-[color:var(--border)] bg-[color:var(--bg0)] p-4 shadow-2xl"
           >
             <div className="mb-3 flex items-center justify-between">
-              <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-amber-500">Archive</span>
-              <button onClick={() => setLogOpen(false)} className="text-neutral-500 hover:text-white">
+              <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">Archive</span>
+              <button onClick={() => setLogOpen(false)} className="text-[#888780] hover:text-white">
                 <X size={14} />
               </button>
             </div>
-            {log.length === 0 && <div className="text-[13px] text-neutral-600">Nothing archived yet.</div>}
+            {log.length === 0 && <div className="text-[13px] text-[#555450]">Nothing archived yet.</div>}
             {log.map((entry) => (
               <div key={entry.date} className="mb-3">
-                <div className="mb-1 font-mono text-[13px] text-neutral-500">{entry.date}</div>
+                <div className="mb-1 font-mono text-[13px] text-[#888780]">{entry.date}</div>
                 {entry.tasks.map((t) => (
-                  <div key={t.id} className="flex items-center gap-2 text-[16px] leading-[1.3] text-neutral-300">
-                    <span className={t.done ? 'text-amber-500' : 'text-neutral-600'}>{t.done ? '✓' : '○'}</span>
-                    <span className="font-mono text-[13px] text-neutral-600">P{t.rank}</span>
+                  <div key={t.id} className="flex items-center gap-2 text-[16px] leading-[1.3] text-[#c8c4bc]">
+                    <span className={t.done ? 'text-[color:var(--cs-accent)]' : 'text-[#555450]'}>{t.done ? '✓' : '○'}</span>
+                    <span className="font-mono text-[13px] text-[#555450]">P{t.rank}</span>
                     <span className={t.done ? 'line-through' : ''}>{t.title}</span>
                   </div>
                 ))}
@@ -224,11 +235,11 @@ function AddTaskInput({
   const inputRef = useRef<HTMLInputElement>(null)
   return (
     <div className="flex items-center gap-2 opacity-60 hover:opacity-100">
-      <Plus size={10} className="text-neutral-600" />
+      <Plus size={10} className="text-[#555450]" />
       <input
         ref={inputRef}
-        className={`flex-1 bg-transparent outline-none placeholder:text-neutral-600 ${
-          isP1 ? 'text-[16px] text-white' : 'text-[16px] text-neutral-300'
+        className={`flex-1 bg-transparent outline-none placeholder:text-[#555450] ${
+          isP1 ? 'text-[16px] text-white' : 'text-[16px] text-[#c8c4bc]'
         }`}
         placeholder={isP1 ? 'Add a P1 priority…' : `Add P${rank}…`}
         value={val}

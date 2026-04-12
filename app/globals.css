@@ -12,6 +12,53 @@ body.cs-distraction-warn {
   animation: cs-distraction-pulse 2s ease-in-out infinite;
 }
 
+/* ──────────────────────────────────────────────────────────────
+   Creative Studio — Anytype-inspired scoped theme.
+   Only applies inside `.cs-anytype` container; the rest of the
+   Larchmont OS app keeps its existing gold/cream tokens.
+   ────────────────────────────────────────────────────────────── */
+.cs-anytype {
+  /* Surfaces — aliased to the global Anytype tokens so a single theme
+     change in Settings → Appearance propagates into Creative Studio. */
+  --cs-bg0: var(--bg0);
+  --cs-bg1: var(--bg1);
+  --cs-bg2: var(--bg2);
+  --cs-bg3: var(--bg3);
+  --cs-bg4: var(--bg4);
+
+  /* Borders */
+  --cs-border: var(--border);
+  --cs-border2: var(--border2);
+
+  /* Text */
+  --cs-text0: var(--text0);
+  --cs-text1: var(--text1);
+  --cs-text2: var(--text2);
+  --cs-text3: var(--text3);
+
+  /* Accent — follows the user's chosen color from useThemeStore. */
+  --cs-accent: var(--accent);
+  --cs-accent2: var(--accent2);
+
+  background-color: var(--cs-bg0);
+  color: var(--cs-text0);
+  font-family: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  -webkit-font-smoothing: antialiased;
+}
+
+.cs-anytype ::selection {
+  background: rgba(232, 93, 58, 0.35);
+  color: var(--cs-text0);
+}
+
+/* Status pill colors (scoped) */
+.cs-anytype .cs-pill-progress { background: rgba(212, 162, 52, 0.15); color: #d4a234; }
+.cs-anytype .cs-pill-complete { background: rgba(82, 169, 106, 0.15); color: #52a96a; }
+.cs-anytype .cs-pill-draft    { background: var(--cs-bg4);            color: var(--cs-text3); }
+.cs-anytype .cs-pill-review   { background: rgba(74, 156, 245, 0.15); color: #4a9cf5; }
+.cs-anytype .cs-pill-active   { background: rgba(232, 93, 58, 0.15);  color: var(--cs-accent); }
+
 :root {
   --background: #FFFFFF;
   --surface: #F7F7F5;
@@ -43,38 +90,72 @@ body.cs-distraction-warn {
   --radius: 0.5rem;
   --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
   --shadow-modal: 0 8px 32px rgba(0,0,0,0.12);
+
+  /* Canonical Anytype tokens (light fallback — app is dark by default) */
+  --bg0: #FFFFFF;
+  --bg1: #F7F7F5;
+  --bg2: #EFEFED;
+  --bg3: #E4E4E2;
+  --bg4: #CACAC8;
+  --border2: rgba(0, 0, 0, 0.10);
+  --border3: rgba(0, 0, 0, 0.16);
+  --text0: #1A1A1A;
+  --text1: #4A4A4A;
+  --text2: #6B6B6B;
+  --text3: #ABABAB;
+  --accent2: #f07a5a;
+  --any-blue: #3d7be8;
 }
 
 .dark {
-  --background: #111110;
-  --surface: #1C1C1A;
-  --surface-2: #242422;
-  --border: #2E2E2C;
-  --border-strong: #3D3D3B;
-  --text-primary: #EEEEEC;
-  --text-secondary: #9B9B98;
-  --text-tertiary: #6B6B68;
-  --accent: #C9A84C;
-  --accent-fg: #111110;
-  --accent-muted: #2A2418;
-  --destructive: #E05050;
-  --success: #3DAA6A;
-  --warning: #E5B93A;
-  --foreground: #EEEEEC;
-  --card: #1C1C1A;
-  --card-foreground: #EEEEEC;
-  --popover: #1C1C1A;
-  --popover-foreground: #EEEEEC;
-  --primary: #C9A84C;
-  --primary-foreground: #111110;
-  --secondary: #242422;
-  --secondary-foreground: #EEEEEC;
-  --muted: #242422;
-  --muted-foreground: #9B9B98;
-  --input: #2E2E2C;
-  --ring: #C9A84C;
+  /* ── Larchmont dark theme — deep near-black palette ──
+     Pushed darker than the previous Anytype-style gray. Surfaces step
+     from #0a0a09 (main) up through #1b1b19 (hover/borders) so there is
+     enough contrast between layers without ever drifting into gray. */
+  --background: #0a0a09;
+  --surface: #0e0e0d;
+  --surface-2: #141413;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.10);
+  --text-primary: #f0ede8;
+  --text-secondary: #c8c4bc;
+  --text-tertiary: #888780;
+  --accent: #e85d3a;
+  --accent-fg: #0a0a09;
+  --accent-muted: rgba(232, 93, 58, 0.15);
+  --destructive: #e05050;
+  --success: #52a96a;
+  --warning: #d4a234;
+  --foreground: #f0ede8;
+  --card: #141413;
+  --card-foreground: #f0ede8;
+  --popover: #141413;
+  --popover-foreground: #f0ede8;
+  --primary: #e85d3a;
+  --primary-foreground: #0a0a09;
+  --secondary: #1a1a18;
+  --secondary-foreground: #f0ede8;
+  --muted: #141413;
+  --muted-foreground: #888780;
+  --input: #1b1b19;
+  --ring: #e85d3a;
   --shadow-card: none;
   --shadow-modal: none;
+
+  /* ── Anytype canonical token names (deep dark) ── */
+  --bg0: #0a0a09;  /* main background, near-black with warmth */
+  --bg1: #0e0e0d;  /* sidebar */
+  --bg2: #141413;  /* cards, popovers, top chrome */
+  --bg3: #1a1a18;  /* hover state */
+  --bg4: #232320;  /* borders, pressed state */
+  --border2: rgba(255, 255, 255, 0.10);
+  --border3: rgba(255, 255, 255, 0.16);
+  --text0: #f0ede8;
+  --text1: #c8c4bc;
+  --text2: #888780;
+  --text3: #555450;
+  --accent2: #f07a5a;
+  --any-blue: #3d7be8;
 }
 
 @theme inline {
@@ -105,11 +186,24 @@ body.cs-distraction-warn {
   --color-muted-foreground: var(--muted-foreground);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --color-bg0: var(--bg0);
+  --color-bg1: var(--bg1);
+  --color-bg2: var(--bg2);
+  --color-bg3: var(--bg3);
+  --color-bg4: var(--bg4);
+  --color-border2: var(--border2);
+  --color-border3: var(--border3);
+  --color-text0: var(--text0);
+  --color-text1: var(--text1);
+  --color-text2: var(--text2);
+  --color-text3: var(--text3);
+  --color-accent2: var(--accent2);
+  --color-any-blue: var(--any-blue);
+  --font-sans: var(--font-inter), Inter, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
   --radius-full: 9999px;
 }
 
