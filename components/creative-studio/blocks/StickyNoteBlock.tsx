@@ -8,7 +8,6 @@
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
 import { useEffect, useRef, useState } from 'react'
@@ -47,7 +46,6 @@ export function StickyNoteBlock({ block, onContextMenu }: Props) {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Underline,
       TaskList,
       TaskItem.configure({ nested: false }),
     ],

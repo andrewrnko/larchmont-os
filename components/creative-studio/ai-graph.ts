@@ -14,6 +14,7 @@ import type {
 
 export interface AIAction {
   type: string
+  actionId?: string        // optional id for forward references: {{actionId}}
   targetBlockId?: string
   targetGroupId?: string
   targetPinId?: string
@@ -27,89 +28,195 @@ export interface ActionResult {
 }
 
 // ────────────────────────────────────────────────
-// Layout engine — grid-based, no-overlap placement
+// Layout engine — column-based placement to the
+// RIGHT of all existing canvas content
 // ────────────────────────────────────────────────
 
-const GRID_W = 320
-const GRID_H = 160
-const PAGE_W = 280
-const PAGE_H = 140
 const GROUP_PAD = 40
+const COL_GAP = 120     // horizontal gap between columns
+const ROW_GAP = 60      // vertical gap between blocks in a column
+
+// Default block sizes per type (used for layout calculation)
+const BLOCK_DIMS: Record<string, { w: number; h: number }> = {
+  page:              { w: 280, h: 160 },
+  text:              { w: 280, h: 180 },
+  sticky:            { w: 240, h: 200 },
+  tasks:             { w: 300, h: 220 },
+  mindmap:           { w: 520, h: 400 },
+  group:             { w: 500, h: 360 },
+  'standalone-node': { w: 180, h: 60 },
+  embed:             { w: 320, h: 200 },
+  transcript:        { w: 280, h: 180 },
+  storyboard:        { w: 400, h: 300 },
+  assistant:         { w: 320, h: 280 },
+}
 
 class LayoutEngine {
-  private occupied = new Set<string>()
-  private baseX: number
-  private baseY: number
-  private pageCol = 0
-  private groupCol = 0
-  private nodeCol = 0
+  // Column definition: content → data → visual.
+  // Each column tracks an x origin and a running y cursor.
+  private cols: {
+    content: { x: number; y: number; items: number }  // pages, text, sticky, transcript
+    data:    { x: number; y: number; items: number }  // tasks
+    visual:  { x: number; y: number; items: number }  // mindmap, group
+    other:   { x: number; y: number; items: number }  // standalone nodes, misc
+  }
+  private startX: number
+  private startY: number
 
   constructor(assistantBlock: AnyBlock, existingBlocks: AnyBlock[]) {
-    // Place new content well to the right of the assistant, with vertical centering
-    this.baseX = assistantBlock.x + assistantBlock.w + 120
-    this.baseY = assistantBlock.y - 300
-
-    // Mark ALL existing blocks as occupied (with 1-cell padding)
+    // Find the RIGHT edge of all existing blocks (excluding assistant)
+    let rightEdge = 0
     for (const b of existingBlocks) {
-      const gx = Math.floor(b.x / GRID_W) - 1
-      const gy = Math.floor(b.y / GRID_H) - 1
-      const gw = Math.ceil(b.w / GRID_W) + 2
-      const gh = Math.ceil(b.h / GRID_H) + 2
-      for (let x = gx; x < gx + gw; x++) {
-        for (let y = gy; y < gy + gh; y++) {
-          this.occupied.add(`${x},${y}`)
-        }
-      }
+      if (b.id === assistantBlock.id) continue
+      rightEdge = Math.max(rightEdge, b.x + b.w)
+    }
+
+    // New content starts 200px right of the rightmost existing block,
+    // or 200px from the left if the canvas is empty.
+    this.startX = existingBlocks.length <= 1 ? 200 : rightEdge + 200
+    this.startY = assistantBlock.y   // align with assistant vertically
+
+    // Column x origins — left to right: content, data, visual
+    const contentW = BLOCK_DIMS.page.w
+    const dataW = BLOCK_DIMS.tasks.w
+    const visualW = BLOCK_DIMS.mindmap.w
+
+    this.cols = {
+      content: { x: this.startX,                                   y: this.startY, items: 0 },
+      data:    { x: this.startX + contentW + COL_GAP,              y: this.startY, items: 0 },
+      visual:  { x: this.startX + contentW + COL_GAP + dataW + COL_GAP, y: this.startY, items: 0 },
+      other:   { x: this.startX + contentW + COL_GAP + dataW + COL_GAP, y: this.startY, items: 0 },
     }
   }
 
-  private findFreeCell(startGx: number, startGy: number, cellsW: number, cellsH: number): { x: number; y: number } {
-    for (let dy = 0; dy < 20; dy++) {
-      for (let dx = 0; dx < 10; dx++) {
-        const gx = startGx + dx
-        const gy = startGy + dy
-        let free = true
-        for (let cx = gx; cx < gx + cellsW && free; cx++) {
-          for (let cy = gy; cy < gy + cellsH && free; cy++) {
-            if (this.occupied.has(`${cx},${cy}`)) free = false
-          }
-        }
-        if (free) {
-          for (let cx = gx; cx < gx + cellsW; cx++) {
-            for (let cy = gy; cy < gy + cellsH; cy++) {
-              this.occupied.add(`${cx},${cy}`)
-            }
-          }
-          return { x: gx * GRID_W, y: gy * GRID_H }
-        }
-      }
-    }
-    // Fallback
-    return { x: this.baseX + this.pageCol * GRID_W, y: this.baseY + 20 * GRID_H }
+  /** Place a block in a column, returning { x, y } and advancing the cursor. */
+  private place(col: keyof typeof this.cols, h: number): { x: number; y: number } {
+    const c = this.cols[col]
+    const pos = { x: c.x, y: c.y }
+    c.y += h + ROW_GAP
+    c.items++
+    return pos
   }
 
   pagePosition(): { x: number; y: number } {
-    const startGx = Math.floor(this.baseX / GRID_W)
-    const startGy = Math.floor(this.baseY / GRID_H) + this.pageCol
-    this.pageCol++
-    return this.findFreeCell(startGx, startGy, 1, 1)
+    return this.place('content', BLOCK_DIMS.page.h)
   }
 
-  groupPosition(w: number, h: number): { x: number; y: number } {
-    const cellsW = Math.ceil(w / GRID_W)
-    const cellsH = Math.ceil(h / GRID_H)
-    const startGx = Math.floor(this.baseX / GRID_W) + 2
-    const startGy = Math.floor(this.baseY / GRID_H) + this.groupCol
-    this.groupCol += cellsH
-    return this.findFreeCell(startGx, startGy, cellsW, cellsH)
+  taskPosition(): { x: number; y: number } {
+    return this.place('data', BLOCK_DIMS.tasks.h)
+  }
+
+  mindmapPosition(): { x: number; y: number } {
+    return this.place('visual', BLOCK_DIMS.mindmap.h)
+  }
+
+  groupPosition(_w: number, h: number): { x: number; y: number } {
+    return this.place('visual', Math.max(h, BLOCK_DIMS.group.h))
   }
 
   blockPosition(): { x: number; y: number } {
-    const startGx = Math.floor(this.baseX / GRID_W) + 4 + this.nodeCol % 2
-    const startGy = Math.floor(this.baseY / GRID_H) + Math.floor(this.nodeCol / 2)
-    this.nodeCol++
-    return this.findFreeCell(startGx, startGy, 1, 1)
+    return this.place('other', 180)
   }
+}
+
+// ────────────────────────────────────────────────
+// Mind map tree layout algorithm
+// ────────────────────────────────────────────────
+
+interface NetworkNodeInput {
+  id: string
+  label: string
+  body: string
+  parentId: string | null
+  color?: string
+}
+
+/** Ensure body text has proper newlines for ModalNotesEditor rendering. */
+function formatBodyText(text: string): string {
+  if (!text) return ''
+  // Already has newlines — use as-is
+  if (text.includes('\n')) return text
+  // Single-line text: split on sentence-ending punctuation followed by space
+  // so each sentence or bullet renders on its own line
+  return text
+    .replace(/\.\s+(?=[A-Z])/g, '.\n')   // "Sentence one. Sentence two" → two lines
+    .replace(/:\s+(?=[A-Z])/g, ':\n')     // "Focus: Deep work" → two lines
+    .replace(/\.\s+(?=[a-z])/g, '.\n')    // "priorities include. research areas" → two lines
+    .replace(/;\s+/g, ';\n')              // "item one; item two" → two lines
+    .replace(/\s*[-•]\s+/g, '\n• ')       // inline bullet markers → separate lines
+    .trim()
+}
+
+function layoutMindMapTree(nodes: NetworkNodeInput[]): MindMapNode[] {
+  // Build adjacency: parent → children
+  const childrenOf = new Map<string | null, NetworkNodeInput[]>()
+  for (const n of nodes) {
+    const list = childrenOf.get(n.parentId) ?? []
+    list.push(n)
+    childrenOf.set(n.parentId, list)
+  }
+
+  // Find root (parentId: null)
+  const roots = childrenOf.get(null) ?? []
+  if (roots.length === 0) return []
+
+  const root = roots[0]
+  const result: MindMapNode[] = []
+
+  const X_STEP = 280
+  const Y_STEP = 130
+
+  // Calculate subtree leaf-count for proportional spacing
+  function subtreeSize(nodeId: string): number {
+    const children = childrenOf.get(nodeId) ?? []
+    if (children.length === 0) return 1
+    return children.reduce((sum, c) => sum + subtreeSize(c.id), 0)
+  }
+
+  // BFS layout: root on left, children branch right
+  function layoutNode(node: NetworkNodeInput, level: number, yCenter: number) {
+    const x = 100 + level * X_STEP
+    result.push({
+      id: node.id,
+      parentId: node.parentId,
+      label: node.label,
+      dx: x,
+      dy: yCenter,
+      shape: 'pill',
+      color: node.color ?? '',
+      notes: formatBodyText(node.body),
+    })
+
+    const children = childrenOf.get(node.id) ?? []
+    if (children.length === 0) return
+
+    // Total leaf-nodes across all children determines spread
+    const totalLeaves = children.reduce((s, c) => s + subtreeSize(c.id), 0)
+    const totalHeight = (totalLeaves - 1) * Y_STEP
+    let currentY = yCenter - totalHeight / 2
+
+    for (const child of children) {
+      const childLeaves = subtreeSize(child.id)
+      const childCenter = currentY + ((childLeaves - 1) * Y_STEP) / 2
+      layoutNode(child, level + 1, childCenter)
+      currentY += childLeaves * Y_STEP
+    }
+  }
+
+  // Start root at a generous y so the tree centers in the block
+  const rootLeaves = subtreeSize(root.id)
+  const estimatedHeight = (rootLeaves - 1) * Y_STEP
+  const rootY = Math.max(200, estimatedHeight / 2 + 80)
+  layoutNode(root, 0, rootY)
+
+  // Normalize: ensure all nodes have positive y with padding
+  const minY = Math.min(...result.map((n) => n.dy))
+  if (minY < 60) {
+    const shift = 60 - minY
+    for (const n of result) n.dy += shift
+  }
+
+  return result
 }
 
 // ────────────────────────────────────────────────
@@ -158,6 +265,35 @@ export function buildCanvasContext(assistantBlockId: string, board: Board): stri
 // Comprehensive action executor
 // ────────────────────────────────────────────────
 
+/** Normalize blockType aliases the AI might use ("mind-map" → "mindmap" etc.) */
+const BLOCK_TYPE_ALIASES: Record<string, BlockKind> = {
+  'mind-map': 'mindmap',
+  'mindmap': 'mindmap',
+  'task-list': 'tasks',
+  'tasklist': 'tasks',
+  'tasks': 'tasks',
+  'page': 'page',
+  'sticky': 'sticky',
+  'text': 'text',
+  'group': 'group',
+  'standalone-node': 'standalone-node',
+  'node': 'standalone-node',
+}
+
+function normalizeBlockType(raw: string): BlockKind {
+  return BLOCK_TYPE_ALIASES[raw.toLowerCase()] ?? raw as BlockKind
+}
+
+function fail(results: ActionResult[], action: AIAction, reason: string): void {
+  console.error(`✗ Action ${action.type} FAILED: ${reason}`, action)
+  results.push({ action, success: false, description: reason })
+}
+
+function succeed(results: ActionResult[], action: AIAction, desc: string): void {
+  console.log(`✓ Action ${action.type} applied: ${desc}`)
+  results.push({ action, success: true, description: desc })
+}
+
 export function executeActions(
   actions: AIAction[],
   board: Board,
@@ -171,14 +307,146 @@ export function executeActions(
   const layout = new LayoutEngine(assistantBlock, board.blocks)
   // Track newly created block IDs so we can reference them across actions
   const createdIds = new Map<string, string>() // label → blockId
+  // Track actionId → created block id for forward references
+  const actionIdMap = new Map<string, string>()
+
+  // Resolve forward references: {{actionId}} → actual block id
+  // Also resolve "auto" for mind map targets
+  function resolveTargetBlockId(raw: string | undefined, preferKind?: string): string {
+    if (!raw) return ''
+    // Forward reference: {{someActionId}}
+    const refMatch = raw.match(/^\{\{(.+)\}\}$/)
+    if (refMatch) {
+      const resolved = actionIdMap.get(refMatch[1])
+      if (resolved) {
+        console.log(`Resolved forward reference {{${refMatch[1]}}} → ${resolved}`)
+        return resolved
+      }
+      console.warn(`Forward reference {{${refMatch[1]}}} not found in actionIdMap`)
+      return ''
+    }
+    // Auto: find most relevant block or create one
+    if (raw === 'auto') {
+      console.warn('targetBlockId "auto" used — resolving...')
+      if (preferKind === 'mindmap') {
+        // Find most recent mind map on canvas
+        const mm = board.blocks.filter((b) => b.kind === 'mindmap')
+        if (mm.length > 0) {
+          const resolved = mm[mm.length - 1].id
+          console.warn(`targetBlockId "auto" resolved to existing mindmap: ${resolved}`)
+          return resolved
+        }
+      }
+      if (preferKind === 'tasks') {
+        const tl = board.blocks.filter((b) => b.kind === 'tasks')
+        if (tl.length > 0) return tl[tl.length - 1].id
+      }
+      return '' // will trigger auto-creation in the action handler
+    }
+    return raw
+  }
 
   for (const action of actions) {
     try {
+      // Resolve forward references and "auto" for ALL actions universally
+      if (action.targetBlockId) {
+        const preferKind = action.type.includes('mind') || action.type.includes('node') ? 'mindmap'
+          : action.type.includes('task') ? 'tasks' : undefined
+        action.targetBlockId = resolveTargetBlockId(action.targetBlockId, preferKind)
+      }
+      if (action.targetGroupId) {
+        action.targetGroupId = resolveTargetBlockId(action.targetGroupId, 'group')
+      }
+
       switch (action.type) {
-        // ── MIND MAP ──
+        // ── MIND MAP — NETWORK CREATION (preferred) ──
+        case 'create-mind-map-network': {
+          const tid = action.targetBlockId ?? ''
+          let target = blockMap.get(tid)
+
+          // Fallback: if targetBlockId not found, try to find ANY mind map block
+          if (!target || target.kind !== 'mindmap') {
+            // Try recently created mind maps
+            for (const [, id] of createdIds) {
+              const b = blockMap.get(id)
+              if (b && b.kind === 'mindmap') { target = b; break }
+            }
+          }
+          if (!target || target.kind !== 'mindmap') {
+            // Try fresh store
+            const fresh = getStoreState()
+            if (fresh) {
+              const fb = fresh.blocks.find((x: AnyBlock) => x.id === tid && x.kind === 'mindmap')
+                ?? fresh.blocks.find((x: AnyBlock) => x.kind === 'mindmap')
+              if (fb) { target = fb; blockMap.set(fb.id, fb) }
+            }
+          }
+          if (!target || target.kind !== 'mindmap') {
+            // Last resort: create a new mind map block
+            const pos = layout.mindmapPosition()
+            const newId = addBlockAt('mindmap', pos.x, pos.y)
+            if (newId) {
+              addConnector({ id: uid(), fromBlockId: assistantBlock.id, toBlockId: newId, style: 'curved', arrow: 'one', color: 'var(--cs-accent)', weight: 2 })
+              const freshStore = getStoreState()
+              target = freshStore?.blocks.find((x: AnyBlock) => x.id === newId)
+              if (target) blockMap.set(newId, target)
+            }
+          }
+          if (!target || target.kind !== 'mindmap') {
+            fail(results, action, 'Could not find or create mind map block')
+            break
+          }
+
+          const d = action.data as { nodes: NetworkNodeInput[] }
+          if (!Array.isArray(d.nodes) || d.nodes.length === 0) {
+            fail(results, action, 'No nodes provided in network data')
+            break
+          }
+
+          // Validate: exactly one root, all parentIds valid
+          const nodeIds = new Set(d.nodes.map((n) => n.id))
+          const roots = d.nodes.filter((n) => !n.parentId)
+          if (roots.length === 0) {
+            // Auto-fix: make the first node the root
+            d.nodes[0].parentId = null
+          }
+
+          // Auto-fix: remap invalid parentIds to root
+          const rootId = d.nodes.find((n) => !n.parentId)?.id ?? d.nodes[0].id
+          for (const n of d.nodes) {
+            if (n.parentId && !nodeIds.has(n.parentId)) {
+              console.warn(`Auto-fixing node "${n.label}": invalid parentId "${n.parentId}" → root`)
+              n.parentId = rootId
+            }
+          }
+
+          // Layout into positioned MindMapNode objects
+          const layoutNodes = layoutMindMapTree(d.nodes)
+
+          // Calculate required block size
+          const maxX = Math.max(...layoutNodes.map((n) => n.dx)) + 160
+          const maxY = Math.max(...layoutNodes.map((n) => n.dy)) + 80
+          const minY = Math.min(...layoutNodes.map((n) => n.dy))
+          const blockW = Math.max(520, maxX + 40)
+          const blockH = Math.max(360, maxY - Math.min(0, minY - 40) + 80)
+
+          updateBlock(target.id, {
+            nodes: layoutNodes,
+            w: blockW,
+            h: blockH,
+          } as Partial<AnyBlock>)
+
+          succeed(results, action, `Created mind map network with ${layoutNodes.length} nodes`)
+          break
+        }
+
+        // ── MIND MAP — SINGLE NODE ──
         case 'add-node': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target || target.kind !== 'mindmap') { results.push({ action, success: false, description: 'Mind map not found' }); break }
+          if (!target || target.kind !== 'mindmap') {
+            fail(results, action, `Mind map not found (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const m = target as MindMapBlock
           const d = action.data as { label: string; parentId?: string; parentLabel?: string; content?: string }
           let parentId: string | null = d.parentId ?? null
@@ -188,31 +456,41 @@ export function executeActions(
           const siblings = m.nodes.filter((n) => n.parentId === parentId)
           updateBlock(target.id, { nodes: [...m.nodes, {
             id: uid(), parentId, label: d.label, dx: (parent?.dx ?? 180) + 250, dy: (parent?.dy ?? 140) + siblings.length * 120,
-            shape: 'pill', color: '', notes: d.content,
+            shape: 'pill', color: '', notes: formatBodyText(d.content ?? ''),
           }] } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: `Added node "${d.label}"` })
+          succeed(results, action, `Added node "${d.label}"`)
           break
         }
         case 'bulk-add-nodes': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target || target.kind !== 'mindmap') { results.push({ action, success: false, description: 'Mind map not found' }); break }
+          if (!target || target.kind !== 'mindmap') {
+            fail(results, action, `Mind map not found (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const m = target as MindMapBlock
           const d = action.data as { nodes: Array<{ label: string; parentLabel: string; content?: string }> }
+          if (!Array.isArray(d.nodes)) {
+            fail(results, action, 'bulk-add-nodes data.nodes is not an array')
+            break
+          }
           let allNodes = [...m.nodes]
           for (const nd of d.nodes) {
             const parent = allNodes.find((n) => n.label.toLowerCase() === nd.parentLabel.toLowerCase())
             const pid = parent?.id ?? allNodes.find((n) => !n.parentId)?.id ?? null
             const sibs = allNodes.filter((n) => n.parentId === pid)
             const p = allNodes.find((n) => n.id === pid)
-            allNodes.push({ id: uid(), parentId: pid, label: nd.label, dx: (p?.dx ?? 180) + 250, dy: (p?.dy ?? 140) + sibs.length * 120, shape: 'pill', color: '', notes: nd.content })
+            allNodes.push({ id: uid(), parentId: pid, label: nd.label, dx: (p?.dx ?? 180) + 250, dy: (p?.dy ?? 140) + sibs.length * 120, shape: 'pill', color: '', notes: formatBodyText(nd.content ?? '') })
           }
           updateBlock(target.id, { nodes: allNodes } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: `Added ${d.nodes.length} nodes` })
+          succeed(results, action, `Added ${d.nodes.length} nodes`)
           break
         }
         case 'edit-node': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target || target.kind !== 'mindmap') break
+          if (!target || target.kind !== 'mindmap') {
+            fail(results, action, `Mind map not found for edit-node (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const m = target as MindMapBlock
           const d = action.data as { nodeId?: string; nodeLabel?: string; newLabel?: string; content?: string }
           updateBlock(target.id, { nodes: m.nodes.map((n) => {
@@ -220,90 +498,119 @@ export function executeActions(
               return { ...n, ...(d.newLabel ? { label: d.newLabel } : {}), ...(d.content !== undefined ? { notes: d.content } : {}) }
             return n
           }) } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: 'Updated node' })
+          succeed(results, action, `Updated node "${d.nodeLabel ?? d.nodeId}"`)
           break
         }
         case 'delete-node': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target || target.kind !== 'mindmap') break
+          if (!target || target.kind !== 'mindmap') {
+            fail(results, action, `Mind map not found for delete-node (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const m = target as MindMapBlock
           const d = action.data as { nodeId?: string; nodeLabel?: string }
           const toDelete = new Set<string>()
           const fn = m.nodes.find((n) => (d.nodeId && n.id === d.nodeId) || (d.nodeLabel && n.label.toLowerCase() === d.nodeLabel!.toLowerCase()))
           if (fn) { const r = (id: string) => { toDelete.add(id); m.nodes.filter((n) => n.parentId === id).forEach((n) => r(n.id)) }; r(fn.id) }
           updateBlock(target.id, { nodes: m.nodes.filter((n) => !toDelete.has(n.id)) } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: `Deleted ${toDelete.size} nodes` })
+          succeed(results, action, `Deleted ${toDelete.size} nodes`)
           break
         }
         case 'rename-mindmap': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target || target.kind !== 'mindmap') break
+          if (!target || target.kind !== 'mindmap') {
+            fail(results, action, `Mind map not found for rename (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const m = target as MindMapBlock
           const root = m.nodes.find((n) => !n.parentId)
           if (root) updateBlock(target.id, { nodes: m.nodes.map((n) => n.id === root.id ? { ...n, label: (action.data as { newTitle: string }).newTitle } : n) } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: `Renamed mind map` })
+          succeed(results, action, `Renamed mind map`)
           break
         }
         case 'update-node-body': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target) break
+          if (!target) {
+            fail(results, action, `Block not found for update-node-body (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const d = action.data as { nodeId?: string; nodeLabel?: string; body: string }
+          const formattedBody = formatBodyText(d.body)
           if (target.kind === 'mindmap') {
             const m = target as MindMapBlock
-            updateBlock(target.id, { nodes: m.nodes.map((n) => ((d.nodeId && n.id === d.nodeId) || (d.nodeLabel && n.label.toLowerCase() === d.nodeLabel!.toLowerCase())) ? { ...n, notes: d.body } : n) } as Partial<AnyBlock>)
+            updateBlock(target.id, { nodes: m.nodes.map((n) => ((d.nodeId && n.id === d.nodeId) || (d.nodeLabel && n.label.toLowerCase() === d.nodeLabel!.toLowerCase())) ? { ...n, notes: formattedBody } : n) } as Partial<AnyBlock>)
           } else if (target.kind === 'standalone-node') {
-            updateBlock(target.id, { notes: d.body } as Partial<AnyBlock>)
+            updateBlock(target.id, { notes: formattedBody } as Partial<AnyBlock>)
+          } else {
+            fail(results, action, `Block "${target.kind}" doesn't support update-node-body`)
+            break
           }
-          results.push({ action, success: true, description: 'Updated node body' })
+          succeed(results, action, 'Updated node body')
           break
         }
 
         // ── TASKS ──
         case 'add-task': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target || target.kind !== 'tasks') { results.push({ action, success: false, description: 'Task list not found' }); break }
+          if (!target || target.kind !== 'tasks') {
+            fail(results, action, `Task list not found (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const t = target as TasksBlock
           const d = action.data as { text: string; priority?: string | number }
           const pri = typeof d.priority === 'string' ? parseInt(d.priority.replace('P', '')) : (d.priority ?? 2)
           updateBlock(target.id, { taskItems: [...t.taskItems, { id: uid(), title: d.text, done: false, priority: pri as 1 | 2 | 3, createdAt: Date.now() }] } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: `Added task "${d.text}"` })
+          succeed(results, action, `Added task "${d.text}"`)
           break
         }
         case 'complete-task': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target || target.kind !== 'tasks') break
+          if (!target || target.kind !== 'tasks') {
+            fail(results, action, `Task list not found for complete-task (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const t = target as TasksBlock
           const d = action.data as { taskText: string }
           updateBlock(target.id, { taskItems: t.taskItems.map((i) => i.title.toLowerCase().includes(d.taskText.toLowerCase()) ? { ...i, done: true, completedAt: Date.now() } : i) } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: `Completed task` })
+          succeed(results, action, `Completed task`)
           break
         }
 
         // ── BLOCK CREATION ──
         case 'create-block': {
           const d = action.data as { blockType: string; label?: string; content?: unknown; position?: { x: number; y: number } | 'auto' }
+          const kind = normalizeBlockType(d.blockType)
           let pos: { x: number; y: number }
-          if (d.position && d.position !== 'auto') pos = d.position as { x: number; y: number }
-          else if (d.blockType === 'page') pos = layout.pagePosition()
-          else if (d.blockType === 'group') pos = layout.groupPosition(600, 400)
-          else pos = layout.blockPosition()
+          if (d.position && d.position !== 'auto') {
+            pos = d.position as { x: number; y: number }
+          } else if (kind === 'mindmap') {
+            pos = layout.mindmapPosition()
+          } else if (kind === 'page' || kind === 'text' || kind === 'sticky') {
+            pos = layout.pagePosition()
+          } else if (kind === 'group') {
+            pos = layout.groupPosition(600, 400)
+          } else if (kind === 'tasks') {
+            pos = layout.taskPosition()
+          } else {
+            pos = layout.blockPosition()
+          }
 
-          const newId = addBlockAt(d.blockType as BlockKind, pos.x, pos.y)
+          const newId = addBlockAt(kind, pos.x, pos.y)
           if (newId) {
             const patch: Record<string, unknown> = {}
             if (d.label) {
-              if (d.blockType === 'sticky') patch.text = d.label
-              else if (d.blockType === 'tasks') patch.label = d.label
-              else if (d.blockType === 'page') patch.title = d.label
-              else if (d.blockType === 'standalone-node') patch.label = d.label
-              else if (d.blockType === 'group') { patch.label = d.label; patch.w = 600; patch.h = 400 }
+              if (kind === 'sticky') patch.text = d.label
+              else if (kind === 'tasks') patch.label = d.label
+              else if (kind === 'page') patch.title = d.label
+              else if (kind === 'standalone-node') patch.label = d.label
+              else if (kind === 'group') { patch.label = d.label; patch.w = 600; patch.h = 400 }
             }
-            if (d.content && d.blockType === 'page' && Array.isArray(d.content)) {
+            if (d.content && kind === 'page' && Array.isArray(d.content)) {
               patch.content = (d.content as Array<{ type: string; text: string }>).map((c) => ({ id: uid(), type: c.type, text: c.text }))
             }
-            if (d.content && d.blockType === 'sticky') patch.text = d.content as string
-            if (d.content && d.blockType === 'text') patch.html = `<p>${d.content}</p>`
-            if (d.content && d.blockType === 'tasks' && Array.isArray(d.content)) {
+            if (d.content && kind === 'sticky') patch.text = d.content as string
+            if (d.content && kind === 'text') patch.html = `<p>${d.content}</p>`
+            if (d.content && kind === 'tasks' && Array.isArray(d.content)) {
               patch.taskItems = (d.content as Array<{ title: string; priority?: number }>).map((t) => ({
                 id: uid(), title: t.title, done: false, priority: (t.priority ?? 2) as 1 | 2 | 3, createdAt: Date.now(),
               }))
@@ -311,11 +618,16 @@ export function executeActions(
             if (Object.keys(patch).length > 0) updateBlock(newId, patch as Partial<AnyBlock>)
             addConnector({ id: uid(), fromBlockId: assistantBlock.id, toBlockId: newId, style: 'curved', arrow: 'one', color: 'var(--cs-accent)', weight: 2 })
             if (d.label) createdIds.set(d.label, newId)
-            // Add to blockMap so subsequent actions (like add-nodes-to-group) can find it
+            // Add to blockMap so subsequent actions (like add-nodes-to-group or create-mind-map-network) can find it
             const freshStore = getStoreState()
             const freshBlock = freshStore?.blocks.find((x: AnyBlock) => x.id === newId)
             if (freshBlock) blockMap.set(newId, freshBlock)
-            results.push({ action, success: true, description: `Created ${d.blockType}${d.label ? ` "${d.label}"` : ''}` })
+            createdIds.set(`__id_${newId}`, newId)
+            // Store actionId mapping for forward references
+            if (action.actionId) actionIdMap.set(action.actionId, newId)
+            succeed(results, action, `Created ${kind}${d.label ? ` "${d.label}"` : ''}`)
+          } else {
+            fail(results, action, `addBlockAt returned null for blockType "${kind}"`)
           }
           break
         }
@@ -348,11 +660,14 @@ export function executeActions(
             }
           }
           if (!group || group.kind !== 'group') {
-            results.push({ action, success: false, description: 'Group not found' })
+            fail(results, action, `Group not found (targetBlockId: "${action.targetBlockId ?? 'none'}", targetGroupId: "${action.targetGroupId ?? 'none'}")`)
             break
           }
           const d = action.data as { nodes: Array<{ label: string; body?: string; connectTo?: string[] }> }
-          if (!Array.isArray(d.nodes)) break
+          if (!Array.isArray(d.nodes)) {
+            fail(results, action, 'add-nodes-to-group data.nodes is not an array')
+            break
+          }
 
           // Layout nodes in a chain: rows of 3, left-to-right, top-to-bottom
           const nodeIds: string[] = []
@@ -369,7 +684,7 @@ export function executeActions(
             const ny = startY + row * rowH
             const newId = addBlockAt('standalone-node', nx, ny)
             if (newId) {
-              updateBlock(newId, { label: nd.label, notes: nd.body, groupId: group!.id } as Partial<AnyBlock>)
+              updateBlock(newId, { label: nd.label, notes: formatBodyText(nd.body ?? ''), groupId: group!.id } as Partial<AnyBlock>)
               nodeIds.push(newId)
             }
           })
@@ -384,26 +699,32 @@ export function executeActions(
           for (let i = 0; i < nodeIds.length - 1; i++) {
             addConnector({ id: uid(), fromBlockId: nodeIds[i], toBlockId: nodeIds[i + 1], style: 'curved', arrow: 'none', color: 'rgba(255,255,255,0.12)', weight: 1.5 })
           }
-          results.push({ action, success: true, description: `Added ${nodeIds.length} nodes to group` })
+          succeed(results, action, `Added ${nodeIds.length} nodes to group`)
           break
         }
 
         // ── BLOCK EDITING ──
         case 'rename-block': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target) break
+          if (!target) {
+            fail(results, action, `Block not found for rename (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const d = action.data as { newTitle: string }
           if (target.kind === 'page') updateBlock(target.id, { title: d.newTitle } as Partial<AnyBlock>)
           else if (target.kind === 'tasks') updateBlock(target.id, { label: d.newTitle } as Partial<AnyBlock>)
           else if (target.kind === 'standalone-node') updateBlock(target.id, { label: d.newTitle } as Partial<AnyBlock>)
           else if (target.kind === 'group') updateBlock(target.id, { label: d.newTitle } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: `Renamed to "${d.newTitle}"` })
+          succeed(results, action, `Renamed to "${d.newTitle}"`)
           break
         }
         case 'update-page-content':
         case 'append-text': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target) break
+          if (!target) {
+            fail(results, action, `Block not found for content update (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           if (target.kind === 'page') {
             const p = target as PageBlock
             const d = action.data as { content?: Array<{ type: string; text: string }>; text?: string; operation?: string }
@@ -414,20 +735,30 @@ export function executeActions(
           } else if (target.kind === 'sticky') {
             const d = action.data as { text?: string; content?: string }
             updateBlock(target.id, { text: d.text ?? d.content ?? '' } as Partial<AnyBlock>)
+          } else {
+            fail(results, action, `Block "${target.kind}" doesn't support content update`)
+            break
           }
-          results.push({ action, success: true, description: 'Updated content' })
+          succeed(results, action, 'Updated content')
           break
         }
         case 'replace-text':
         case 'update-sticky':
         case 'update-text': {
           const target = blockMap.get(action.targetBlockId ?? '')
-          if (!target) break
+          if (!target) {
+            fail(results, action, `Block not found for text replace (targetBlockId: "${action.targetBlockId ?? 'none'}")`)
+            break
+          }
           const d = action.data as { text?: string; content?: string }
           const val = d.text ?? d.content ?? ''
           if (target.kind === 'sticky') updateBlock(target.id, { text: val } as Partial<AnyBlock>)
           else if (target.kind === 'text') updateBlock(target.id, { html: `<p>${val}</p>` } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: 'Replaced content' })
+          else {
+            fail(results, action, `Block "${target.kind}" doesn't support text replace`)
+            break
+          }
+          succeed(results, action, 'Replaced content')
           break
         }
 
@@ -435,23 +766,31 @@ export function executeActions(
         case 'rename-group': {
           const gid = action.targetGroupId ?? action.targetBlockId ?? ''
           const target = blockMap.get(gid)
-          if (!target || target.kind !== 'group') break
+          if (!target || target.kind !== 'group') {
+            fail(results, action, `Group not found for rename (id: "${gid}")`)
+            break
+          }
           updateBlock(gid, { label: (action.data as { newLabel: string }).newLabel } as Partial<AnyBlock>)
-          results.push({ action, success: true, description: `Renamed group` })
+          succeed(results, action, `Renamed group`)
           break
         }
         case 'add-node-to-group':
         case 'add-block-to-group': {
           const gid = action.targetGroupId ?? action.targetBlockId ?? ''
           const group = blockMap.get(gid)
-          if (!group || group.kind !== 'group') break
+          if (!group || group.kind !== 'group') {
+            fail(results, action, `Group not found for add-node (id: "${gid}")`)
+            break
+          }
           const d = action.data as { label?: string; content?: string; body?: string }
           const px = group.x + GROUP_PAD + Math.random() * (group.w - 2 * GROUP_PAD - 160)
           const py = group.y + 50 + Math.random() * (group.h - 120)
           const newId = addBlockAt('standalone-node', px, py)
           if (newId) {
             updateBlock(newId, { label: d.label, notes: d.body ?? d.content, groupId: gid } as Partial<AnyBlock>)
-            results.push({ action, success: true, description: `Added "${d.label}" to group` })
+            succeed(results, action, `Added "${d.label}" to group`)
+          } else {
+            fail(results, action, `addBlockAt returned null for standalone-node`)
           }
           break
         }
@@ -460,7 +799,7 @@ export function executeActions(
         case 'create-project': {
           const d = action.data as { projectName: string; structure?: { mindmap?: { root: string; branches: Array<{ label: string; children?: string[] }> }; tasks?: Array<{ title: string; priority?: number }>; brief?: string } }
           if (d.structure?.mindmap) {
-            const pos = layout.blockPosition()
+            const pos = layout.mindmapPosition()
             const mmId = addBlockAt('mindmap', pos.x, pos.y)
             if (mmId) {
               const rootNode: MindMapNode = { id: uid(), parentId: null, label: d.structure.mindmap.root, dx: 180, dy: 180, shape: 'pill', color: '' }
@@ -475,7 +814,7 @@ export function executeActions(
             }
           }
           if (d.structure?.tasks) {
-            const pos = layout.pagePosition()
+            const pos = layout.taskPosition()
             const tId = addBlockAt('tasks', pos.x, pos.y)
             if (tId) {
               updateBlock(tId, { label: `${d.projectName} Tasks`, taskItems: d.structure.tasks.map((t) => ({ id: uid(), title: t.title, done: false, priority: (t.priority ?? 2) as 1 | 2 | 3, createdAt: Date.now() })) } as Partial<AnyBlock>)
@@ -490,15 +829,15 @@ export function executeActions(
               addConnector({ id: uid(), fromBlockId: assistantBlock.id, toBlockId: bId, style: 'curved', arrow: 'one', color: 'var(--cs-accent)', weight: 2 })
             }
           }
-          results.push({ action, success: true, description: `Created project "${d.projectName}"` })
+          succeed(results, action, `Created project "${d.projectName}"`)
           break
         }
 
         default:
-          results.push({ action, success: false, description: `Unknown action: ${action.type}` })
+          fail(results, action, `Unknown action type: "${action.type}"`)
       }
     } catch (err) {
-      results.push({ action, success: false, description: `Error: ${err instanceof Error ? err.message : String(err)}` })
+      fail(results, action, `Error: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
@@ -522,18 +861,43 @@ function getStoreState(): Board | null {
 // ────────────────────────────────────────────────
 
 export function parseAIResponse(responseText: string): { message: string; actions: AIAction[] } {
+  // Pattern 1: Entire response is pure JSON
   try {
     const parsed = JSON.parse(responseText)
-    if (typeof parsed.message === 'string' && Array.isArray(parsed.actions)) return { message: parsed.message, actions: parsed.actions }
-  } catch { /* not JSON */ }
+    if (typeof parsed.message === 'string' && Array.isArray(parsed.actions)) {
+      return { message: parsed.message, actions: parsed.actions }
+    }
+  } catch { /* not pure JSON */ }
 
-  const jsonMatch = responseText.match(/```(?:json)?\s*\n([\s\S]*?)```/)
-  if (jsonMatch) {
+  // Pattern 2: JSON inside markdown code fence (```json ... ``` or ``` ... ```)
+  const fenceMatch = responseText.match(/```(?:json)?\s*\n?([\s\S]*?)```/)
+  if (fenceMatch) {
     try {
-      const parsed = JSON.parse(jsonMatch[1])
-      if (typeof parsed.message === 'string' && Array.isArray(parsed.actions)) return { message: parsed.message, actions: parsed.actions }
-    } catch { /* bad JSON */ }
+      const parsed = JSON.parse(fenceMatch[1])
+      if (typeof parsed.message === 'string' && Array.isArray(parsed.actions)) {
+        // Strip the code fence from the display text — show only human text
+        const cleanText = responseText.replace(/```(?:json)?\s*\n?[\s\S]*?```/g, '').trim()
+        return { message: parsed.message || cleanText, actions: parsed.actions }
+      }
+    } catch (err) {
+      console.warn('parseAIResponse: code fence contained invalid JSON', err)
+    }
   }
 
-  return { message: responseText, actions: [] }
+  // Pattern 3: JSON object embedded inline in text (no fences)
+  const inlineMatch = responseText.match(/(\{[\s\S]*"message"\s*:\s*"[\s\S]*?"actions"\s*:\s*\[[\s\S]*\]\s*\})/)
+  if (inlineMatch) {
+    try {
+      const parsed = JSON.parse(inlineMatch[1])
+      if (typeof parsed.message === 'string' && Array.isArray(parsed.actions)) {
+        return { message: parsed.message, actions: parsed.actions }
+      }
+    } catch (err) {
+      console.warn('parseAIResponse: inline JSON extraction failed', err)
+    }
+  }
+
+  // Fallback: strip any leftover code fences from display
+  const cleanMessage = responseText.replace(/```(?:json)?\s*\n?[\s\S]*?```/g, '').trim()
+  return { message: cleanMessage || responseText, actions: [] }
 }

@@ -67,7 +67,14 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
       // Fallback: parse response text for embedded actions
       const parsed = parseAIResponse(responseText)
       const allActions = serverActions.length > 0 ? serverActions : parsed.actions
-      const displayMessage = serverActions.length > 0 ? responseText : parsed.message
+
+      // Always strip code fences and raw JSON from display
+      let displayMessage = serverActions.length > 0 ? responseText : parsed.message
+      displayMessage = displayMessage
+        .replace(/```(?:json)?\s*\n?[\s\S]*?```/g, '')  // remove fenced blocks
+        .replace(/^\s*\{[\s\S]*"actions"\s*:\s*\[[\s\S]*\]\s*\}\s*$/g, '') // remove bare JSON
+        .trim()
+      if (!displayMessage) displayMessage = parsed.message || 'Done.'
 
       // Execute actions
       let actionResults: ActionResult[] = []
@@ -86,12 +93,19 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
         }
       }
 
-      // Build action summary
-      const succeeded = actionResults.filter((r) => r.success)
-      const failed = actionResults.filter((r) => !r.success)
+      // Build detailed action summary
       let statusLine = ''
-      if (succeeded.length > 0) statusLine += `\n\n✓ ${succeeded.length} action${succeeded.length > 1 ? 's' : ''} applied`
-      if (failed.length > 0) statusLine += `\n⚠ ${failed.length} action${failed.length > 1 ? 's' : ''} skipped`
+      if (actionResults.length > 0) {
+        const lines: string[] = []
+        for (const r of actionResults) {
+          if (r.success) {
+            lines.push(`✓ ${r.description}`)
+          } else {
+            lines.push(`⚠ ${r.action.type}: ${r.description}`)
+          }
+        }
+        statusLine = '\n\n' + lines.join('\n')
+      }
 
       const assistantMsg: ChatMessage = {
         role: 'assistant',

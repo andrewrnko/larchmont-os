@@ -424,10 +424,7 @@ export function SubpageEditor() {
                 pageBlock.content.map((x) => (x.id === item.id ? ({ ...x, checked: !(item.checked ?? false) } as SubPageBlock) : x))
               )
             }
-            // Standardized checkbox: 14×14, rounded-sm, border token unchecked,
-            // accent-filled when checked. Matches every other Creative Studio
-            // checkbox (Tiptap task list, tasks block, daily repeatables).
-            className="shrink-0 mt-[3px] mr-2 flex h-[14px] w-[14px] items-center justify-center rounded-[3px] border transition-colors duration-150"
+            className="shrink-0 mt-[5px] mr-2 flex h-[14px] w-[14px] items-center justify-center rounded-[3px] border transition-colors duration-150"
             style={{
               borderColor: item.checked ? 'var(--accent)' : 'var(--border-strong)',
               background: item.checked ? 'var(--accent)' : 'transparent',

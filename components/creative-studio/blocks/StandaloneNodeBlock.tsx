@@ -14,7 +14,7 @@ import { useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCanvasStore, useActiveBoard, pushHistorySnapshot } from '../store'
-import { useSlashMenu } from '../SlashMenu'
+import { ModalNotesEditor } from '../ModalNotesEditor'
 import type { StandaloneNodeBlock, AnyBlock } from '../types'
 import { getCollapsedBlockIds } from '../Connectors'
 import { Plus, X } from 'lucide-react'
@@ -78,18 +78,11 @@ export function StandaloneNodeBlockView({ block, onContextMenu }: Props) {
     window.addEventListener('close-node-modals', handler)
     return () => window.removeEventListener('close-node-modals', handler)
   }, [block.id, modalOpen])
-  const modalTextareaRef = useRef<HTMLTextAreaElement>(null)
-
   const isActive = modalOpen || editingId
   const isInSelection = selection.includes(block.id)
   const bg = resolveColor(block.color)
   const fg = textForBg(bg)
   const neutral = isNeutral(block.color)
-
-  const { handleKeyDown: slashKeyDown, menu: slashMenu } = useSlashMenu(
-    modalTextareaRef,
-    (val) => { updateBlock(block.id, { notes: val } as Partial<AnyBlock>) }
-  )
 
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
   useEffect(() => { setPortalTarget(document.body) }, [])
@@ -358,13 +351,11 @@ export function StandaloneNodeBlockView({ block, onContextMenu }: Props) {
                       onMouseLeave={(e) => (e.currentTarget.style.color = '#888780')}><X size={18} /></button>
                   </div>
                 </div>
-                <textarea ref={modalTextareaRef} key={block.id} defaultValue={block.notes ?? ''}
-                  placeholder="Type / for commands... Write ideas, sub-notes, action items..."
-                  className="flex-1 resize-none bg-transparent p-6 text-[15px] leading-[1.5] outline-none"
-                  style={{ color: '#f0ede8' }}
-                  onBlur={(e) => updateBlock(block.id, { notes: e.target.value } as Partial<AnyBlock>)}
-                  onKeyDown={slashKeyDown} />
-                {slashMenu}
+                <ModalNotesEditor
+                  key={block.id}
+                  defaultValue={block.notes ?? ''}
+                  onChange={(val) => updateBlock(block.id, { notes: val } as Partial<AnyBlock>)}
+                />
               </motion.div>
             </motion.div>
           )}

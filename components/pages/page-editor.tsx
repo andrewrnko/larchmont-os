@@ -377,7 +377,7 @@ function BlockRow({
             onClick={() =>
               updateBlock(pageId, block.id, { done: !done })
             }
-            className="mt-[3px] flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-[3px] border transition-colors duration-150"
+            className="mt-[5px] flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-[3px] border transition-colors duration-150"
             style={{
               borderColor: done ? 'var(--accent)' : 'var(--border-strong)',
               background: done ? 'var(--accent)' : 'transparent',
@@ -403,7 +403,7 @@ function BlockRow({
               commitValue(localValue)
             }}
             onKeyDown={handleKeyDown}
-            className="w-full bg-transparent text-[14px] outline-none placeholder:text-[color:var(--text3)]"
+            className="w-full bg-transparent text-[14px] leading-[1.6] outline-none placeholder:text-[color:var(--text3)]"
             style={{
               color: done ? 'var(--text2)' : 'var(--text0)',
               textDecoration: done ? 'line-through' : 'none',

@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCanvasStore, uid } from '../store'
-import { useSlashMenu } from '../SlashMenu'
+import { ModalNotesEditor } from '../ModalNotesEditor'
 import type { MindMapBlock, MindMapNode } from '../types'
 import { BlockWrapper } from '../BlockWrapper'
 import { Plus, X } from 'lucide-react'
@@ -82,17 +82,9 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
     cursor: { x: number; y: number }
   } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const modalTextareaRef = useRef<HTMLTextAreaElement>(null)
-  // Declared before useSlashMenu so the callback doesn't hit a temporal
-  // dead zone when referencing setNodes.
   const setNodes = (fn: (n: MindMapNode[]) => MindMapNode[]) => {
     updateBlock(block.id, { nodes: fn(block.nodes) })
   }
-
-  const { handleKeyDown: slashKeyDown, menu: slashMenu } = useSlashMenu(
-    modalTextareaRef,
-    (val) => { if (modalId) setNodes((ns) => ns.map((x) => (x.id === modalId ? { ...x, notes: val } : x))) }
-  )
 
   // Close the right-click context menu on outside click or Escape.
   useEffect(() => {
@@ -551,19 +543,13 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
                   </div>
 
                   {/* Body */}
-                  <textarea
-                    ref={modalTextareaRef}
+                  <ModalNotesEditor
                     key={modalNode.id}
                     defaultValue={modalNode.notes ?? ''}
-                    placeholder="Type / for commands… Write ideas, sub-notes, action items…"
-                    className="flex-1 resize-none bg-transparent p-6 text-[15px] leading-[1.5] outline-none"
-                    style={{ color: '#f0ede8' }}
-                    onBlur={(e) =>
-                      setNodes((ns) => ns.map((x) => (x.id === modalNode.id ? { ...x, notes: e.target.value } : x)))
+                    onChange={(val) =>
+                      setNodes((ns) => ns.map((x) => (x.id === modalNode.id ? { ...x, notes: val } : x)))
                     }
-                    onKeyDown={slashKeyDown}
                   />
-                  {slashMenu}
                 </motion.div>
               </motion.div>
             )}
