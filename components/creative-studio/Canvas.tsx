@@ -18,7 +18,9 @@ import { TranscriptBlockView } from './blocks/TranscriptBlock'
 import { AssistantBlockView } from './blocks/AssistantBlock'
 import { EmbedBlockView } from './blocks/EmbedBlock'
 import { TasksBlockView } from './blocks/TasksBlock'
-import { ConnectorLines } from './Connectors'
+import { StandaloneNodeBlockView } from './blocks/StandaloneNodeBlock'
+import { GroupBlockView } from './blocks/GroupBlock'
+import { ConnectorLines, getCollapsedBlockIds } from './Connectors'
 import { ContextMenu, type ContextMenuState } from './ContextMenu'
 import { ConnectorDropMenu, type DropMenuState } from './ConnectorDropMenu'
 import { CommentPinMarker, PinContextMenu, type PinViewport } from './CommentPin'
@@ -81,6 +83,10 @@ function summarizeBlock(block: AnyBlock | undefined): string {
         .join(' | ')
       return `[AI chat] ${recent}`
     }
+    case 'standalone-node':
+      return `[Node] ${block.label}`
+    case 'group':
+      return `[Group] ${block.label}`
     default:
       return `[${block.kind}]`
   }
@@ -107,13 +113,32 @@ function screenToWorld(
   }
 }
 
-// 30px-padded hit test
-function blockAtWorldPoint(blocks: AnyBlock[], wx: number, wy: number, excludeId?: string): AnyBlock | null {
+// Padded hit test for connector drop targets.
+// When the source is a standalone-node, SKIP group blocks — nodes should
+// connect to other nodes or non-group blocks, never to the group container.
+// Standalone nodes get a larger center-based snap area (40px radius).
+function blockAtWorldPoint(
+  blocks: AnyBlock[],
+  wx: number,
+  wy: number,
+  excludeId?: string,
+  sourceKind?: string
+): AnyBlock | null {
   const PAD = 30
+  const NODE_SNAP = 40
   let hit: AnyBlock | null = null
   for (const b of blocks) {
     if (b.id === excludeId) continue
-    if (wx >= b.x - PAD && wx <= b.x + b.w + PAD && wy >= b.y - PAD && wy <= b.y + b.h + PAD) {
+    // When dragging from a standalone-node, skip group blocks as targets
+    if (sourceKind === 'standalone-node' && b.kind === 'group') continue
+    // Standalone nodes: check distance from center (40px radius)
+    if (b.kind === 'standalone-node') {
+      const cx = b.x + b.w / 2
+      const cy = b.y + b.h / 2
+      if (Math.hypot(wx - cx, wy - cy) <= NODE_SNAP + Math.max(b.w, b.h) / 2) {
+        if (!hit || b.z > hit.z) hit = b
+      }
+    } else if (wx >= b.x - PAD && wx <= b.x + b.w + PAD && wy >= b.y - PAD && wy <= b.y + b.h + PAD) {
       if (!hit || b.z > hit.z) hit = b
     }
   }
@@ -177,20 +202,37 @@ export function Canvas({ tool, setTool }: Props) {
       const b = s.boards.find((x) => x.id === s.activeBoardId)
       if (!b) return
       const w = screenToWorld(e.clientX, e.clientY, containerRef.current, b.viewport.x, b.viewport.y, b.viewport.scale)
-      const hit = blockAtWorldPoint(b.blocks, w.x, w.y, d.fromId)
+      const sourceBlock = b.blocks.find((x) => x.id === d.fromId)
+      const hit = blockAtWorldPoint(b.blocks, w.x, w.y, d.fromId, sourceBlock?.kind)
       if (hit) {
+        // Any connector involving a standalone-node uses neutral gray style
+        const involvesNode = sourceBlock?.kind === 'standalone-node' || hit.kind === 'standalone-node'
         addConnector({
           id: uid(),
           fromBlockId: d.fromId,
           toBlockId: hit.id,
           style: 'curved',
-          arrow: 'one',
-          color: 'var(--cs-accent)',
-          weight: 2,
+          arrow: involvesNode ? 'none' : 'one',
+          color: involvesNode ? 'rgba(255,255,255,0.12)' : 'var(--cs-accent)',
+          weight: involvesNode ? 1.5 : 2,
         })
+      } else if (sourceBlock?.kind === 'standalone-node') {
+        // Standalone node "+" dropped on empty canvas → auto-create child node
+        // Center the new node at cursor (subtract half default w/h: 160/2=80, 64/2=32)
+        const childId = addBlockAt('standalone-node', w.x - 80, w.y - 32)
+        if (childId) {
+          addConnector({
+            id: uid(),
+            fromBlockId: d.fromId,
+            toBlockId: childId,
+            style: 'curved',
+            arrow: 'none',
+            color: 'rgba(255,255,255,0.12)',
+            weight: 1.5,
+          })
+        }
       } else {
-        // Released on empty canvas — open the drop menu so the user can
-        // instantly create a new block and connect it to the source.
+        // Non-node block dropped on empty canvas → show the dropdown
         setDropMenu({
           clientX: e.clientX,
           clientY: e.clientY,
@@ -312,7 +354,7 @@ export function Canvas({ tool, setTool }: Props) {
       return
     }
 
-    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page', 'transcript', 'assistant', 'tasks']
+    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page', 'transcript', 'assistant', 'tasks', 'standalone-node', 'group']
     if (!placementKinds.includes(tool as BlockKind)) return
     addBlockAt(tool as BlockKind, wx, wy)
     setTool('select')
@@ -451,15 +493,21 @@ export function Canvas({ tool, setTool }: Props) {
 
   return (
     <div
-      className="relative h-full w-full overflow-hidden"
+      className="relative h-full w-full overflow-hidden select-none"
       style={{ background: 'var(--bg0)' }}
     >
       <div
         ref={containerRef}
-        className="absolute inset-0 outline-none"
+        className="absolute inset-0 outline-none select-none"
         tabIndex={0}
+        onPointerDown={(e) => {
+          // Prevent text selection on canvas drag — but allow it in editable fields
+          const el = e.target as HTMLElement
+          const tag = el.tagName
+          const isEditable = tag === 'INPUT' || tag === 'TEXTAREA' || el.contentEditable === 'true' || !!el.closest('[contenteditable="true"]')
+          if (!isEditable) e.preventDefault()
+        }}
         onClick={(e) => {
-          // Focus the canvas so paste events fire — but not if clicking inside a block's input
           const tag = (e.target as HTMLElement)?.tagName
           const isInteractive = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable
           if (!isInteractive && !(e.target as HTMLElement).closest('[data-block]')) {
@@ -485,8 +533,25 @@ export function Canvas({ tool, setTool }: Props) {
             transformOrigin: '0 0',
           }}
         >
-          {board.blocks.map((block) => renderBlock(block, handleContextMenu))}
-          <ConnectorLines blocks={board.blocks} connectors={board.connectors} />
+          {/* Render order:
+              1. Connectors touching groups (behind groups — hidden by group bg)
+              2. Group blocks
+              3. Connectors NOT touching groups (above groups, visible inside)
+              4. Non-group blocks (nodes, etc — above everything) */}
+          {(() => {
+            const hiddenIds = getCollapsedBlockIds(board.blocks, board.connectors)
+            const visible = board.blocks.filter((b) => !hiddenIds.has(b.id))
+            const groups = visible.filter((b) => b.kind === 'group')
+            const rest = visible.filter((b) => b.kind !== 'group')
+            return (
+              <>
+                <ConnectorLines blocks={board.blocks} connectors={board.connectors} filter="to-group" />
+                {groups.map((block) => renderBlock(block, handleContextMenu))}
+                <ConnectorLines blocks={board.blocks} connectors={board.connectors} filter="not-group" />
+                {rest.map((block) => renderBlock(block, handleContextMenu))}
+              </>
+            )
+          })()}
 
           {/* Comment pins (world space) */}
           {(() => {
@@ -516,23 +581,24 @@ export function Canvas({ tool, setTool }: Props) {
           {connectDrag && (
             <svg
               className="pointer-events-none absolute left-0 top-0"
-              style={{ width: 100000, height: 100000, overflow: 'visible' }}
+              style={{ width: 10, height: 10, overflow: 'visible', zIndex: 100 }}
             >
               <path
                 d={`M ${connectDrag.startX} ${connectDrag.startY} C ${(connectDrag.startX + connectDrag.cursorX) / 2} ${connectDrag.startY}, ${(connectDrag.startX + connectDrag.cursorX) / 2} ${connectDrag.cursorY}, ${connectDrag.cursorX} ${connectDrag.cursorY}`}
-                stroke="var(--cs-accent)"
-                strokeWidth={2.5}
-                strokeDasharray="8 5"
+                stroke="#e85d3a"
+                strokeWidth={2}
+                strokeDasharray="6 4"
                 fill="none"
               />
               {/* Cursor dot */}
-              <circle cx={connectDrag.cursorX} cy={connectDrag.cursorY} r={6} fill="var(--cs-accent)" opacity={0.8} />
+              <circle cx={connectDrag.cursorX} cy={connectDrag.cursorY} r={6} fill="#e85d3a" opacity={0.8} />
             </svg>
           )}
+
         </div>
 
-        {/* Lasso overlay (screen space) */}
-        {lasso && (
+        {/* Lasso overlay (screen space) — only render when actually dragged */}
+        {lasso && lasso.w > 1 && lasso.h > 1 && (
           <div
             className="pointer-events-none absolute border border-[color:var(--cs-accent)]/70 bg-[color:var(--cs-accent)]/10"
             style={{ left: lasso.x, top: lasso.y, width: lasso.w, height: lasso.h }}
@@ -636,6 +702,8 @@ function renderBlock(block: AnyBlock, onContextMenu: (e: React.MouseEvent) => vo
     case 'assistant': return <AssistantBlockView  key={block.id} block={block} onContextMenu={onContextMenu} />
     case 'timeline':  return <PlaceholderBlock   key={block.id} block={block} label="Timeline" onContextMenu={onContextMenu} />
     case 'embed':     return <EmbedBlockView     key={block.id} block={block} onContextMenu={onContextMenu} />
-    case 'section':   return <PlaceholderBlock   key={block.id} block={block} label="Section" onContextMenu={onContextMenu} />
+    case 'section':         return <PlaceholderBlock          key={block.id} block={block} label="Section" onContextMenu={onContextMenu} />
+    case 'standalone-node': return <StandaloneNodeBlockView   key={block.id} block={block as import('./types').StandaloneNodeBlock} onContextMenu={onContextMenu} />
+    case 'group':           return <GroupBlockView            key={block.id} block={block as import('./types').GroupBlock} onContextMenu={onContextMenu} />
   }
 }

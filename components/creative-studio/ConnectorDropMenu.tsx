@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Type, StickyNote, ImageIcon, Film, GitBranch, FileText, CheckSquare,
-  FileAudio, Bot, Link2, Sparkles, X,
+  FileAudio, Bot, Link2, Sparkles, X, Circle, Square,
 } from 'lucide-react'
 import type { BlockKind } from './types'
 
@@ -51,6 +51,8 @@ const BLOCK_OPTIONS: Option[] = [
   { kind: 'transcript', label: 'Transcript', icon: FileAudio,   description: 'Reference text' },
   { kind: 'assistant',  label: 'AI Chat',    icon: Bot,         description: 'Assistant for connected blocks' },
   { kind: 'embed',      label: 'Embed',      icon: Link2,       description: 'Web URL preview' },
+  { kind: 'standalone-node', label: 'Node', icon: Circle,      description: 'Standalone mind map node' },
+  { kind: 'group',     label: 'Group',      icon: Square,      description: 'Container for nodes' },
 ]
 
 interface Props {

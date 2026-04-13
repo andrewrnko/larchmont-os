@@ -14,6 +14,8 @@ export type BlockKind =
   | 'transcript'
   | 'assistant'
   | 'tasks'
+  | 'standalone-node'
+  | 'group'
 
 export interface BaseBlock {
   id: string
@@ -144,6 +146,21 @@ export interface SectionBlock extends BaseBlock {
   label?: string
 }
 
+export interface StandaloneNodeBlock extends BaseBlock {
+  kind: 'standalone-node'
+  label: string
+  notes?: string
+  color?: string
+  shape?: 'circle' | 'square' | 'pill'
+  groupId?: string
+  collapsed?: boolean
+}
+
+export interface GroupBlock extends BaseBlock {
+  kind: 'group'
+  label: string
+}
+
 export type AnyBlock =
   | TextBlock
   | StickyBlock
@@ -157,6 +174,8 @@ export type AnyBlock =
   | TranscriptBlock
   | AssistantBlock
   | TasksBlock
+  | StandaloneNodeBlock
+  | GroupBlock
 
 export interface Connector {
   id: string

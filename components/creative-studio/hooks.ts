@@ -156,7 +156,25 @@ export function useDraggable(blockId: string, opts?: { disabled?: boolean }) {
 
       // Capture original positions of ALL selected blocks for group move
       const sel = isInSelection ? cs.selection : [blockId]
-      const origins = sel.map((id) => {
+      // When dragging a group block, also move standalone-node blocks within its bounds
+      const containedIds = new Set<string>()
+      for (const id of sel) {
+        const blk = board.blocks.find((x) => x.id === id)
+        if (blk && blk.kind === 'group') {
+          for (const other of board.blocks) {
+            if (other.kind === 'standalone-node' && !sel.includes(other.id)) {
+              if (
+                other.x >= blk.x && other.x + other.w <= blk.x + blk.w &&
+                other.y >= blk.y && other.y + other.h <= blk.y + blk.h
+              ) {
+                containedIds.add(other.id)
+              }
+            }
+          }
+        }
+      }
+      const allIds = [...sel, ...containedIds]
+      const origins = allIds.map((id) => {
         const b = board.blocks.find((x) => x.id === id)
         return { id, x: b?.x ?? 0, y: b?.y ?? 0 }
       })
@@ -179,6 +197,23 @@ export function useDraggable(blockId: string, opts?: { disabled?: boolean }) {
         window.removeEventListener('pointermove', onMove)
         window.removeEventListener('pointerup', onUp)
         document.body.style.userSelect = ''
+        // After drag ends, update groupId for standalone-node blocks
+        const postState = useCanvasStore.getState()
+        const postBoard = postState.boards.find((b) => b.id === postState.activeBoardId)
+        if (postBoard) {
+          const groups = postBoard.blocks.filter((b) => b.kind === 'group')
+          for (const id of allIds) {
+            const blk = postBoard.blocks.find((b) => b.id === id)
+            if (blk && blk.kind === 'standalone-node') {
+              const inside = groups.find(
+                (g) =>
+                  blk.x >= g.x && blk.x + blk.w <= g.x + g.w &&
+                  blk.y >= g.y && blk.y + blk.h <= g.y + g.h
+              )
+              updateBlock(blk.id, { groupId: inside?.id ?? undefined } as Partial<import('./types').AnyBlock>)
+            }
+          }
+        }
       }
       window.addEventListener('pointermove', onMove)
       window.addEventListener('pointerup', onUp)
@@ -202,6 +237,8 @@ const MIN_SIZES: Record<string, { w: number; h: number }> = {
   timeline: { w: 320, h: 100 },
   embed: { w: 240, h: 160 },
   section: { w: 240, h: 160 },
+  'standalone-node': { w: 90, h: 36 },
+  group: { w: 200, h: 150 },
 }
 
 export function useResizable(blockId: string, kind: BlockKind, opts?: { lockAspect?: boolean; ratio?: number }) {
@@ -285,8 +322,20 @@ export function useLassoSelect(containerRef: React.RefObject<HTMLDivElement | nu
     let lastBox: { x: number; y: number; w: number; h: number } | null = null
 
     const onDown = (e: PointerEvent) => {
-      // Only when clicking empty canvas (not a block, connector anchor, or comment pin)
-      if ((e.target as HTMLElement).closest('[data-block], [data-anchor], [data-comment-pin]')) return
+      // Only when clicking empty canvas or inside a group block (not a non-group block, anchor, or pin).
+      // Groups have pointer-events:none on their background, so clicks land on the canvas behind them.
+      // But the BlockWrapper div still has data-block, so we need to check if the hit block is a group
+      // and allow lasso to start inside groups.
+      const blockEl = (e.target as HTMLElement).closest('[data-block]')
+      if (blockEl) {
+        const blockId = blockEl.getAttribute('data-block')
+        const cs = useCanvasStore.getState()
+        const activeBoard = cs.boards.find((x) => x.id === cs.activeBoardId)
+        const hitBlock = activeBoard?.blocks.find((x) => x.id === blockId)
+        // Allow lasso inside group blocks, block it for all other block types
+        if (hitBlock?.kind !== 'group') return
+      }
+      if ((e.target as HTMLElement).closest('[data-anchor], [data-comment-pin]')) return
       if (e.button !== 0) return
       const rect = el.getBoundingClientRect()
       startX = e.clientX - rect.left

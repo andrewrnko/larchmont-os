@@ -1,53 +1,21 @@
-// AI Assistant block — chat interface that pulls context from connected blocks.
+// AI Assistant block — full canvas intelligence layer.
+// Reads EVERY block on the canvas (not just connected ones), sends full
+// context to the AI, and executes structured actions against the store.
 
 'use client'
 
 import { useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import { useCanvasStore, useActiveBoard, uid } from '../store'
-import type {
-  AssistantBlock, AnyBlock, TextBlock, StickyBlock, TranscriptBlock,
-  PageBlock, MindMapBlock, StoryboardBlock, TasksBlock, ChatMessage,
-} from '../types'
+import type { AssistantBlock, AnyBlock, ChatMessage, Connector } from '../types'
 import { BlockWrapper } from '../BlockWrapper'
 import { Bot, Send, Loader2, Trash2 } from 'lucide-react'
-
-// Extract text content from any block for context injection.
-function blockToText(block: AnyBlock): string {
-  switch (block.kind) {
-    case 'text': return `[Text Note] ${(block as TextBlock).html.replace(/<[^>]+>/g, '')}`
-    case 'sticky': return `[Sticky] ${(block as StickyBlock).text}`
-    case 'transcript': {
-      const t = block as TranscriptBlock
-      return `[Transcript: ${t.title}${t.source ? ` — ${t.source}` : ''}]\n${t.transcript}`
-    }
-    case 'page': {
-      const p = block as PageBlock
-      const body = p.content.map((c) => ('text' in c ? c.text : '')).filter(Boolean).join('\n')
-      return `[Page: ${p.title}]\n${body}`
-    }
-    case 'mindmap': {
-      const m = block as MindMapBlock
-      const nodes = m.nodes.map((n) => `- ${n.label}${n.notes ? `: ${n.notes}` : ''}`).join('\n')
-      return `[Mind Map]\n${nodes}`
-    }
-    case 'storyboard': {
-      const s = block as StoryboardBlock
-      const frames = s.frames.map((f) => `${f.label}: ${f.notes}${f.detailedNotes ? `\n${f.detailedNotes}` : ''}`).join('\n')
-      return `[Storyboard]\n${frames}`
-    }
-    case 'tasks': {
-      const tk = block as TasksBlock
-      const items = tk.taskItems.map((t) => `${t.done ? '☑' : '☐'} ${t.priority ? `P${t.priority}` : ''} ${t.title}`).join('\n')
-      return `[Task List: ${tk.label}]\n${items || '(empty)'}`
-    }
-    case 'embed': {
-      const e = block as import('../types').EmbedBlock
-      return `[Link: ${e.title || e.url || '(no url)'}]\nURL: ${e.url}\n${e.description || ''}`
-    }
-    default: return ''
-  }
-}
+import {
+  buildCanvasContext,
+  parseAIResponse,
+  executeActions,
+  type ActionResult,
+} from '../ai-graph'
 
 interface Props {
   block: AssistantBlock
@@ -56,26 +24,18 @@ interface Props {
 
 export function AssistantBlockView({ block, onContextMenu }: Props) {
   const updateBlock = useCanvasStore((s) => s.updateBlock)
+  const addBlockAt = useCanvasStore((s) => s.addBlockAt)
+  const addConnector = useCanvasStore((s) => s.addConnector)
   const board = useActiveBoard()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Find all blocks connected TO this assistant block
-  const getConnectedContext = (): string => {
-    if (!board) return ''
-    const connectedIds = new Set<string>()
-    for (const c of board.connectors) {
-      if (c.toBlockId === block.id) connectedIds.add(c.fromBlockId)
-      if (c.fromBlockId === block.id) connectedIds.add(c.toBlockId)
-    }
-    if (connectedIds.size === 0) return ''
-    return board.blocks
-      .filter((b) => connectedIds.has(b.id))
-      .map(blockToText)
-      .filter(Boolean)
-      .join('\n\n---\n\n')
-  }
+  // Canvas stats for header
+  const blockCount = board ? board.blocks.length - 1 : 0 // exclude self
+  const groupCount = board ? board.blocks.filter((b) => b.kind === 'group').length : 0
+  const mindmapCount = board ? board.blocks.filter((b) => b.kind === 'mindmap').length : 0
 
   const send = async () => {
     if (!input.trim() || loading) return
@@ -83,62 +43,59 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
     const nextMessages = [...block.messages, userMsg]
     updateBlock(block.id, { messages: nextMessages })
     setInput('')
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
     setLoading(true)
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }), 50)
 
     try {
-      const context = getConnectedContext()
+      // Build full canvas context (ALL blocks, not just connected)
+      const canvasContext = board ? buildCanvasContext(block.id, board) : ''
+
       const res = await fetch('/api/creative-studio/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMsg.content,
-          context,
+          canvasContext,
           history: nextMessages.slice(-20).map((m) => ({ role: m.role, content: m.content })),
         }),
       })
       const data = await res.json()
-      let responseText: string = data.response || data.error || 'No response'
+      const responseText: string = data.response || data.error || 'No response'
+      const serverActions = Array.isArray(data.actions) ? data.actions : []
 
-      // Check for task creation block in response
-      const taskMatch = responseText.match(/```tasks\n([\s\S]*?)```/)
-      if (taskMatch) {
-        try {
-          const taskData = JSON.parse(taskMatch[1]) as { title: string; priority?: number }[]
-          // Create a Tasks block on the canvas near the assistant
-          const addBlockAt = useCanvasStore.getState().addBlockAt
-          const taskBlockId = addBlockAt('tasks', block.x + block.w + 40, block.y)
-          if (taskBlockId && taskData.length > 0) {
-            const taskItems = taskData.map((t) => ({
-              id: uid(),
-              title: t.title,
-              done: false,
-              priority: (t.priority ?? 2) as 1 | 2 | 3,
-              createdAt: Date.now(),
-            }))
-            useCanvasStore.getState().updateBlock(taskBlockId, {
-              label: 'Next Steps',
-              taskItems,
-            })
-            // Connect the new task block to this assistant
-            useCanvasStore.getState().addConnector({
-              id: uid(),
-              fromBlockId: block.id,
-              toBlockId: taskBlockId,
-              style: 'curved',
-              arrow: 'one',
-              color: 'var(--cs-accent)',
-              weight: 2,
-            })
-          }
-        } catch {}
-        // Remove the tasks code block from the displayed message
-        responseText = responseText.replace(/```tasks\n[\s\S]*?```/, '✅ *Task list created on canvas*')
+      // Fallback: parse response text for embedded actions
+      const parsed = parseAIResponse(responseText)
+      const allActions = serverActions.length > 0 ? serverActions : parsed.actions
+      const displayMessage = serverActions.length > 0 ? responseText : parsed.message
+
+      // Execute actions
+      let actionResults: ActionResult[] = []
+      if (allActions.length > 0) {
+        const cs = useCanvasStore.getState()
+        const currentBoard = cs.boards.find((b) => b.id === cs.activeBoardId)
+        if (currentBoard) {
+          actionResults = executeActions(
+            allActions,
+            currentBoard,
+            (id, patch) => useCanvasStore.getState().updateBlock(id, patch),
+            (kind, x, y) => useCanvasStore.getState().addBlockAt(kind, x, y),
+            block,
+            (c: Connector) => useCanvasStore.getState().addConnector(c),
+          )
+        }
       }
+
+      // Build action summary
+      const succeeded = actionResults.filter((r) => r.success)
+      const failed = actionResults.filter((r) => !r.success)
+      let statusLine = ''
+      if (succeeded.length > 0) statusLine += `\n\n✓ ${succeeded.length} action${succeeded.length > 1 ? 's' : ''} applied`
+      if (failed.length > 0) statusLine += `\n⚠ ${failed.length} action${failed.length > 1 ? 's' : ''} skipped`
 
       const assistantMsg: ChatMessage = {
         role: 'assistant',
-        content: responseText,
+        content: displayMessage + statusLine,
         timestamp: Date.now(),
       }
       updateBlock(block.id, { messages: [...nextMessages, assistantMsg] })
@@ -156,9 +113,13 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
   }
 
   const clearChat = () => updateBlock(block.id, { messages: [] })
-  const connectedCount = board
-    ? board.connectors.filter((c) => c.toBlockId === block.id || c.fromBlockId === block.id).length
-    : 0
+
+  // Auto-grow textarea
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+    e.target.style.height = 'auto'
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+  }
 
   return (
     <BlockWrapper block={block} kind="assistant" onContextMenu={onContextMenu}>
@@ -168,16 +129,18 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[color:rgba(255,255,255,0.07)] bg-[#1c1c1a] px-4 py-3">
-          <div className="flex items-center gap-2">
-            <Bot size={15} className="text-[color:var(--cs-accent)]" />
-            <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">AI Assistant</span>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <Bot size={15} className="text-[color:var(--cs-accent)]" />
+              <span className="font-mono text-[13px] font-medium uppercase tracking-[0.06em] text-[color:var(--cs-accent)]">AI Assistant</span>
+            </div>
+            <span className="mt-0.5 text-[11px] text-[#555450]">
+              Canvas: {blockCount} block{blockCount !== 1 ? 's' : ''} · {groupCount} group{groupCount !== 1 ? 's' : ''} · {mindmapCount} mind map{mindmapCount !== 1 ? 's' : ''}
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] text-[#888780]">{connectedCount} node{connectedCount !== 1 ? 's' : ''}</span>
-            <button onClick={clearChat} className="text-[#555450] hover:text-red-400" title="Clear chat">
-              <Trash2 size={14} />
-            </button>
-          </div>
+          <button onClick={clearChat} className="text-[#555450] hover:text-red-400" title="Clear chat">
+            <Trash2 size={14} />
+          </button>
         </div>
 
         {/* Messages */}
@@ -186,56 +149,65 @@ export function AssistantBlockView({ block, onContextMenu }: Props) {
             <div className="flex h-full flex-col items-center justify-center text-center p-4">
               <Bot size={32} className="mb-3 text-[color:var(--cs-accent)]/40" />
               <p className="text-[15px] leading-[1.5] text-[#888780]">
-                Connect blocks to me, then ask questions about them.
+                I can see everything on your canvas.
               </p>
               <p className="mt-1 text-[14px] leading-[1.5] text-[#555450]">
-                I can read sticky notes, text, transcripts, pages, mind maps, and storyboards.
+                Ask me to build projects, add nodes, create tasks, organize groups, or analyze your work.
               </p>
             </div>
           )}
           {block.messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`rounded-lg px-4 py-3 text-[15px] leading-[1.5] overflow-hidden ${
-                msg.role === 'user'
-                  ? 'ml-6 bg-[color:var(--cs-accent)]/15 text-[#f0ede8]'
-                  : 'mr-6 bg-[#242422] text-[#c8c4bc]'
-              }`}
-            >
-              {msg.role === 'assistant' ? (
-                <div className="prose prose-invert prose-sm max-w-none break-words [&_a]:text-[color:var(--cs-accent2)] [&_a]:underline [&_code]:text-[color:var(--cs-accent2)] [&_strong]:text-white [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5">
-                  <Markdown>{msg.content}</Markdown>
-                </div>
-              ) : (
-                <div className="whitespace-pre-wrap break-words">{msg.content}</div>
-              )}
+            <div key={i}>
+              <div
+                className={`rounded-lg px-4 py-3 text-[15px] leading-[1.5] overflow-hidden ${
+                  msg.role === 'user'
+                    ? 'ml-6 bg-[color:var(--cs-accent)]/15 text-[#f0ede8]'
+                    : 'mr-6 bg-[#242422] text-[#c8c4bc]'
+                }`}
+              >
+                {msg.role === 'assistant' ? (
+                  <div className="prose prose-invert prose-sm max-w-none break-words [&_a]:text-[color:var(--cs-accent2)] [&_a]:underline [&_code]:text-[color:var(--cs-accent2)] [&_strong]:text-white [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5">
+                    <Markdown>{msg.content}</Markdown>
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+                )}
+              </div>
             </div>
           ))}
           {loading && (
             <div className="mr-6 flex items-center gap-2 rounded-md bg-[#242422] px-3 py-2 text-[15px] text-[#888780]">
-              <Loader2 size={12} className="animate-spin" /> Thinking…
+              <Loader2 size={12} className="animate-spin" /> Thinking...
             </div>
           )}
         </div>
 
-        {/* Input */}
+        {/* Input — multi-line textarea */}
         <div className="border-t border-[color:rgba(255,255,255,0.07)] p-3">
-          <div className="flex gap-2">
-            <input
-              className="flex-1 rounded-md bg-[#1c1c1a] px-3 py-2 text-[15px] leading-[1.5] text-white outline-none placeholder:text-[#555450]"
-              placeholder="Ask about connected blocks…"
+          <div className="flex gap-2 items-end">
+            <textarea
+              ref={textareaRef}
+              className="flex-1 resize-none rounded-md bg-[#1c1c1a] px-3 py-2 text-[15px] leading-[1.5] text-white outline-none placeholder:text-[#555450]"
+              placeholder="Talk to your canvas..."
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+              onChange={handleInputChange}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
+              }}
+              rows={1}
+              style={{ maxHeight: 120 }}
             />
             <button
               onClick={send}
               disabled={loading || !input.trim()}
-              className="rounded-md bg-[color:var(--cs-accent)] p-2 text-black hover:bg-[color:var(--cs-accent2)] disabled:opacity-30"
+              className="shrink-0 rounded-md bg-[color:var(--cs-accent)] p-2 text-black hover:bg-[color:var(--cs-accent2)] disabled:opacity-30"
             >
               <Send size={16} />
             </button>
           </div>
+          {input.length > 200 && (
+            <div className="mt-1 text-right text-[11px] text-[#555450]">{input.length} chars</div>
+          )}
         </div>
       </div>
     </BlockWrapper>

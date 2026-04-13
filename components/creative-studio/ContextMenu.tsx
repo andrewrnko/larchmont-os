@@ -30,6 +30,7 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
   const toggleLock = useCanvasStore((s) => s.toggleLock)
   const bringToFront = useCanvasStore((s) => s.bringToFront)
   const sendToBack = useCanvasStore((s) => s.sendToBack)
+  const selection = useCanvasStore((s) => s.selection)
   const setSelection = useCanvasStore((s) => s.setSelection)
   const board = useCanvasStore((s) => s.boards.find((b) => b.id === s.activeBoardId))
   const addPin = useCommentsStore((s) => s.addPin)
@@ -81,6 +82,12 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
         >
           {state.blockId ? (
             <>
+              {/* If right-clicked on a group block, offer to add a node inside */}
+              {board?.blocks.find((b) => b.id === state.blockId)?.kind === 'group' &&
+                item('Add Node here', () => {
+                  addBlockAt('standalone-node', state.worldX, state.worldY)
+                  onClose()
+                })}
               {item('Duplicate', () => {
                 duplicateBlock(state.blockId!)
                 onClose()
@@ -98,8 +105,12 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
                 onClose()
               })}
               <div className="my-1 h-px bg-[color:var(--bg4)]" />
-              {item('Delete', () => {
-                removeBlocks([state.blockId!])
+              {item(selection.length > 1 && selection.includes(state.blockId!) ? `Delete ${selection.length} selected` : 'Delete', () => {
+                // If the right-clicked block is in the selection, delete all selected
+                const ids = selection.includes(state.blockId!)
+                  ? selection
+                  : [state.blockId!]
+                removeBlocks(ids)
                 onClose()
               }, true)}
             </>
@@ -114,6 +125,8 @@ export function ContextMenu({ state, onClose, onZoomToFit }: Props) {
               {item('Add Task List', () => addAt('tasks'))}
               {item('Add Transcript', () => addAt('transcript'))}
               {item('Add AI Assistant', () => addAt('assistant'))}
+              {item('Add Node', () => addAt('standalone-node'))}
+              {item('Add Group', () => addAt('group'))}
               <button
                 className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[15px] text-neutral-200 hover:bg-[color:var(--cs-accent)]/20"
                 onClick={(e) => {

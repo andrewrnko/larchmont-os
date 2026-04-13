@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import {
   MousePointer2, Hand, Type, StickyNote, ImageIcon, Film, GitBranch,
   FileText, Link2, FileAudio, Bot, CheckSquare, MessageSquare,
+  Circle, Square,
 } from 'lucide-react'
 import type { BlockKind } from './types'
 
@@ -14,6 +15,7 @@ export type ToolId = 'select' | 'pan' | BlockKind | 'connector' | 'comment'
 interface Props {
   active: ToolId
   setActive: (t: ToolId) => void
+  hidden?: boolean
 }
 
 const TOOLS: { id: ToolId; label: string; shortcut: string; desc: string; icon: typeof Type; stub?: boolean }[] = [
@@ -26,13 +28,15 @@ const TOOLS: { id: ToolId; label: string; shortcut: string; desc: string; icon: 
   { id: 'mindmap',    label: 'Mind Map',        shortcut: 'M', desc: 'Visual brainstorm — click nodes to write notes', icon: GitBranch },
   { id: 'page',       label: 'Page',            shortcut: 'P', desc: 'Full document with headings, lists, media',      icon: FileText },
   { id: 'tasks',      label: 'Tasks',             shortcut: 'K', desc: 'Task list with checkboxes and focus timer',      icon: CheckSquare },
+  { id: 'standalone-node', label: 'Node',         shortcut: 'N', desc: 'Standalone mind map node on the canvas',          icon: Circle },
+  { id: 'group',      label: 'Group',             shortcut: 'G', desc: 'Container to group nodes together',              icon: Square },
   { id: 'comment',    label: 'Comment',           shortcut: 'C', desc: 'Drop annotation pins on the canvas',              icon: MessageSquare },
   { id: 'connector',  label: 'Connector',       shortcut: 'L', desc: 'Draw lines between blocks (also hover edges)',   icon: Link2 },
   { id: 'transcript', label: 'Transcript',      shortcut: 'R', desc: 'Paste audio transcripts for reference',          icon: FileAudio },
   { id: 'assistant',  label: 'AI Assistant',    shortcut: 'A', desc: 'Chat with AI about connected blocks',            icon: Bot },
 ]
 
-export function Toolbar({ active, setActive }: Props) {
+export function Toolbar({ active, setActive, hidden }: Props) {
   const [hoverId, setHoverId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -44,6 +48,7 @@ export function Toolbar({ active, setActive }: Props) {
         v: 'select', h: 'pan', t: 'text', s: 'sticky', i: 'image',
         f: 'storyboard', m: 'mindmap', p: 'page', c: 'comment',
         l: 'connector', r: 'transcript', a: 'assistant', k: 'tasks',
+        n: 'standalone-node', g: 'group',
       }
       const id = map[e.key.toLowerCase()]
       if (id) setActive(id)
@@ -54,10 +59,12 @@ export function Toolbar({ active, setActive }: Props) {
 
   return (
     <div
-      className="absolute left-3 top-1/2 z-30 -translate-y-1/2 flex flex-col gap-1.5 rounded-xl border p-1.5 shadow-2xl backdrop-blur"
+      className="absolute left-3 top-1/2 z-30 flex flex-col gap-1.5 rounded-xl border p-1.5 shadow-2xl backdrop-blur"
       style={{
         background: 'color-mix(in srgb, var(--bg2) 95%, transparent)',
         borderColor: 'var(--border)',
+        transform: hidden ? 'translateY(-50%) translateX(calc(-100% - 16px))' : 'translateY(-50%) translateX(0)',
+        transition: 'transform 200ms ease-in-out',
       }}
     >
       {TOOLS.map((t) => {

@@ -19,7 +19,11 @@ const SLOTS: { key: TimeSlot; label: string; icon: typeof Sunrise }[] = [
 
 const CATEGORIES = ['Ops', 'Finance', 'Content', 'Client', 'Health', 'Admin']
 
-export function DailyRepeatables() {
+interface RepeatableProps {
+  onExpandedChange?: (expanded: boolean) => void
+}
+
+export function DailyRepeatables({ onExpandedChange }: RepeatableProps) {
   const items = useRepeatableStore((s) => s.items)
   const checks = useRepeatableStore((s) => s.checks)
   const log = useRepeatableStore((s) => s.log)
@@ -32,6 +36,11 @@ export function DailyRepeatables() {
 
   // Default to collapsed — the expanded panel takes a lot of vertical space.
   const [collapsed, setCollapsed] = useState(true)
+
+  // Notify parent when expanded/collapsed state changes
+  useEffect(() => {
+    onExpandedChange?.(!collapsed)
+  }, [collapsed, onExpandedChange])
   const [logOpen, setLogOpen] = useState(false)
   const [addingSlot, setAddingSlot] = useState<TimeSlot | null>(null)
   const [newTitle, setNewTitle] = useState('')

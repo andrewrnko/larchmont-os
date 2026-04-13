@@ -19,6 +19,8 @@ interface Props {
   className?: string
   lockAspect?: boolean
   ratio?: number
+  /** When true, the main body area passes pointer events through (for groups). */
+  passThrough?: boolean
   onContextMenu?: (e: React.MouseEvent) => void
 }
 
@@ -37,7 +39,7 @@ function anchorWorldPos(block: AnyBlock, side: string) {
   }
 }
 
-export function BlockWrapper({ block, kind, children, className, lockAspect, ratio, onContextMenu }: Props) {
+export function BlockWrapper({ block, kind, children, className, lockAspect, ratio, passThrough, onContextMenu }: Props) {
   const selection = useCanvasStore((s) => s.selection)
   const setSelection = useCanvasStore((s) => s.setSelection)
   const bringToFront = useCanvasStore((s) => s.bringToFront)
@@ -69,11 +71,11 @@ export function BlockWrapper({ block, kind, children, className, lockAspect, rat
   return (
     <div
       data-block={block.id}
-      onPointerDown={handleSelectOnly}
+      onPointerDown={passThrough ? undefined : handleSelectOnly}
       onContextMenu={onContextMenu}
       className={cn(
-        'absolute group',
-        selected && 'ring-2 ring-[color:var(--cs-accent)]',
+        'absolute group select-none',
+        selected && !passThrough && 'ring-2 ring-[color:var(--cs-accent)]',
         block.locked && 'cursor-not-allowed',
         className
       )}
@@ -83,6 +85,7 @@ export function BlockWrapper({ block, kind, children, className, lockAspect, rat
         width: block.w,
         height: block.h,
         zIndex: block.z,
+        pointerEvents: passThrough ? 'none' : undefined,
       }}
     >
       {children}
@@ -93,7 +96,10 @@ export function BlockWrapper({ block, kind, children, className, lockAspect, rat
           data-drag-handle
           onPointerDown={onDragStart}
           className="absolute left-0 top-0 z-[9999] h-4 w-full cursor-move rounded-t-md opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-          style={{ background: 'linear-gradient(180deg, color-mix(in srgb, var(--cs-accent) 35%, transparent) 0%, transparent 100%)' }}
+          style={{
+            background: 'linear-gradient(180deg, color-mix(in srgb, var(--cs-accent) 35%, transparent) 0%, transparent 100%)',
+            pointerEvents: 'auto',
+          }}
           title="Drag to move"
         />
       )}
@@ -106,7 +112,7 @@ export function BlockWrapper({ block, kind, children, className, lockAspect, rat
             data-anchor
             onPointerDown={(e) => handleAnchorDown(side, e)}
             className="absolute z-[99999] h-3.5 w-3.5 cursor-crosshair rounded-full border-2 border-white bg-[color:var(--cs-accent)] opacity-0 shadow-md transition-all duration-150 ease-out group-hover:opacity-100 hover:scale-150"
-            style={style}
+            style={{ ...style, pointerEvents: 'auto' }}
           />
         ))}
 
@@ -124,6 +130,7 @@ export function BlockWrapper({ block, kind, children, className, lockAspect, rat
           style={{
             background:
               'linear-gradient(135deg, transparent 0 50%, color-mix(in srgb, var(--cs-accent) 90%, transparent) 50% 100%)',
+            pointerEvents: 'auto',
           }}
         />
       )}

@@ -12,7 +12,11 @@ import type { PriorityTask } from './types'
 
 const MAX_PER_RANK = 5
 
-export function DayHyperplanner() {
+interface PlannerProps {
+  onExpandedChange?: (expanded: boolean) => void
+}
+
+export function DayHyperplanner({ onExpandedChange }: PlannerProps) {
   const tasks = usePlannerStore((s) => s.tasks)
   const drifting = usePlannerStore((s) => s.drifting)
   const driftingSince = usePlannerStore((s) => s.driftingSince)
@@ -30,6 +34,11 @@ export function DayHyperplanner() {
   const [logOpen, setLogOpen] = useState(false)
   const [warn, setWarn] = useState(false)
   const [, tick] = useState(0)
+
+  // Notify parent when expanded/collapsed state changes
+  useEffect(() => {
+    onExpandedChange?.(!collapsed)
+  }, [collapsed, onExpandedChange])
 
   const byRank = (r: 1 | 2 | 3) => tasks.filter((t) => t.rank === r).sort((a, b) => a.createdAt - b.createdAt)
   const firstP1Open = byRank(1).find((t) => !t.done)

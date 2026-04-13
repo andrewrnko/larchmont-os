@@ -1,8 +1,9 @@
 // Top-level client wrapper: hydrates stores, lays out planner + sidebar + canvas.
+// Manages toolbar auto-hide when planner panels are expanded.
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCanvasStore, usePlannerStore } from './store'
 import { Canvas } from './Canvas'
 import { Toolbar, type ToolId } from './Toolbar'
@@ -11,6 +12,17 @@ import { DayHyperplanner } from './DayHyperplanner'
 import { DailyRepeatables } from './DailyRepeatables'
 import { FocusOverlay } from './FocusOverlay'
 import { SubpageEditor } from './SubpageEditor'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+
+const LS_TOOLBAR = 'cs:toolbar-visible'
+
+function loadBool(key: string, fallback: boolean): boolean {
+  if (typeof window === 'undefined') return fallback
+  try {
+    const raw = localStorage.getItem(key)
+    return raw !== null ? raw === 'true' : fallback
+  } catch { return fallback }
+}
 
 export function CreativeStudioClient() {
   const hydrate = useCanvasStore((s) => s.hydrate)
@@ -21,6 +33,38 @@ export function CreativeStudioClient() {
   const createBoard = useCanvasStore((s) => s.createBoard)
 
   const [tool, setTool] = useState<ToolId>('select')
+
+  // ── Toolbar visibility ──
+  const [toolbarVisible, setToolbarVisible] = useState(() => loadBool(LS_TOOLBAR, true))
+  const [dayExpanded, setDayExpanded] = useState(true) // DayHyperplanner starts expanded
+  const [repeatExpanded, setRepeatExpanded] = useState(false) // DailyRepeatables starts collapsed
+  const plannerExpanded = dayExpanded || repeatExpanded
+
+  // Track previous planner state to detect changes (skip initial render)
+  const prevPlannerRef = useRef(plannerExpanded)
+  const initialRender = useRef(true)
+
+  useEffect(() => {
+    if (initialRender.current) {
+      initialRender.current = false
+      return
+    }
+    if (prevPlannerRef.current !== plannerExpanded) {
+      prevPlannerRef.current = plannerExpanded
+      setToolbarVisible(!plannerExpanded)
+    }
+  }, [plannerExpanded])
+
+  const toggleToolbar = useCallback(() => {
+    setToolbarVisible((v) => {
+      const next = !v
+      try { localStorage.setItem(LS_TOOLBAR, String(next)) } catch {}
+      return next
+    })
+  }, [])
+
+  const onDayExpandedChange = useCallback((expanded: boolean) => setDayExpanded(expanded), [])
+  const onRepeatExpandedChange = useCallback((expanded: boolean) => setRepeatExpanded(expanded), [])
 
   useEffect(() => {
     hydrate()
@@ -66,14 +110,32 @@ export function CreativeStudioClient() {
 
   return (
     <div className="cs-anytype flex h-full w-full flex-col overflow-hidden">
-      <DayHyperplanner />
-      <DailyRepeatables />
+      <DayHyperplanner onExpandedChange={onDayExpandedChange} />
+      <DailyRepeatables onExpandedChange={onRepeatExpandedChange} />
       <div className="relative flex flex-1 overflow-hidden">
         <div className="relative flex-1">
           <Canvas tool={tool} setTool={setTool} />
           <BoardPopover />
-          <Toolbar active={tool} setActive={setTool} />
+          <Toolbar active={tool} setActive={setTool} hidden={!toolbarVisible} />
           <SubpageEditor />
+
+          {/* Toggle tab — thin pill at left edge, always accessible */}
+          <button
+            onClick={toggleToolbar}
+            className="absolute left-0 top-1/2 z-[31] flex h-12 w-5 items-center justify-center rounded-r-md border-y border-r backdrop-blur"
+            style={{
+              transform: 'translateY(-50%)',
+              background: 'color-mix(in srgb, var(--bg2) 90%, transparent)',
+              borderColor: 'var(--border)',
+              color: 'var(--text2)',
+              transition: 'color 150ms ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text0)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text2)')}
+            title={toolbarVisible ? 'Hide toolbar' : 'Show toolbar'}
+          >
+            {toolbarVisible ? <ChevronLeft size={12} /> : <ChevronRight size={12} />}
+          </button>
         </div>
       </div>
       <FocusOverlay />

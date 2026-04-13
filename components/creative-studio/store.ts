@@ -239,8 +239,26 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   removeBlocks: (ids) => {
     pushHistorySnapshot()
     mutateActive((b) => {
-      b.blocks = b.blocks.filter((x) => !ids.includes(x.id))
-      b.connectors = b.connectors.filter((c) => !ids.includes(c.fromBlockId) && !ids.includes(c.toBlockId))
+      // When deleting group blocks, also delete standalone-nodes inside them
+      const allIds = new Set(ids)
+      for (const id of ids) {
+        const blk = b.blocks.find((x) => x.id === id)
+        if (blk && blk.kind === 'group') {
+          for (const other of b.blocks) {
+            if (other.kind === 'standalone-node') {
+              const node = other as import('./types').StandaloneNodeBlock
+              // Match by groupId or by bounds containment
+              if (node.groupId === id ||
+                  (other.x >= blk.x && other.x + other.w <= blk.x + blk.w &&
+                   other.y >= blk.y && other.y + other.h <= blk.y + blk.h)) {
+                allIds.add(other.id)
+              }
+            }
+          }
+        }
+      }
+      b.blocks = b.blocks.filter((x) => !allIds.has(x.id))
+      b.connectors = b.connectors.filter((c) => !allIds.has(c.fromBlockId) && !allIds.has(c.toBlockId))
     })
     set({ selection: [] })
   },
@@ -449,6 +467,12 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
       return { ...base, kind: 'embed', w: 320, h: 180, url: '', title: '', description: '', favicon: '', image: '' }
     case 'section':
       return { ...base, kind: 'section', w: 480, h: 320, label: 'Section' }
+    case 'standalone-node':
+      // Height 64 matches mind map pill (py-5 top 20 + text ~24 + py-5 bottom 20)
+      return { ...base, kind: 'standalone-node', w: 160, h: 64, label: 'New node' }
+    case 'group':
+      // Groups render behind other blocks — use a low z so nodes inside sit on top.
+      return { ...base, kind: 'group', w: 400, h: 300, label: 'GROUP', z: 1 }
     default:
       return null
   }
