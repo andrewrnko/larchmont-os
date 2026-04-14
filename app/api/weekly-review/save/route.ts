@@ -1,26 +1,22 @@
-import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { startOfWeek, endOfWeek, format } from 'date-fns'
+import { chat } from '@/lib/model-router'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 export async function POST(req: NextRequest) {
   try {
     const { summary, messages } = await req.json()
     if (!summary) return NextResponse.json({ error: 'summary is required' }, { status: 400 })
 
-    const extraction = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
-      messages: [{
-        role: 'user',
-        content: `Extract data from this week review summary. Return ONLY valid JSON, no markdown:
+    // Routed through model-router — extraction is a local task (gemma3:27b).
+    // Falls back to Haiku if the local model is down.
+    const extraction = await chat(
+      `Extract data from this week review summary. Return ONLY valid JSON, no markdown:
 {
   "completedCount": number,
   "avgCompletionRate": number or null,
@@ -32,10 +28,11 @@ export async function POST(req: NextRequest) {
 
 Summary:
 ${summary}`,
-      }],
-    })
+      'extract',
+      { temperature: 0.1, maxTokens: 500, cloudModel: 'claude-haiku-4-5-20251001' }
+    )
 
-    const raw = extraction.content[0].type === 'text' ? extraction.content[0].text.trim() : '{}'
+    const raw = extraction.content.trim() || '{}'
     let parsed: { completedCount?: number; avgCompletionRate?: number | null; topWin?: string; biggestStall?: string; thePattern?: string; nextWeekPriorities?: string[] } = {}
     try { parsed = JSON.parse(raw) } catch { /* fallback */ }
 

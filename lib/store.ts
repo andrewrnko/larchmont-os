@@ -450,31 +450,63 @@ export const useBriefingStore = create<BriefingState>((set, get) => ({
 }))
 
 // ────────────────────────────────────────────────────────────
-// Timer — persists across page navigation via Zustand global state
+// Timer — persists across page navigation via Zustand global state.
+// Single-timer invariant: one task OR one planner block at a time.
 // ────────────────────────────────────────────────────────────
+export type TimerKind = 'task' | 'block'
+
 interface TimerState {
   activeTaskId: string | null
+  activeBlockId: string | null
+  activeKind: TimerKind | null
   startedAt: string | null // ISO datetime string
   startTimer: (taskId: string) => void
+  startBlockTimer: (blockId: string) => void
   stopTimer: () => { taskId: string; startedAt: string } | null
+  stopBlockTimer: () => { blockId: string; startedAt: string } | null
   clearTimer: () => void
 }
 
 export const useTimerStore = create<TimerState>((set, get) => ({
   activeTaskId: null,
+  activeBlockId: null,
+  activeKind: null,
   startedAt: null,
 
   startTimer: (taskId) => {
-    set({ activeTaskId: taskId, startedAt: new Date().toISOString() })
+    set({
+      activeTaskId: taskId,
+      activeBlockId: null,
+      activeKind: 'task',
+      startedAt: new Date().toISOString(),
+    })
+  },
+
+  startBlockTimer: (blockId) => {
+    set({
+      activeTaskId: null,
+      activeBlockId: blockId,
+      activeKind: 'block',
+      startedAt: new Date().toISOString(),
+    })
   },
 
   stopTimer: () => {
     const { activeTaskId, startedAt } = get()
     if (!activeTaskId || !startedAt) return null
     const result = { taskId: activeTaskId, startedAt }
-    set({ activeTaskId: null, startedAt: null })
+    set({ activeTaskId: null, activeBlockId: null, activeKind: null, startedAt: null })
     return result
   },
 
-  clearTimer: () => set({ activeTaskId: null, startedAt: null }),
+  stopBlockTimer: () => {
+    const { activeBlockId, startedAt } = get()
+    if (!activeBlockId || !startedAt) return null
+    const result = { blockId: activeBlockId, startedAt }
+    set({ activeTaskId: null, activeBlockId: null, activeKind: null, startedAt: null })
+    return result
+  },
+
+  clearTimer: () =>
+    set({ activeTaskId: null, activeBlockId: null, activeKind: null, startedAt: null }),
 }))

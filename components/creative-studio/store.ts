@@ -473,6 +473,8 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
     case 'group':
       // Groups render behind other blocks — use a low z so nodes inside sit on top.
       return { ...base, kind: 'group', w: 400, h: 300, label: 'GROUP', z: 1 }
+    case 'week-planner':
+      return { ...base, kind: 'week-planner', w: 640, h: 240, weekStart: null }
     default:
       return null
   }

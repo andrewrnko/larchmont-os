@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Bot, Moon, TrendingUp, BarChart2, Inbox,
   FolderKanban, FileEdit, Megaphone, ImageIcon, Library, Palette,
   CalendarDays, Film, Mic, Sparkles, Archive, Settings,
-  CheckSquare2,
+  CheckSquare2, CalendarRange,
 } from 'lucide-react'
 
 export interface RouteMeta {
@@ -31,6 +31,7 @@ export const OBJECT_ROUTES = [
   '/inbox',
   '/projects',
   '/tasks',
+  '/planner',
   '/briefs',
   '/campaigns',
   '/assets',
@@ -64,6 +65,7 @@ export const ROUTE_META: Record<string, RouteMeta> = {
   '/voice-notes':      { title: 'Voice Notes',      icon: Mic,             tint: 'rgba(250,108,148,0.18)', tintFg: '#fa6c94' },
   '/creative-studio':  { title: 'Creative Studio',  icon: Sparkles,        tint: 'rgba(232,93,58,0.18)',   tintFg: '#e85d3a' },
   '/tasks':            { title: 'Tasks',            icon: CheckSquare2,    tint: 'rgba(82,169,106,0.18)',  tintFg: '#52a96a' },
+  '/planner':          { title: 'Planner',          icon: CalendarRange,   tint: 'rgba(129,140,248,0.18)', tintFg: '#818cf8' },
   '/archive':          { title: 'Archive',          icon: Archive,         tint: 'rgba(107,114,128,0.18)', tintFg: '#9ca3af' },
   '/settings':         { title: 'Settings',         icon: Settings,        tint: 'rgba(107,114,128,0.18)', tintFg: '#9ca3af' },
 }

@@ -49,6 +49,7 @@ const BLOCK_DIMS: Record<string, { w: number; h: number }> = {
   transcript:        { w: 280, h: 180 },
   storyboard:        { w: 400, h: 300 },
   assistant:         { w: 320, h: 280 },
+  'week-planner':    { w: 640, h: 240 },
 }
 
 class LayoutEngine {

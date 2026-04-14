@@ -1,15 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
-import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
+import { chat } from '@/lib/model-router'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,13 +16,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'dayPlan is required' }, { status: 400 })
     }
 
-    // Use Claude to extract structured data from the day plan text
-    const extraction = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 600,
-      messages: [{
-        role: 'user',
-        content: `Extract project and tasks from this day plan.
+    // Routed through model-router — extraction is a local task (gemma3:27b).
+    // Falls back to Haiku if the local model is down.
+    const extraction = await chat(
+      `Extract project and tasks from this day plan.
 Respond with ONLY a JSON object. No explanation. No markdown. No backticks. Just raw JSON exactly like this format:
 {"projectName":"Example Project","tasks":[{"name":"Task name","priority":"P0","timeBlock":"morning"}]}
 
@@ -39,11 +32,12 @@ Rules:
 
 Day plan to extract from:
 ${dayPlan}`,
-      }],
-    })
+      'extract',
+      { temperature: 0.1, maxTokens: 600, cloudModel: 'claude-haiku-4-5-20251001' }
+    )
 
-    const raw = extraction.content[0].type === 'text' ? extraction.content[0].text.trim() : ''
-    console.log('[populate] 2. Claude extraction response:', raw)
+    const raw = extraction.content.trim()
+    console.log(`[populate] 2. Extraction response (tier=${extraction.tier}, model=${extraction.model}):`, raw)
 
     let parsed: { projectName: string; tasks: { name: string; priority: string; timeBlock: string }[] }
     try {

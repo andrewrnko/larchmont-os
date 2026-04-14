@@ -81,6 +81,10 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
     fromId: string
     cursor: { x: number; y: number }
   } | null>(null)
+  // Internal multi-select: selected node IDs within this mind map
+  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set())
+  // Internal lasso for selecting nodes within the mind map
+  const [internalLasso, setInternalLasso] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const setNodes = (fn: (n: MindMapNode[]) => MindMapNode[]) => {
     updateBlock(block.id, { nodes: fn(block.nodes) })
@@ -133,6 +137,58 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
     }
   }
 
+  // Internal lasso: pointerdown on empty space inside the mind map starts a
+  // selection box. On pointerup, nodes whose center falls inside the box are selected.
+  const startInternalLasso = (e: React.PointerEvent) => {
+    // Only left-click on the container background (not on a node)
+    if (e.button !== 0) return
+    if ((e.target as HTMLElement).closest('[data-mm-node]')) return
+    e.stopPropagation()
+
+    const local = toLocal(e.clientX, e.clientY)
+    const startLocal = { ...local }
+    let lastBox: { x: number; y: number; w: number; h: number } | null = null
+
+    if (!e.shiftKey) setSelectedNodeIds(new Set())
+
+    const onMove = (ev: PointerEvent) => {
+      const cur = toLocal(ev.clientX, ev.clientY)
+      lastBox = {
+        x: Math.min(cur.x, startLocal.x),
+        y: Math.min(cur.y, startLocal.y),
+        w: Math.abs(cur.x - startLocal.x),
+        h: Math.abs(cur.y - startLocal.y),
+      }
+      setInternalLasso(lastBox)
+    }
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      if (lastBox && (lastBox.w > 4 || lastBox.h > 4)) {
+        const bx1 = lastBox.x, by1 = lastBox.y
+        const bx2 = lastBox.x + lastBox.w, by2 = lastBox.y + lastBox.h
+        const hits = new Set<string>()
+        for (const n of visibleNodes) {
+          if (n.dx >= bx1 && n.dx <= bx2 && n.dy >= by1 && n.dy <= by2) {
+            hits.add(n.id)
+          }
+        }
+        if (e.shiftKey) {
+          setSelectedNodeIds((prev) => {
+            const next = new Set(prev)
+            hits.forEach((id) => next.add(id))
+            return next
+          })
+        } else {
+          setSelectedNodeIds(hits)
+        }
+      }
+      setInternalLasso(null)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
+
   // Press+drag = move node. Click (no drag) = open modal. Double-click = edit label.
   // ONLY fires on left-click (button 0) — right-click is handled by onContextMenu.
   const startNodeInteraction = (e: React.PointerEvent, nodeId: string) => {
@@ -143,12 +199,32 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
     if (!node) return
     const startX = e.clientX
     const startY = e.clientY
-    const origDx = node.dx
-    const origDy = node.dy
     const cs = useCanvasStore.getState()
     const b = cs.boards.find((x) => x.id === cs.activeBoardId)
     const scale = b?.viewport.scale ?? 1
     let moved = false
+
+    // If this node is in the multi-selection, drag all selected nodes together.
+    // Otherwise behave as a single-node drag.
+    const isInSelection = selectedNodeIds.has(nodeId)
+    const dragIds = isInSelection && selectedNodeIds.size > 1 ? [...selectedNodeIds] : [nodeId]
+    const origins = dragIds.map((id) => {
+      const n = block.nodes.find((x) => x.id === id)
+      return { id, dx: n?.dx ?? 0, dy: n?.dy ?? 0 }
+    })
+
+    // If clicking a node that's NOT in selection (and no shift), select just this one
+    if (!e.shiftKey && !isInSelection) {
+      setSelectedNodeIds(new Set([nodeId]))
+    } else if (e.shiftKey) {
+      // Shift-click toggles this node in/out of selection
+      setSelectedNodeIds((prev) => {
+        const next = new Set(prev)
+        if (next.has(nodeId)) next.delete(nodeId)
+        else next.add(nodeId)
+        return next
+      })
+    }
 
     const onMove = (ev: PointerEvent) => {
       const dxp = ev.clientX - startX
@@ -156,7 +232,11 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
       if (!moved && Math.hypot(dxp, dyp) > 3) moved = true
       if (moved) {
         setNodes((ns) =>
-          ns.map((n) => (n.id === nodeId ? { ...n, dx: origDx + dxp / scale, dy: origDy + dyp / scale } : n))
+          ns.map((n) => {
+            const orig = origins.find((o) => o.id === n.id)
+            if (!orig) return n
+            return { ...n, dx: orig.dx + dxp / scale, dy: orig.dy + dyp / scale }
+          })
         )
       }
     }
@@ -248,6 +328,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
     <BlockWrapper block={block} kind="mindmap" onContextMenu={onContextMenu}>
       <div
         ref={containerRef}
+        onPointerDown={startInternalLasso}
         className="relative h-full w-full rounded-md border shadow-lg"
         style={{
           overflow: 'visible',
@@ -282,11 +363,27 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
           })()}
         </svg>
 
+        {/* Internal lasso selection box */}
+        {internalLasso && internalLasso.w > 1 && internalLasso.h > 1 && (
+          <div
+            className="pointer-events-none absolute z-30 rounded-sm border"
+            style={{
+              left: internalLasso.x,
+              top: internalLasso.y,
+              width: internalLasso.w,
+              height: internalLasso.h,
+              borderColor: 'rgba(232, 93, 58, 0.7)',
+              background: 'rgba(232, 93, 58, 0.1)',
+            }}
+          />
+        )}
+
         {/* Nodes */}
         {visibleNodes.map((n) => {
           const hasChildren = block.nodes.some((x) => x.parentId === n.id)
           const isEditing = editingId === n.id
-          const isSelected = modalId === n.id || editingId === n.id
+          const isNodeSelected = selectedNodeIds.has(n.id)
+          const isSelected = modalId === n.id || editingId === n.id || isNodeSelected
           const bg = resolveColor(n.color)
           const fg = textForBg(bg)
           const neutral = isNeutral(n.color)
@@ -299,6 +396,7 @@ export function MindMapBlockView({ block, onContextMenu }: Props) {
           return (
             <div
               key={n.id}
+              data-mm-node={n.id}
               onPointerDown={(e) => !isEditing && startNodeInteraction(e, n.id)}
               onDoubleClick={(e) => handleDoubleClick(e, n.id)}
               onContextMenu={(e) => {

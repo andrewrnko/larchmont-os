@@ -20,6 +20,7 @@ import { EmbedBlockView } from './blocks/EmbedBlock'
 import { TasksBlockView } from './blocks/TasksBlock'
 import { StandaloneNodeBlockView } from './blocks/StandaloneNodeBlock'
 import { GroupBlockView } from './blocks/GroupBlock'
+import { WeekPlannerBlockView } from './blocks/WeekPlannerBlock'
 import { ConnectorLines, getCollapsedBlockIds } from './Connectors'
 import { ContextMenu, type ContextMenuState } from './ContextMenu'
 import { ConnectorDropMenu, type DropMenuState } from './ConnectorDropMenu'
@@ -87,6 +88,8 @@ function summarizeBlock(block: AnyBlock | undefined): string {
       return `[Node] ${block.label}`
     case 'group':
       return `[Group] ${block.label}`
+    case 'week-planner':
+      return `[Week planner · ${block.weekStart ?? 'current week'}]`
     default:
       return `[${block.kind}]`
   }
@@ -705,5 +708,6 @@ function renderBlock(block: AnyBlock, onContextMenu: (e: React.MouseEvent) => vo
     case 'section':         return <PlaceholderBlock          key={block.id} block={block} label="Section" onContextMenu={onContextMenu} />
     case 'standalone-node': return <StandaloneNodeBlockView   key={block.id} block={block as import('./types').StandaloneNodeBlock} onContextMenu={onContextMenu} />
     case 'group':           return <GroupBlockView            key={block.id} block={block as import('./types').GroupBlock} onContextMenu={onContextMenu} />
+    case 'week-planner':    return <WeekPlannerBlockView      key={block.id} block={block as import('./types').WeekPlannerBlock} onContextMenu={onContextMenu} />
   }
 }

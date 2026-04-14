@@ -13,25 +13,26 @@ import { ViewSwitcher } from '@/components/shared/view-switcher'
 import { EmptyState } from '@/components/shared/empty-state'
 import { KanbanBoard } from '@/components/shared/kanban-board'
 import { cn } from '@/lib/utils'
+import { dueDateClass } from '@/lib/planner-types'
 
 const KANBAN_COLUMNS = ['Not Started', 'In Progress', 'Blocked', 'Done'] as const
 type KanbanStatus = typeof KANBAN_COLUMNS[number]
 const PRIORITIES = ['P0', 'P1', 'P2', 'P3']
 
 const PRIORITY_COLORS: Record<string, string> = {
-  P0: 'bg-red-500', P1: 'bg-orange-400', P2: 'bg-yellow-400', P3: 'bg-[var(--text-tertiary)]',
+  P0: 'bg-[color:var(--accent)]', P1: 'bg-orange-400', P2: 'bg-yellow-400', P3: 'bg-[var(--text-tertiary)]',
 }
 
 const STATUS_COLORS: Record<string, string> = {
   'Not Started': 'text-[var(--text-tertiary)]',
-  'In Progress': 'text-blue-400',
+  'In Progress': 'text-[color:var(--accent)]',
   'Blocked': 'text-orange-400',
   'Done': 'text-green-400',
 }
 
 const COLUMN_COLORS: Record<string, string> = {
   'Not Started': 'border-[var(--border)]',
-  'In Progress': 'border-blue-500/30',
+  'In Progress': 'border-[color:var(--accent)]/30',
   'Blocked': 'border-orange-500/30',
   'Done': 'border-green-500/30',
 }
@@ -148,7 +149,7 @@ function TaskCard({ task, projects, onDelete, onTimerStart, onTimerStop }: TaskC
     <div className={cn(
       'group relative rounded-[6px] border px-3 py-2.5',
       'transition-colors duration-100',
-      isActive ? 'border-blue-500/50' : 'border-[var(--border)]',
+      isActive ? 'border-[color:var(--accent)]/50' : 'border-[var(--border)]',
       'hover:border-[color:var(--border2)] hover:bg-[color:var(--bg3)]'
     )}
     style={{ background: 'var(--bg2)' }}>
@@ -172,7 +173,7 @@ function TaskCard({ task, projects, onDelete, onTimerStart, onTimerStop }: TaskC
           </span>
         )}
         {task.dueDate && (
-          <span className={cn('text-[11px] tabular-nums', new Date(task.dueDate) < new Date() && task.status !== 'Done' ? 'text-red-400' : 'text-[var(--text-tertiary)]')}>
+          <span className={cn('text-[11px] tabular-nums', dueDateClass(task.dueDate, task.status === 'Done'))}>
             {formatDate(task.dueDate)}
           </span>
         )}
@@ -183,7 +184,7 @@ function TaskCard({ task, projects, onDelete, onTimerStart, onTimerStop }: TaskC
             className={cn(
               'ml-auto flex items-center gap-1 rounded-[4px] px-1.5 py-0.5 text-[11px] transition-all',
               isActive
-                ? 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
+                ? 'bg-[color:var(--accent)]/15 text-[color:var(--accent)] hover:bg-[color:var(--accent)]/25'
                 : 'bg-[var(--surface-2)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] opacity-0 group-hover:opacity-100'
             )}
           >
@@ -225,8 +226,8 @@ function TaskListRow({ task, projects, onComplete, onDelete, completing }: {
       {task.status === 'Blocked' && <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 text-orange-400" />}
       <span className={cn('text-[11px]', STATUS_COLORS[task.status] ?? '')}>{task.status}</span>
       {task.dueDate && (
-        <span className={cn('flex-shrink-0 rounded-[4px] px-1.5 py-0.5 text-[11px]',
-          new Date(task.dueDate) < new Date() && !isDone ? 'bg-red-500/10 text-red-400' : 'bg-[var(--surface-2)] text-[var(--text-tertiary)]')}>
+        <span className={cn('flex-shrink-0 rounded-[4px] bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]',
+          dueDateClass(task.dueDate, isDone))}>
           {formatDate(task.dueDate)}
         </span>
       )}
@@ -459,7 +460,7 @@ export default function TasksPage() {
                 // Anytype-style compact column header: colored square badge with
                 // a short label, full column name, and a muted count.
                 const badge =
-                  column === 'Not Started' ? { label: 'P3', bg: 'rgba(74,156,245,0.2)',  fg: '#4a9cf5', bd: 'rgba(74,156,245,0.3)'  } :
+                  column === 'Not Started' ? { label: 'P3', bg: 'rgba(147,165,180,0.2)', fg: '#93a5b4', bd: 'rgba(147,165,180,0.3)' } :
                   column === 'In Progress' ? { label: 'P1', bg: 'rgba(212,162,52,0.2)',  fg: '#d4a234', bd: 'rgba(212,162,52,0.3)'  } :
                   column === 'Blocked'     ? { label: 'P0', bg: 'rgba(232,93,58,0.2)',   fg: '#e85d3a', bd: 'rgba(232,93,58,0.3)'   } :
                                              { label: 'P2', bg: 'rgba(82,169,106,0.2)',  fg: '#52a96a', bd: 'rgba(82,169,106,0.3)'  }
