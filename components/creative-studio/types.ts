@@ -17,6 +17,7 @@ export type BlockKind =
   | 'standalone-node'
   | 'group'
   | 'week-planner'
+  | 'planner-block'
 
 export interface BaseBlock {
   id: string
@@ -168,6 +169,16 @@ export interface WeekPlannerBlock extends BaseBlock {
   weekStart: string | null
 }
 
+export interface PlannerBlockNode extends BaseBlock {
+  kind: 'planner-block'
+  /** Which inner tab is showing. */
+  tab: 'week' | 'day'
+  /** Monday (YYYY-MM-DD) of the displayed week in Week tab. null = current week. */
+  anchorWeek: string | null
+  /** Date (YYYY-MM-DD) displayed in Day tab. null = today. */
+  activeDay: string | null
+}
+
 export type AnyBlock =
   | TextBlock
   | StickyBlock
@@ -184,6 +195,7 @@ export type AnyBlock =
   | StandaloneNodeBlock
   | GroupBlock
   | WeekPlannerBlock
+  | PlannerBlockNode
 
 export interface Connector {
   id: string

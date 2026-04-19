@@ -475,6 +475,16 @@ function createDefaultBlock(kind: BlockKind, x: number, y: number): AnyBlock | n
       return { ...base, kind: 'group', w: 400, h: 300, label: 'GROUP', z: 1 }
     case 'week-planner':
       return { ...base, kind: 'week-planner', w: 640, h: 240, weekStart: null }
+    case 'planner-block':
+      return {
+        ...base,
+        kind: 'planner-block',
+        w: 420,
+        h: 520,
+        tab: 'day',
+        anchorWeek: null,
+        activeDay: null,
+      }
     default:
       return null
   }

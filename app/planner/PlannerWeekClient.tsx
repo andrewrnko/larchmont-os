@@ -15,6 +15,7 @@ import {
   addDays,
   CATEGORY_COLORS,
   blockDurationMinutes,
+  formatTo12h,
 } from '@/lib/planner-types'
 import type {
   PlannerBlock,
@@ -594,7 +595,7 @@ function CompactBlock({
 }) {
   const colors = CATEGORY_COLORS[block.category]
   const mins = blockDurationMinutes(block)
-  const timeLabel = `${block.start_time.slice(0, 5)}–${block.end_time.slice(0, 5)}`
+  const timeLabel = `${formatTo12h(block.start_time)}–${formatTo12h(block.end_time)}`
   const isDone = block.status === 'done'
   return (
     <div
@@ -940,7 +941,7 @@ function BlockEditModal({ block, sameDayBlocks, onClose, onPatch, onDelete, onSw
                 >
                   {sameDayBlocks.map((b) => (
                     <option key={b.id} value={b.id}>
-                      {b.title || 'Untitled'} · {b.start_time.slice(0, 5)}–{b.end_time.slice(0, 5)}
+                      {b.title || 'Untitled'} · {formatTo12h(b.start_time)}–{formatTo12h(b.end_time)}
                     </option>
                   ))}
                 </select>

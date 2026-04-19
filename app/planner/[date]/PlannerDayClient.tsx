@@ -9,9 +9,6 @@ import {
   ChevronRight,
   Sparkles,
   FileText,
-  Trash2,
-  Play,
-  Square,
   Lock,
   Repeat,
   Plus,
@@ -29,11 +26,13 @@ import {
   blockDurationMinutes,
   CATEGORY_COLORS,
   isVirtualRepeat,
+  formatTo12h,
 } from '@/lib/planner-types'
 import type { PlannerBlock, PlannerCategory, PlannerBlockStatus } from '@/lib/planner-types'
 import type { Task as AppTask } from '@/lib/db'
 import { PlannerContextMenu } from '../PlannerContextMenu'
 import { TaskEditModal } from '../TaskEditModal'
+import { PlannerBlockEditor } from '../PlannerBlockEditor'
 import { dueDateClass } from '@/lib/planner-types'
 
 const DAY_START_HOUR = 7
@@ -44,8 +43,6 @@ const MIN_BLOCK_HEIGHT = 48
 const DRAG_SNAP_MINUTES = 15
 const DRAG_THRESHOLD_PX = 4
 
-const CATEGORIES: PlannerCategory[] = ['deep_work', 'admin', 'client', 'personal', 'travel', 'buffer']
-const STATUS_ORDER: PlannerBlockStatus[] = ['planned', 'in_progress', 'done', 'skipped']
 
 function formatLongDate(iso: string): string {
   return parseLocalDate(iso).toLocaleDateString(undefined, {
@@ -526,7 +523,7 @@ export function PlannerDayClient({ date }: Props) {
                     style={{ height: SLOT_PX * 2, color: 'var(--text2)' }}
                   >
                     <span className="absolute -top-1.5 right-2 font-mono text-[10px]">
-                      {hour.toString().padStart(2, '0')}:00
+                      {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
                     </span>
                   </div>
                 )
@@ -781,7 +778,6 @@ function BlockPill({
   const baseTop = ((startMin - dayStartMin) / 30) * slotPx
   const top = baseTop + (dragOffsetPx ?? 0)
 
-  const running = Boolean(timerStartedAt)
   const isDone = block.status === 'done'
 
   const toggleDone = (e: React.MouseEvent | React.PointerEvent) => {
@@ -941,185 +937,21 @@ function BlockPill({
           className="font-mono text-[11px] tabular-nums"
           style={{ color: colors.fg }}
         >
-          {block.start_time.slice(0, 5)}–{block.end_time.slice(0, 5)}
+          {formatTo12h(block.start_time)}–{formatTo12h(block.end_time)}
         </span>
       </div>
 
       {expanded && (
-        <div
-          data-planner-keep-open
-          className="flex flex-col gap-3 border-t px-3 py-3"
-          style={{ borderColor: 'var(--border)', background: 'var(--bg1)' }}
-        >
-          {/* Row 1: category + status + times */}
-          <div className="grid grid-cols-2 gap-2">
-            <label className="flex flex-col gap-1">
-              <span className="font-mono text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text2)' }}>
-                Category
-              </span>
-              <select
-                value={block.category}
-                onChange={(e) => onUpdate({ category: e.target.value as PlannerCategory })}
-                className="rounded-md px-2 py-1.5 text-[12px]"
-                style={{ background: 'var(--bg2)', color: 'var(--text0)', border: '1px solid var(--border)' }}
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {CATEGORY_COLORS[c].name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1">
-              <span className="font-mono text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text2)' }}>
-                Status
-              </span>
-              <select
-                value={block.status}
-                onChange={(e) => onSetStatus(e.target.value as PlannerBlockStatus)}
-                className="rounded-md px-2 py-1.5 text-[12px]"
-                style={{ background: 'var(--bg2)', color: 'var(--text0)', border: '1px solid var(--border)' }}
-              >
-                {STATUS_ORDER.map((s) => (
-                  <option key={s} value={s}>
-                    {s.replace('_', ' ')}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1">
-              <span className="font-mono text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text2)' }}>
-                Start
-              </span>
-              <input
-                type="time"
-                value={block.start_time.slice(0, 5)}
-                onChange={(e) => onUpdate({ start_time: e.target.value })}
-                className="rounded-md px-2 py-1.5 text-[12px]"
-                style={{ background: 'var(--bg2)', color: 'var(--text0)', border: '1px solid var(--border)' }}
-              />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span className="font-mono text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text2)' }}>
-                End
-              </span>
-              <input
-                type="time"
-                value={block.end_time.slice(0, 5)}
-                onChange={(e) => onUpdate({ end_time: e.target.value })}
-                className="rounded-md px-2 py-1.5 text-[12px]"
-                style={{ background: 'var(--bg2)', color: 'var(--text0)', border: '1px solid var(--border)' }}
-              />
-            </label>
-          </div>
-
-          {/* Row 2: notes */}
-          <label className="flex flex-col gap-1">
-            <span className="font-mono text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text2)' }}>
-              Notes
-            </span>
-            <textarea
-              value={block.notes ?? ''}
-              onChange={(e) => onUpdate({ notes: e.target.value })}
-              placeholder="Details, links, context…"
-              rows={3}
-              className="w-full resize-none rounded-md border px-2 py-1.5 text-[12px] outline-none"
-              style={{ background: 'var(--bg2)', borderColor: 'var(--border)', color: 'var(--text0)' }}
-            />
-          </label>
-
-          {/* Row 3: toggles + timer + delete */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => onUpdate({ is_locked: !block.is_locked })}
-              className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px]"
-              style={{
-                background: block.is_locked ? 'color-mix(in srgb, var(--accent) 20%, transparent)' : 'var(--bg2)',
-                color: block.is_locked ? 'var(--text0)' : 'var(--text1)',
-              }}
-            >
-              <Lock size={12} /> {block.is_locked ? 'Locked' : 'Lock'}
-            </button>
-            <button
-              onClick={() =>
-                onUpdate({
-                  is_repeating: !block.is_repeating,
-                  repeat_days: !block.is_repeating ? [1, 2, 3, 4, 5] : [],
-                  repeat_start_date: !block.is_repeating ? block.date : null,
-                })
-              }
-              className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px]"
-              style={{
-                background: block.is_repeating ? 'color-mix(in srgb, var(--accent) 20%, transparent)' : 'var(--bg2)',
-                color: block.is_repeating ? 'var(--text0)' : 'var(--text1)',
-              }}
-            >
-              <Repeat size={12} /> {block.is_repeating ? 'Repeating' : 'Repeat'}
-            </button>
-            {running ? (
-              <button
-                onClick={onStopTimer}
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px]"
-                style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
-              >
-                <Square size={11} /> {elapsed}
-              </button>
-            ) : (
-              <button
-                onClick={onStartTimer}
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px]"
-                style={{ background: 'var(--bg2)', color: 'var(--text0)' }}
-              >
-                <Play size={11} /> Start timer
-              </button>
-            )}
-            <div className="ml-auto flex items-center gap-2">
-              {block.actual_duration_minutes != null && (
-                <span className="text-[11px]" style={{ color: 'var(--text2)' }}>
-                  Actual {block.actual_duration_minutes}m · Planned {blockDurationMinutes(block)}m
-                </span>
-              )}
-              <button
-                onClick={onRemove}
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px]"
-                style={{ background: 'var(--bg2)', color: '#ef6850' }}
-              >
-                <Trash2 size={11} /> Delete
-              </button>
-            </div>
-          </div>
-
-          {block.is_repeating && (
-            <div className="flex flex-col gap-1">
-              <span className="font-mono text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text2)' }}>
-                Repeat on
-              </span>
-              <div className="flex items-center gap-1">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => {
-                  const on = block.repeat_days.includes(i)
-                  return (
-                    <button
-                      key={d}
-                      onClick={() => {
-                        const next = on
-                          ? block.repeat_days.filter((x) => x !== i)
-                          : [...block.repeat_days, i].sort()
-                        onUpdate({ repeat_days: next })
-                      }}
-                      className="rounded-md px-2 py-1 font-mono text-[10px] uppercase tracking-wide"
-                      style={{
-                        background: on ? 'var(--accent)' : 'var(--bg2)',
-                        color: on ? 'var(--accent-fg)' : 'var(--text1)',
-                      }}
-                    >
-                      {d}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
+        <PlannerBlockEditor
+          block={block}
+          onUpdate={onUpdate}
+          onRemove={onRemove}
+          onSetStatus={onSetStatus}
+          onStartTimer={onStartTimer}
+          onStopTimer={onStopTimer}
+          timerStartedAt={timerStartedAt}
+          elapsedLabel={elapsed}
+        />
       )}
     </div>
   )

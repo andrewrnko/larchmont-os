@@ -128,10 +128,20 @@ export function timeToMinutes(t: string): number {
   return (h ?? 0) * 60 + (m ?? 0)
 }
 
-/** Extract "HH:MM" from any HH:MM[:SS][...] value. Pure string op. */
-export function formatTimeLabel(t: string | null | undefined): string {
+/** Convert HH:MM (24h) string to 12h AM/PM format, e.g. "16:00" → "4:00 PM". */
+export function formatTo12h(t: string | null | undefined): string {
   if (!t) return ''
-  return t.slice(0, 5)
+  const [hStr, mStr] = t.slice(0, 5).split(':')
+  const h = parseInt(hStr, 10)
+  const m = parseInt(mStr, 10)
+  const period = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 || 12
+  return `${h12}:${String(m).padStart(2, '0')} ${period}`
+}
+
+/** Extract "HH:MM" from any HH:MM[:SS][...] value — delegates to 12h formatter. */
+export function formatTimeLabel(t: string | null | undefined): string {
+  return formatTo12h(t)
 }
 
 // ── Task due-date tone helpers ────────────────────────────────────────────

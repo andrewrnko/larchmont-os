@@ -21,6 +21,7 @@ import { TasksBlockView } from './blocks/TasksBlock'
 import { StandaloneNodeBlockView } from './blocks/StandaloneNodeBlock'
 import { GroupBlockView } from './blocks/GroupBlock'
 import { WeekPlannerBlockView } from './blocks/WeekPlannerBlock'
+import { PlannerBlockNodeView } from './blocks/PlannerBlockNode'
 import { ConnectorLines, getCollapsedBlockIds } from './Connectors'
 import { ContextMenu, type ContextMenuState } from './ContextMenu'
 import { ConnectorDropMenu, type DropMenuState } from './ConnectorDropMenu'
@@ -90,6 +91,8 @@ function summarizeBlock(block: AnyBlock | undefined): string {
       return `[Group] ${block.label}`
     case 'week-planner':
       return `[Week planner · ${block.weekStart ?? 'current week'}]`
+    case 'planner-block':
+      return `[Planner · ${block.tab} · ${block.activeDay ?? 'today'}]`
     default:
       return `[${block.kind}]`
   }
@@ -357,7 +360,7 @@ export function Canvas({ tool, setTool }: Props) {
       return
     }
 
-    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page', 'transcript', 'assistant', 'tasks', 'standalone-node', 'group']
+    const placementKinds: BlockKind[] = ['text', 'sticky', 'image', 'storyboard', 'mindmap', 'page', 'transcript', 'assistant', 'tasks', 'standalone-node', 'group', 'planner-block']
     if (!placementKinds.includes(tool as BlockKind)) return
     addBlockAt(tool as BlockKind, wx, wy)
     setTool('select')
@@ -709,5 +712,6 @@ function renderBlock(block: AnyBlock, onContextMenu: (e: React.MouseEvent) => vo
     case 'standalone-node': return <StandaloneNodeBlockView   key={block.id} block={block as import('./types').StandaloneNodeBlock} onContextMenu={onContextMenu} />
     case 'group':           return <GroupBlockView            key={block.id} block={block as import('./types').GroupBlock} onContextMenu={onContextMenu} />
     case 'week-planner':    return <WeekPlannerBlockView      key={block.id} block={block as import('./types').WeekPlannerBlock} onContextMenu={onContextMenu} />
+    case 'planner-block':   return <PlannerBlockNodeView      key={block.id} block={block as import('./types').PlannerBlockNode} onContextMenu={onContextMenu} />
   }
 }
